@@ -12,7 +12,7 @@ public class TReference {
     private String refId;
 
     public TClass getType() {
-        return defaultMemory.getReferencedObject(refId).getIClass();
+        return defaultMemory.getReferencedObject(refId).getTClass();
     }
 
 }

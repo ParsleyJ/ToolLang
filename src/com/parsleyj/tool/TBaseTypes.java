@@ -33,6 +33,7 @@ public class TBaseTypes {
 
     public static final TClass ERROR_CLASS = new TClass("Error", OBJECT_CLASS);
     public static final TClass INVALID_CALL_ERROR_CLASS = new TClass("InvalidCallError", ERROR_CLASS);
+    public static final TClass METHOD_NOT_FOUND_ERROR_CLASS = new TClass("MethodNotFoundError", ERROR_CLASS);
 
     public static final TObject NULL_OBJECT = new TObject(null, null);
 
@@ -40,12 +41,7 @@ public class TBaseTypes {
         /************** OBJECT CLASS *********************/
         OBJECT_CLASS.addMethod(new TNativeMethod("___access_member___", Collections.singletonList(IDENTIFIER_CLASS)) {
             @Override
-            public TObject evaluate(TObject self, TObject... values) {
-                if(values.length!=1) {
-                    return INVALID_CALL_ERROR_CLASS.newInstance(newStringInstance(
-                            "Failed attempt to force call '" + getCompleteName() + "' method providing an invalid number of parameters."));
-                }
-
+            public TObject checkedInvoke(TObject self, TObject... values) {
                 //TODO: check type of param, access to field, return
                 return null;
             }
@@ -53,12 +49,7 @@ public class TBaseTypes {
 
         OBJECT_CLASS.addMethod(new TNativeMethod("___access_member___", Collections.singletonList(METHOD_CALL_CLASS)) {
             @Override
-            public TObject evaluate(TObject self, TObject... paramValues) {
-                if(paramValues.length!=1) {
-                    return INVALID_CALL_ERROR_CLASS.newInstance(newStringInstance(
-                            "Failed attempt to force call '" + getCompleteName() + "' method providing an invalid number of parameters."));
-                }
-
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 //TODO: check type of param, access to method, call it
                 return null;
             }
@@ -66,18 +57,20 @@ public class TBaseTypes {
 
         OBJECT_CLASS.addMethod(new TNativeMethod("getClass", new ArrayList<TClass>()) {
             @Override
-            public TObject evaluate(TObject self, TObject... paramValues) {
-                return self.getIClass();
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                return self.getTClass();
             }
         });
 
         OBJECT_CLASS.addMethod(new TNativeMethod("methodNames", new ArrayList<TClass>()) {
             @Override
-            public TObject evaluate(TObject self, TObject... paramValues) {
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 //TODO returns string array
                 return null;
             }
         });
+
+
 
         /************** CLASS CLASS : OBJECT *************/
 
@@ -107,6 +100,49 @@ public class TBaseTypes {
                 return new TObject(INTEGER_CLASS, Integer.parseInt(literalInstance));
             }
         });
+
+        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("parseInt", Collections.singletonList(STRING_CLASS)) {
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                return new TObject(INTEGER_CLASS, Integer.parseInt((String) paramValues[0].getPrimitiveValue()));
+            }
+        });
+
+        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("add", Collections.singletonList(INTEGER_CLASS)){
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                return new TObject(INTEGER_CLASS, (Integer)self.getPrimitiveValue() + (Integer)paramValues[0].getPrimitiveValue());
+            }
+        });
+
+        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("subtract", Collections.singletonList(INTEGER_CLASS)){
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                return new TObject(INTEGER_CLASS, (Integer)self.getPrimitiveValue() - (Integer)paramValues[0].getPrimitiveValue());
+            }
+        });
+
+        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("multiply", Collections.singletonList(INTEGER_CLASS)){
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                return new TObject(INTEGER_CLASS, (Integer)self.getPrimitiveValue() * (Integer)paramValues[0].getPrimitiveValue());
+            }
+        });
+
+        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("divide", Collections.singletonList(INTEGER_CLASS)){
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                return new TObject(INTEGER_CLASS, (Integer)self.getPrimitiveValue() / (Integer)paramValues[0].getPrimitiveValue());
+            }
+        });
+
+        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("mod", Collections.singletonList(INTEGER_CLASS)){
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                return new TObject(INTEGER_CLASS, (Integer)self.getPrimitiveValue() % (Integer)paramValues[0].getPrimitiveValue());
+            }
+        });
+
 
     }
 

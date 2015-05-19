@@ -25,7 +25,7 @@ public class TClass extends TObject {
     }
 
     @Override
-    public TClass getIClass() {
+    public TClass getTClass() {
         return TBaseTypes.CLASS_CLASS;
     }
 
@@ -69,6 +69,17 @@ public class TClass extends TObject {
 
     public void addLiteralClass(TLiteral tLiteral){
         literalClasses.add(tLiteral);
+    }
+
+    public boolean isOrExtends(TClass tClass){
+        TClass tmp = this;
+
+        while(tmp != null){
+            if(tmp.isSameIstance(tClass)) return true;
+            tmp = tmp.getParentClass();
+        }
+
+        return false;
     }
 
     public class MethodNotFoundException extends Exception {

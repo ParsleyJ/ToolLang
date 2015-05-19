@@ -29,7 +29,7 @@ public class TObject implements TExpression {
         this.belongingClass = belongingClass;
     }
 
-    public TClass getIClass() {
+    public TClass getTClass() {
         return belongingClass;
     }
 
@@ -45,7 +45,7 @@ public class TObject implements TExpression {
         String completeName = TMethod.getCompleteNameFromActual(name, params);
         TMethod m = instanceMethods.get(completeName); //TODO: maybe just a string check is not enough (inheritance)
         if(m!=null) return m.evaluate(this, params); //TODO: push a stack
-        else return getIClass().getMethod(name).evaluate(this, params);
+        else return getTClass().getMethod(name).evaluate(this, params);
     }
 
     public void addInstanceMethod(TMethod method){
@@ -56,5 +56,8 @@ public class TObject implements TExpression {
         return primitiveValue;
     }
 
+    public boolean isSameIstance(TObject object){
+        return object.id == this.id;
+    }
 
 }

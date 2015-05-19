@@ -43,7 +43,7 @@ public class TMethod extends TObject {
         String tmp = name + "(";
         for(int i = 0; i < params.length; ++i){
             if(i != 0) tmp += ",";
-            tmp += params[i].getIClass().getName();
+            tmp += params[i].getTClass().getName();
         }
         tmp += ")";
         return tmp;
