@@ -25,16 +25,21 @@ public class TClass extends TObject {
     }
 
     @Override
+    public boolean isClass() {
+        return true;
+    }
+
+    @Override
     public TClass getTClass() {
         return TBaseTypes.CLASS_CLASS;
     }
 
-    public TMethod getMethod(String name) throws MethodNotFoundException{
+    public TMethod getMethod(String name) throws MethodNotFoundException {
         TClass tmp = this;
 
-        while (tmp != null){
+        while (tmp != null) {
             TMethod tmpMethod = methods.get(name);
-            if(tmpMethod != null) return tmpMethod;
+            if (tmpMethod != null) return tmpMethod;
             tmp = tmp.getParentClass();
         }
 
@@ -43,10 +48,10 @@ public class TClass extends TObject {
 
     @Override
     public String getStringRepresentation() {
-        return "<"+name+">";
+        return "<" + name + ">";
     }
 
-    public String getName() {
+    public String getClassName() {
         return name;
     }
 
@@ -55,7 +60,7 @@ public class TClass extends TObject {
         methods.put(iMethod.getCompleteName(), iMethod);
     }
 
-    public TObject newInstance(TObject... constructorParameters){
+    public TObject newInstance(TObject... constructorParameters) {
         return new TObject(); //TODO: constructorParameters
     }
 
@@ -63,19 +68,19 @@ public class TClass extends TObject {
         return parentClass;
     }
 
-    public List<TLiteral> getILiterals(){
+    public List<TLiteral> getILiterals() {
         return literalClasses;
     }
 
-    public void addLiteralClass(TLiteral tLiteral){
+    public void addLiteralClass(TLiteral tLiteral) {
         literalClasses.add(tLiteral);
     }
 
-    public boolean isOrExtends(TClass tClass){
+    public boolean isOrExtends(TClass tClass) {
         TClass tmp = this;
 
-        while(tmp != null){
-            if(tmp.isSameIstance(tClass)) return true;
+        while (tmp != null) {
+            if (tmp.isSameIstance(tClass)) return true;
             tmp = tmp.getParentClass();
         }
 

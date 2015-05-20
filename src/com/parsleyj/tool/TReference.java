@@ -3,16 +3,22 @@ package com.parsleyj.tool;
 /**
  * Created by Giuseppe on 17/05/15.
  */
-public class TReference {
+public class TReference extends TObject {
 
-    //TODO:
+    private TIdentifier identifier;
+    private Integer referencedId;
 
-    private ToolMemory defaultMemory;
-
-    private String refId;
-
-    public TClass getType() {
-        return defaultMemory.getReferencedObject(refId).getTClass();
+    public TReference(TIdentifier identifier, Integer objid) {
+        super(TBaseTypes.REFERENCE_CLASS);
+        this.identifier = identifier;
+        this.referencedId = objid;
     }
 
+    public TIdentifier getTIdentifier() {
+        return identifier;
+    }
+
+    public Integer getReferencedId() {
+        return referencedId;
+    }
 }

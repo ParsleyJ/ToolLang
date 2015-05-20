@@ -7,16 +7,29 @@ import java.util.List;
  */
 public class ToolInterpreter {
 
-
-
     private ToolScanner scanner;
 
+    private ToolMemory memory;
 
-
-    public TObject evaluateExpression(String expression){
-        List<TToken> tokens = scanner.getTokens(expression);
-        
-        return null;
-
+    public ToolInterpreter(ToolScanner scanner) {
+        this.scanner = scanner;
+        this.memory = TBaseTypes.TOOL_OBJECT.getNamespace();
+        //...
+        //memory.addToRootScope(...);
+        //memory.addToRootScope(...);
+        //memory.addToRootScope(...);
+        //...
     }
+
+
+    public TObject evaluateExpression(String expression) {
+        List<TToken> tokens = scanner.getTokens(expression);
+
+        return null;
+    }
+
+    public TObject evaluateExpression(List<TToken> tokens) {
+        return null;
+    }
+
 }

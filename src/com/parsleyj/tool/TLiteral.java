@@ -3,7 +3,7 @@ package com.parsleyj.tool;
 /**
  * Created by Giuseppe on 17/05/15.
  */
-public abstract class TLiteral extends TokenClass{
+public abstract class TLiteral extends TokenClass { //TODO: is TLiteral a TObject?
 
     private TClass tClass;
 
@@ -12,9 +12,9 @@ public abstract class TLiteral extends TokenClass{
         this.tClass = tClass;
     }
 
-    public TClass getRepresentingIClass(){
+    public TClass getRepresentingTClass() {
         return tClass;
     }
 
-    public abstract TObject convertLiteralToIObject(String literalInstance);
+    public abstract TObject convertLiteralToTObject(String literalInstance);
 }

@@ -12,11 +12,10 @@ public class StringUtils {
      * BS, FF, NL, CR, TAB, double and single quote.</li>
      * <li><strong>\X \XX \XXX</strong> : Octal character
      * specification (0 - 377, 0x00 - 0xFF).</li>
-     * <li><strong>\uXXXX</strong> : Hexadecimal based Unicode character.</li>
+     * <li><strong>uXXXX</strong> : Hexadecimal based Unicode character.</li>
      * </ul>
      *
-     * @param st
-     *            A string optionally containing standard java escape sequences.
+     * @param st A string optionally containing standard java escape sequences.
      * @return The translated string.
      */
     public static String unescapeJavaString(String st) {
@@ -90,8 +89,8 @@ public class StringUtils {
         return sb.toString();
     }
 
-    public static String removeFirstAndLastCharacters(String st){
-        if(st.length()<2) return "";
-        return st.substring(1, st.length()-1);
+    public static String removeFirstAndLastCharacters(String st) {
+        if (st.length() < 2) return "";
+        return st.substring(1, st.length() - 1);
     }
 }
