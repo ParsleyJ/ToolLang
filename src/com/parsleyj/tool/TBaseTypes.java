@@ -48,7 +48,9 @@ public class TBaseTypes {
     public static final TClass FORMAL_PARAMETER_CLASS = new TClass("___FormalParameter___", METAOBJECT_CLASS);
     public static final TClass OPERATOR_CLASS = new TClass("___Operator___", METAOBJECT_CLASS);
 
-    //TODO: TOOL_INTERPRETER_CLASS, DEFAULT_INTERPRETER_OBJECT, NATIVE_CLASS_CLASS, NATIVE_OBJECT_CLASS
+    public static final TClass TOOL_INTERPRETER_CLASS = new TClass("ToolInterpreter", OBJECT_CLASS);
+    public static final TObject DEFAULT_INTERPRETER_OBJECT = new TObject(TOOL_INTERPRETER_CLASS, null);
+    //TODO: NATIVE_CLASS_CLASS, NATIVE_OBJECT_CLASS
 
     public static final TClass STRING_CLASS = new TClass("String", OBJECT_CLASS);
     public static final TClass INTEGER_CLASS = new TClass("Integer", OBJECT_CLASS);
@@ -66,7 +68,8 @@ public class TBaseTypes {
 
     public static final TObject[] baseObjects = new TObject[]{
             NULL_OBJECT,
-            TOOL_OBJECT
+            TOOL_OBJECT,
+            DEFAULT_INTERPRETER_OBJECT,
     };
 
     public static final TClass[] baseClasses = new TClass[]{
@@ -75,13 +78,18 @@ public class TBaseTypes {
             METAOBJECT_CLASS,
             CLASS_CLASS,
             KEYWORD_CLASS,
+            STATEMENT_CLASS,
+            BLOCK_CLASS,
             METHOD_CLASS,
             NATIVE_METHOD_CLASS,
             IDENTIFIER_CLASS,
             METHOD_CALL_CLASS,
             REFERENCE_CLASS,
             FIELD_CLASS,
+            FORMAL_PARAMETER_CLASS,
             OPERATOR_CLASS,
+
+            TOOL_INTERPRETER_CLASS,
 
             STRING_CLASS,
             INTEGER_CLASS,
@@ -191,6 +199,11 @@ public class TBaseTypes {
             }
         });
 
+        /************** TOOL INTERPRETER CLASS : OBJECT **/
+
+
+        /************** DEFAULT INTERPRETER OBJECT *******/
+    
 
         /************** STRING CLASS : OBJECT ************/
         STRING_CLASS.addLiteralClass(new TLiteral(STRING_CLASS, "([\"'])(?:(?=(\\\\?))\\2.)*?\\1") {
