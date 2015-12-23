@@ -118,6 +118,8 @@ public class TBaseTypes {
     public static final TClass INVALID_CLASS_DEFINITION_ERROR_CLASS = new TClass("InvalidClassDefinitionError", ERROR_CLASS);
     public static final TClass INDEX_OUT_OF_BOUNDS_ERROR_CLASS = new TClass("IndexOutOfBoundsError", ERROR_CLASS);
 
+
+
     public static final TObject[] baseObjects = new TObject[]{
             NULL_OBJECT,
             TOOL_OBJECT,
@@ -181,16 +183,21 @@ public class TBaseTypes {
         OBJECT_CLASS.addClassMethod(new TNativeMethod("___accessMember___", Collections.singletonList(METHOD_CALL_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
-                //TODO: access to method, invoke it and return returned value
-                return null;
+                TMethodCall methodCall = (TMethodCall) paramValues[0];
+                //access to method, invoke it and return returned value
+                return self.callMethod(methodCall.getName(), methodCall.getActualParameters().toArray(
+                        new TObject[methodCall.getActualParameters().size()]));
+
             }
         });
 
         OBJECT_CLASS.addClassMethod(new TNativeMethod("___getInstanceMethod___", Collections.singletonList(METHOD_CALL_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
-                //TODO: find the method and return it
-                return null;
+                TMethodCall methodCall = (TMethodCall) paramValues[0];
+                return self.getInstanceMethods().get(TMethod.getCompleteNameFromActual(
+                        methodCall.getName().getIdentifierString(), methodCall.getActualParameters().toArray(
+                                new TObject[methodCall.getActualParameters().size()])));
             }
         });
 
@@ -415,7 +422,24 @@ public class TBaseTypes {
         /************** PAIR CLASS : COLLECTION **********/
         /************** MAP CLASS : COLLECTION ***********/
 
+
+
+
     }
 
+    /*********************************************************/
+    /************************ OPERATORS **********************/
+    /*********************************************************/
 
+    public static final TOperator DOT_OPERATOR = new TOperator(
+            ".",
+            new TIdentifier("___accessMember___"),
+            TOperator.OperatorBehavior.Binary,
+            TOperator.OperatorAssociativity.Left);
+
+    public static final TOperator ADD_OPERATOR = new TOperator(
+            "+",
+            new TIdentifier("add"),
+            TOperator.OperatorBehavior.Binary,
+            TOperator.OperatorAssociativity.Left);
 }

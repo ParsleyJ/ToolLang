@@ -46,8 +46,7 @@ public class TNamespace {
         TReference r = getFirstReferenceInStack(identifier);
         if (r == null) return InternalUtils.throwError(TBaseTypes.REFERENCE_NOT_FOUND_ERROR_CLASS,
                         "No <Reference> object found for identifier: '" + identifier + "' " +
-                                "in " + owner + "'s memory."
-                );
+                                "in " + owner + "'s memory.");
         return getReferencedObject(r);
     }
 

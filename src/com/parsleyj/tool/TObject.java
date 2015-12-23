@@ -62,8 +62,8 @@ public class TObject {
         return null;//TODO: impl
     }
 
-    public TObject callMethod(String name, TObject... params) {
-        String completeName = TMethod.getCompleteNameFromActual(name, params);
+    public TObject callMethod(TIdentifier name, TObject... params) {
+        String completeName = TMethod.getCompleteNameFromActual(name.getIdentifierString(), params);
         //first, searches in instance methods
         TMethod m = instanceMethods.get(completeName);
         if (m != null){
