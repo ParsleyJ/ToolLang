@@ -6,7 +6,7 @@ package com.parsleyj.tool;
 public class TReference extends TObject {
 
     private TIdentifier identifier;
-    private Integer referencedId;
+    private Integer referencedId = 0;
 
     public TReference(TIdentifier identifier, Integer objid) {
         super(TBaseTypes.REFERENCE_CLASS);

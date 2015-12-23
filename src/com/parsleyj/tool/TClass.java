@@ -1,9 +1,6 @@
 package com.parsleyj.tool;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Giuseppe on 17/05/15.
@@ -14,7 +11,7 @@ public class TClass extends TObject {
 
     private Map<String, TMethod> methods = new HashMap<String, TMethod>();
 
-    private Map<String, TField> fields;
+    private Map<String, TField> fields = new HashMap<String, TField>();
     private TClass parentClass;
 
     private List<TLiteral> literalClasses = new ArrayList<TLiteral>();
@@ -34,11 +31,11 @@ public class TClass extends TObject {
         return TBaseTypes.CLASS_CLASS;
     }
 
-    public TMethod getMethod(String name) throws MethodNotFoundException {
+    public TMethod getClassMethod(String completeName) throws MethodNotFoundException {
         TClass tmp = this;
 
         while (tmp != null) {
-            TMethod tmpMethod = methods.get(name);
+            TMethod tmpMethod = methods.get(completeName);
             if (tmpMethod != null) return tmpMethod;
             tmp = tmp.getParentClass();
         }
@@ -56,12 +53,24 @@ public class TClass extends TObject {
     }
 
 
-    public void addMethod(TMethod iMethod) {
-        methods.put(iMethod.getCompleteName(), iMethod);
+    public void addClassMethod(TMethod tMethod) {
+        methods.put(tMethod.getCompleteName(), tMethod);
+    }
+
+    public void addClassField(TField tField){
+        fields.put(tField.getFieldName().getIdentifierString(), tField);
+    }
+
+    public TField getClassField(String name){
+        return fields.get(name);
+    }
+
+    public Collection<TField> getClassFields(){
+        return fields.values();
     }
 
     public TObject newInstance(TObject... constructorParameters) {
-        return new TObject(); //TODO: constructorParameters
+        return new TObject(this); //TODO: constructorParameters
     }
 
     public TClass getParentClass() {

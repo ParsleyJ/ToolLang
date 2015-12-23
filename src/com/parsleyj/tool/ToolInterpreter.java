@@ -5,13 +5,16 @@ import java.util.List;
 /**
  * Created by Giuseppe on 17/05/15.
  */
-public class ToolInterpreter {
+public class ToolInterpreter extends TObject{
+
+
 
     private ToolScanner scanner;
 
-    private ToolMemory memory;
+    private TNamespace memory;
 
     public ToolInterpreter(ToolScanner scanner) {
+        super(TBaseTypes.TOOL_INTERPRETER_CLASS);
         this.scanner = scanner;
         this.memory = TBaseTypes.TOOL_OBJECT.getNamespace();
         //...

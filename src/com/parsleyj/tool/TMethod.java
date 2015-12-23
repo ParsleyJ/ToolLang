@@ -9,11 +9,13 @@ public class TMethod extends TObject {
 
     protected String name;
     protected List<TClass> formalParametersTypes;
+    protected TBlock bodyBlock;
 
-    public TMethod(String name, List<TClass> formalParametersTypes) {
+    public TMethod(String name, List<TClass> formalParametersTypes, TBlock body) {
         super(TBaseTypes.METHOD_CLASS);
         this.name = name;
         this.formalParametersTypes = formalParametersTypes;
+        this.bodyBlock = body;
     }
 
     public String getSimpleName() {
@@ -35,9 +37,37 @@ public class TMethod extends TObject {
         return formalParametersTypes;
     }
 
-    public TObject evaluate(TObject self, TObject... paramValues) {
-        //TODO: implement
-        return null;
+    public TObject invoke(TObject self, TObject... paramValues) {
+
+        TObject tmp = checkCallParametersCorrectness(paramValues);
+        if (tmp != null) return tmp;
+
+        //a stack is added in namespace, containing the arguments
+        self.getNamespace().pushNewStack();
+        //TODO: add parameters in stack
+
+        //another stack is automatically added for the block execution
+        TObject result = bodyBlock.evaluate(self.getNamespace(), TBaseTypes.DEFAULT_INTERPRETER_OBJECT);
+
+        self.getNamespace().popStack();
+
+        return result;
+    }
+
+    public TObject checkCallParametersCorrectness(TObject... actualParameters) {
+        if (formalParametersTypes.size() == actualParameters.length)
+            return InternalUtils.throwError(TBaseTypes.INVALID_CALL_ERROR_CLASS,
+                    "Failed attempt to invoke '" + getCompleteName() + "' method providing an invalid number of parameters.");
+
+        for (int i = 0; i < formalParametersTypes.size(); ++i) {
+            if (!actualParameters[i].getTClass().isOrExtends(formalParametersTypes.get(i)))
+                return InternalUtils.throwError(TBaseTypes.INVALID_CALL_ERROR_CLASS,
+                        "Failed attempt to invoke '" + getCompleteName() + "' method providing an invalid parameter " +
+                                "of type " + actualParameters[i].getTClass().getStringRepresentation() + " where " +
+                                formalParametersTypes.get(i).getStringRepresentation() + " was expected.");
+        }
+
+        return null; //return null if everything is ok
     }
 
     public static String getCompleteNameFromActual(String name, TObject... params) {
@@ -49,5 +79,7 @@ public class TMethod extends TObject {
         tmp += ")";
         return tmp;
     }
+
+
 
 }

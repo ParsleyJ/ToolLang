@@ -5,17 +5,18 @@ import java.util.*;
 /**
  * Created by Giuseppe on 17/05/15.
  */
-public class ToolMemory {
+public class TNamespace {
 
     private TObject owner;
 
     private Deque<Map<String, TReference>> stack = new ArrayDeque<Map<String, TReference>>();
 
-    private Map<Integer, TObject> heap = new HashMap<Integer, TObject>();
+    private THeapMemory heap;
 
-    public ToolMemory(TObject owner) {
+    public TNamespace(TObject owner, THeapMemory heapMemory) {
         this.owner = owner;
         stack.addFirst(new HashMap<String, TReference>());
+        heap = heapMemory;
     }
 
     public Integer addObjectToHeap(TObject object) {
@@ -30,6 +31,12 @@ public class ToolMemory {
         return result;
     }
 
+    public TReference addNullReferenceToScope(String identifier){
+        TReference result = new TReference(new TIdentifier(identifier), TBaseTypes.NULL_OBJECT.getId());
+        stack.getLast().put(identifier, result);
+        return result;
+    }
+
     public TReference addClassToScope(TClass tClass) {
         return addObjectToScope(tClass.getClassName(), tClass);
     }
@@ -37,11 +44,10 @@ public class ToolMemory {
 
     public TObject getReferencedObject(String identifier) {
         TReference r = getFirstReferenceInStack(identifier);
-        if (r == null) return TBaseTypes.REFERENCE_NOT_FOUND_ERROR_CLASS.newInstance(
-                TBaseTypes.newStringInstance(
+        if (r == null) return InternalUtils.throwError(TBaseTypes.REFERENCE_NOT_FOUND_ERROR_CLASS,
                         "No <Reference> object found for identifier: '" + identifier + "' " +
                                 "in " + owner + "'s memory."
-                ));
+                );
         return getReferencedObject(r);
     }
 

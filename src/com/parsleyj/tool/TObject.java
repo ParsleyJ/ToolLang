@@ -17,30 +17,32 @@ public class TObject {
         }
     }
 
+    public static final THeapMemory BASE_MEMORY = new THeapMemory();
+
     private int id = IdProvider.getNextId();
 
     protected Object primitiveValue;
 
     protected TClass belongingClass;
 
-    private Map<String, TMethod> instanceMethods = new HashMap<String, TMethod>();//TODO: should this be in memory?
+    private Map<String, TMethod> instanceMethods = new HashMap<String, TMethod>();//TODO: should this be in memory? (let it be <str, int>?)
 
-    private ToolMemory toolMemory;
+    private TNamespace namespace;
 
     public TObject() {
         belongingClass = TBaseTypes.OBJECT_CLASS;
-        toolMemory = new ToolMemory(this);
+        namespace = new TNamespace(this, BASE_MEMORY);
     }
 
     public TObject(TClass belongingClass) {
         this.belongingClass = belongingClass;
-        toolMemory = new ToolMemory(this);
+        namespace = new TNamespace(this, BASE_MEMORY);
     }
 
     public TObject(TClass belongingClass, Object primitiveValue) {
         this.primitiveValue = primitiveValue;
         this.belongingClass = belongingClass;
-        toolMemory = new ToolMemory(this);
+        namespace = new TNamespace(this, BASE_MEMORY);
     }
 
     public TClass getTClass() {
@@ -56,18 +58,41 @@ public class TObject {
     }
 
     public TReference getField(TField field) {
+        namespace.getFirstReferenceInStack(field.getFieldName().getIdentifierString());
         return null;//TODO: impl
     }
 
-    public TObject callMethod(String name, TObject... params) throws TClass.MethodNotFoundException {
+    public TObject callMethod(String name, TObject... params) {
         String completeName = TMethod.getCompleteNameFromActual(name, params);
-        TMethod m = instanceMethods.get(completeName); //TODO: maybe just a string check is not enough (inheritance)
-        if (m != null) return m.evaluate(this, params); //TODO: push a stack
-        else return getTClass().getMethod(name).evaluate(this, params);
+        //first, searches in instance methods
+        TMethod m = instanceMethods.get(completeName);
+        if (m != null){
+            namespace.pushNewStack();
+            TObject result = m.invoke(this, params);
+            namespace.popStack();
+            return result;
+        } else { //if nothing was found, search in methods defined in belonging class
+            try {
+                namespace.pushNewStack();
+                TObject result = getTClass().getClassMethod(completeName).invoke(this, params);
+                namespace.popStack();
+                return result;
+            }catch (TClass.MethodNotFoundException e){
+                namespace.popStack();
+                return InternalUtils.throwError(TBaseTypes.METHOD_NOT_FOUND_ERROR_CLASS,
+                        "No method '" + completeName + "' found in object " + this + " ."
+                );
+            }
+
+        }
     }
 
     public void addInstanceMethod(TMethod method) {
         instanceMethods.put(method.getCompleteName(), method);
+    }
+
+    public Map<String, TMethod> getInstanceMethods() {
+        return instanceMethods;
     }
 
     public Object getPrimitiveValue() {
@@ -97,7 +122,7 @@ public class TObject {
         return false;
     }
 
-    public ToolMemory getNamespace() {
-        return toolMemory;
+    public TNamespace getNamespace() {
+        return namespace;
     }
 }
