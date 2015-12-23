@@ -88,7 +88,7 @@ public class TBaseTypes {
     public static final TClass KEYWORD_CLASS = new TClass("___Keyword___", METAOBJECT_CLASS);
     public static final TClass STATEMENT_CLASS = new TClass("___Statement___", METAOBJECT_CLASS);
     public static final TClass BLOCK_CLASS = new TClass("___Block___", STATEMENT_CLASS);
-    public static final TClass METHOD_CLASS = new TClass("___Method___", BLOCK_CLASS);
+    public static final TClass METHOD_CLASS = new TClass("___Method___", METAOBJECT_CLASS);
     public static final TClass NATIVE_METHOD_CLASS = new TClass("___NativeMethod___", METHOD_CLASS);
     public static final TClass IDENTIFIER_CLASS = new TClass("___Identifier___", METAOBJECT_CLASS);
     public static final TClass METHOD_CALL_CLASS = new TClass("___MethodCall___", METAOBJECT_CLASS);
@@ -201,6 +201,26 @@ public class TBaseTypes {
             }
         });
 
+        OBJECT_CLASS.addClassMethod(new TNativeMethod("___plainInit___", Collections.<TClass>emptyList()) {
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                //for each field of the belonging class, creates a reference (to NULL) in the object's namespace
+                for(TField field:self.getTClass().getClassFields()){
+                    self.getNamespace().addNullReferenceToScope(field.getFieldName().getIdentifierString());
+                }
+                //returns the caller object
+                return self;
+            }
+        });
+
+        OBJECT_CLASS.addClassMethod(new TNativeMethod("___delete___", Collections.<TClass>emptyList()) {
+            @Override
+            public TObject checkedInvoke(TObject self, TObject... paramValues) {
+                TObject.BASE_MEMORY.delete(self.getId());
+                return NULL_OBJECT;
+            }
+        });
+
         OBJECT_CLASS.addClassMethod(new TNativeMethod("getClass", Collections.<TClass>emptyList()) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
@@ -215,30 +235,12 @@ public class TBaseTypes {
                 for(TMethod method: self.getInstanceMethods().values()){
                     methodNames.add(InternalUtils.newStringInstance(method.getCompleteName()));
                 }
-
+                
                 return InternalUtils.newListInstance(methodNames);
             }
         });
 
-        OBJECT_CLASS.addClassMethod(new TNativeMethod("___delete___", Collections.<TClass>emptyList()) {
-            @Override
-            public TObject checkedInvoke(TObject self, TObject... paramValues) {
-                TObject.BASE_MEMORY.delete(self.getId());
-                return NULL_OBJECT;
-            }
-        });
 
-        OBJECT_CLASS.addClassMethod(new TNativeMethod("___plainInit___", Collections.<TClass>emptyList()) {
-            @Override
-            public TObject checkedInvoke(TObject self, TObject... paramValues) {
-                //for each field of the belonging class, creates a reference (to NULL) in the object's namespace
-                for(TField field:self.getTClass().getClassFields()){
-                    self.getNamespace().addNullReferenceToScope(field.getFieldName().getIdentifierString());
-                }
-                //returns the caller object
-                return self;
-            }
-        });
 
         //TODO: getSimpleInstanceMethodNames --- simple names of instance methods
         //TODO: getSimpleMethodNames --- simple names of all methods callable on this object
