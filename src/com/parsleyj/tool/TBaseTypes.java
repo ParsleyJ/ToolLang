@@ -244,6 +244,7 @@ public class TBaseTypes {
         //TODO: getSimpleMethodNames --- simple names of all methods callable on this object
         //TODO: getCompleteMethodNames --- complete names of all methods callable on this object
         //TODO: isInstanceOf
+        //TODO: isDirectInstanceOf
         //TODO: equals
         //TODO: castTo --- gets a target class as parameter. casting to the same class or a parent class should be predefined
         //TODO: toString --- or getStringRepresentation
@@ -304,6 +305,12 @@ public class TBaseTypes {
 
 
         /************** IDENTIFIER CLASS : METAOBJECT ****/
+        IDENTIFIER_CLASS.addLiteralClass(new TLiteral(IDENTIFIER_CLASS, "[_a-zA-Z][_a-zA-Z0-9]*") {
+            @Override
+            public TObject convertLiteralToTObject(String literalInstance) {
+                return new TIdentifier(literalInstance);
+            }
+        });
 
 
         /************** METHOD CALL CLASS : METAOBJECT ***/
@@ -373,42 +380,42 @@ public class TBaseTypes {
             }
         });
 
-        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("parseInt", Collections.singletonList(STRING_CLASS)) {
+        INTEGER_CLASS.addClassMethod(new TNativeMethod("parseInt", Collections.singletonList(STRING_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 return new TObject(INTEGER_CLASS, Integer.parseInt((String) paramValues[0].getPrimitiveValue()));
             }
         });
 
-        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("add", Collections.singletonList(INTEGER_CLASS)) {
+        INTEGER_CLASS.addClassMethod(new TNativeMethod("add", Collections.singletonList(INTEGER_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 return new TObject(INTEGER_CLASS, (Integer) self.getPrimitiveValue() + (Integer) paramValues[0].getPrimitiveValue());
             }
         });
 
-        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("subtract", Collections.singletonList(INTEGER_CLASS)) {
+        INTEGER_CLASS.addClassMethod(new TNativeMethod("subtract", Collections.singletonList(INTEGER_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 return new TObject(INTEGER_CLASS, (Integer) self.getPrimitiveValue() - (Integer) paramValues[0].getPrimitiveValue());
             }
         });
 
-        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("multiply", Collections.singletonList(INTEGER_CLASS)) {
+        INTEGER_CLASS.addClassMethod(new TNativeMethod("multiply", Collections.singletonList(INTEGER_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 return new TObject(INTEGER_CLASS, (Integer) self.getPrimitiveValue() * (Integer) paramValues[0].getPrimitiveValue());
             }
         });
 
-        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("divide", Collections.singletonList(INTEGER_CLASS)) {
+        INTEGER_CLASS.addClassMethod(new TNativeMethod("divide", Collections.singletonList(INTEGER_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 return new TObject(INTEGER_CLASS, (Integer) self.getPrimitiveValue() / (Integer) paramValues[0].getPrimitiveValue());
             }
         });
 
-        INTEGER_CLASS.addInstanceMethod(new TNativeMethod("mod", Collections.singletonList(INTEGER_CLASS)) {
+        INTEGER_CLASS.addClassMethod(new TNativeMethod("mod", Collections.singletonList(INTEGER_CLASS)) {
             @Override
             public TObject checkedInvoke(TObject self, TObject... paramValues) {
                 return new TObject(INTEGER_CLASS, (Integer) self.getPrimitiveValue() % (Integer) paramValues[0].getPrimitiveValue());
@@ -442,4 +449,45 @@ public class TBaseTypes {
             new TIdentifier("add"),
             TOperator.OperatorBehavior.Binary,
             TOperator.OperatorAssociativity.Left);
+
+    public static final TOperator SUBTRACT_OPERATOR = new TOperator(
+            "-",
+            new TIdentifier("sub"),
+            TOperator.OperatorBehavior.Binary,
+            TOperator.OperatorAssociativity.Left);
+
+    public static final TOperator MULTIPLY_OPERATOR = new TOperator(
+            "*",
+            new TIdentifier("multiply"),
+            TOperator.OperatorBehavior.Binary,
+            TOperator.OperatorAssociativity.Left);
+
+    public static final TOperator DIVIDE_OPERATOR = new TOperator(
+            "/",
+            new TIdentifier("divide"),
+            TOperator.OperatorBehavior.Binary,
+            TOperator.OperatorAssociativity.Left);
+
+    public static final TOperator MOD_OPERATOR = new TOperator(
+            "%",
+            new TIdentifier("mod"),
+            TOperator.OperatorBehavior.Binary,
+            TOperator.OperatorAssociativity.Left);
+
+    //array of all operators, priority sorted
+    public static final TOperator[] baseOperators = new TOperator[]{
+            DOT_OPERATOR,
+            ADD_OPERATOR,
+            SUBTRACT_OPERATOR,
+            MULTIPLY_OPERATOR,
+            DIVIDE_OPERATOR,
+            MOD_OPERATOR
+    };
+
+    static {
+        TNamespace rootTNamespace = TOOL_OBJECT.getNamespace();
+        for (TOperator baseOperator : baseOperators) {
+            rootTNamespace.addObjectToScope("#OPERATOR:" + baseOperator.getMaskedName(), baseOperator);
+        }
+    }
 }

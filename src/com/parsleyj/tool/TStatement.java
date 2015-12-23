@@ -5,6 +5,15 @@ package com.parsleyj.tool;
  */
 public class TStatement extends TObject {
 
+    public TStatement() {
+        super(TBaseTypes.STATEMENT_CLASS);
+    }
+
+    //for TBlock
+    protected TStatement(TClass belongingClass){
+        super(belongingClass);
+    }
+
     public TObject evaluate(TNamespace namespace, ToolInterpreter interpreter){
         //TODO: impl
         return null;

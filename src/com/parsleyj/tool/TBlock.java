@@ -7,14 +7,24 @@ import java.util.ArrayList;
  */
 public class TBlock extends TStatement {
 
-    private ArrayList<TStatement> statements = new ArrayList<TStatement>();
+    private ArrayList<TStatement> bodyStatements = new ArrayList<TStatement>();
 
-    public ArrayList<TStatement> getStatements() {
-        return statements;
+    public TBlock(ArrayList<TStatement> bodyStatements){
+        super(TBaseTypes.BLOCK_CLASS);
+        this.bodyStatements = bodyStatements;
     }
 
-    public void setStatements(ArrayList<TStatement> statements) {
-        this.statements = statements;
+    protected TBlock(TClass belongingClass, ArrayList<TStatement> bodyStatements){
+        super(belongingClass);
+        this.bodyStatements = bodyStatements;
+    }
+
+    public ArrayList<TStatement> getBodyStatements() {
+        return bodyStatements;
+    }
+
+    public void setBodyStatements(ArrayList<TStatement> bodyStatements) {
+        this.bodyStatements = bodyStatements;
     }
 
     @Override
@@ -22,15 +32,13 @@ public class TBlock extends TStatement {
         TObject res = TBaseTypes.NULL_OBJECT;
         namespace.pushNewStack();
         //noinspection ForLoopReplaceableByForEach
-        for (int i = 0; i < statements.size(); i++) {
-            TStatement statement = statements.get(i);
+        for (int i = 0; i < bodyStatements.size(); i++) {
+            TStatement statement = bodyStatements.get(i);
             res = statement.evaluate(namespace, interpreter);
             if(res.getTClass().isOrExtends(TBaseTypes.THROWED_ERROR_CLASS)) break;
         }
         namespace.popStack();
         return res;
     }
-
-    //// TODO: array of statements... evaluate = each statement in order...
 
 }
