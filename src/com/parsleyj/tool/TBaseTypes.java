@@ -96,10 +96,10 @@ public class TBaseTypes {
     public static final TClass FIELD_CLASS = new TClass("___Field___", METAOBJECT_CLASS);
     public static final TClass FORMAL_PARAMETER_CLASS = new TClass("___FormalParameter___", METAOBJECT_CLASS);
     public static final TClass OPERATOR_CLASS = new TClass("___Operator___", METAOBJECT_CLASS);
-    public static final TClass THROWED_ERROR_CLASS = new TClass("___ThrowedError___", METAOBJECT_CLASS);
+    public static final TClass THROWN_ERROR_CLASS = new TClass("___ThrowedError___", METAOBJECT_CLASS);
 
     public static final TClass TOOL_INTERPRETER_CLASS = new TClass("ToolInterpreter", OBJECT_CLASS);
-    public static final DefaultToolInterpreter DEFAULT_INTERPRETER_OBJECT = new DefaultToolInterpreter();
+    public static final ToolInterpreter DEFAULT_INTERPRETER_OBJECT = new ToolInterpreter();
     //TODO: NATIVE_CLASS_CLASS, NATIVE_OBJECT_CLASS
 
     public static final TClass STRING_CLASS = new TClass("String", OBJECT_CLASS);
@@ -142,7 +142,7 @@ public class TBaseTypes {
             FIELD_CLASS,
             FORMAL_PARAMETER_CLASS,
             OPERATOR_CLASS,
-            THROWED_ERROR_CLASS,
+            THROWN_ERROR_CLASS,
 
             TOOL_INTERPRETER_CLASS,
 
@@ -235,7 +235,7 @@ public class TBaseTypes {
                 for(TMethod method: self.getInstanceMethods().values()){
                     methodNames.add(InternalUtils.newStringInstance(method.getCompleteName()));
                 }
-                
+
                 return InternalUtils.newListInstance(methodNames);
             }
         });

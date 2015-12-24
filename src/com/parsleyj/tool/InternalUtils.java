@@ -9,7 +9,7 @@ public class InternalUtils {
 
     public static TObject throwError(TClass errorClass, String description){
         TObject errorObject = errorClass.newInstance(newStringInstance(description));
-        return TBaseTypes.THROWED_ERROR_CLASS.newInstance(errorObject);
+        return TBaseTypes.THROWN_ERROR_CLASS.newInstance(errorObject);
     }
 
     private InternalUtils(){}

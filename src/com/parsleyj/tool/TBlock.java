@@ -35,7 +35,7 @@ public class TBlock extends TStatement {
         for (int i = 0; i < bodyStatements.size(); i++) {
             TStatement statement = bodyStatements.get(i);
             res = statement.evaluate(namespace, interpreter);
-            if(res.getTClass().isOrExtends(TBaseTypes.THROWED_ERROR_CLASS)) break;
+            if(res.getTClass().isOrExtends(TBaseTypes.THROWN_ERROR_CLASS)) break;
         }
         namespace.popStack();
         return res;

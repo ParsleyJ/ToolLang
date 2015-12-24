@@ -7,7 +7,7 @@ import java.util.List;
  */
 public abstract class TNativeMethod extends TMethod {
 
-    public static final TBlock NATIVE_METHOD_BLOCK = new TBlock(); //TODO: something to distinguish it from the normal blocks
+    public static final TBlock NATIVE_METHOD_BLOCK = new TBlock(null); //TODO: something to distinguish it from the normal blocks
 
     public TNativeMethod(String name, List<TClass> formalParametersTypes) {
         super(name, formalParametersTypes, NATIVE_METHOD_BLOCK);

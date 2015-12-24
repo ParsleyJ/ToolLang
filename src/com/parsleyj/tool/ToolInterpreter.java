@@ -13,9 +13,9 @@ public class ToolInterpreter extends TObject{
 
     private TNamespace memory;
 
-    public ToolInterpreter(ToolScanner scanner) {
+    public ToolInterpreter() {
         super(TBaseTypes.TOOL_INTERPRETER_CLASS);
-        this.scanner = scanner;
+        this.scanner = new ToolScanner(null);
         this.memory = TBaseTypes.TOOL_OBJECT.getNamespace();
         //...
         //memory.addToRootScope(...);
@@ -25,7 +25,7 @@ public class ToolInterpreter extends TObject{
     }
 
 
-    public TObject evaluateExpression(String expression) {
+    public TObject evaluate(String expression) {
         List<TToken> tokens = scanner.getTokens(expression);
 
         return null;
