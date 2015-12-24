@@ -1,13 +1,13 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.interpreter;
 
 /**
  * Created by Giuseppe on 18/05/15.
  */
-public class TokenClass {
+public class TokenPattern {
     private String regex;
     private String tokenClassName;
 
-    public TokenClass(String regex, String tokenClassName) {
+    public TokenPattern(String regex, String tokenClassName) {
         this.regex = regex;
         this.tokenClassName = tokenClassName;
     }

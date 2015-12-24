@@ -1,5 +1,7 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.interpreter.LiteralPattern;
+
 import java.util.*;
 
 /**
@@ -14,7 +16,7 @@ public class TClass extends TObject {
     private Map<String, TField> fields = new HashMap<String, TField>();
     private TClass parentClass;
 
-    private List<TLiteral> literalClasses = new ArrayList<TLiteral>();
+    private List<LiteralPattern> literalPatterns = new ArrayList<>();
 
     public TClass(String name, TClass parentClass) {
         this.name = name;
@@ -77,12 +79,16 @@ public class TClass extends TObject {
         return parentClass;
     }
 
-    public List<TLiteral> getILiterals() {
-        return literalClasses;
+    public List<LiteralPattern> getLiteralPatterns() {
+        return literalPatterns;
     }
 
-    public void addLiteralClass(TLiteral tLiteral) {
-        literalClasses.add(tLiteral);
+    public void addLiteralPattern(LiteralPattern literalPattern) {
+        literalPatterns.add(literalPattern);
+    }
+
+    public boolean hasLiteralPatterns(){
+        return !literalPatterns.isEmpty();
     }
 
     public boolean isOrExtends(TClass tClass) {

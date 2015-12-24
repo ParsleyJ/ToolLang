@@ -1,5 +1,8 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.interpreter.LiteralPattern;
+import com.parsleyj.tool.utils.InternalUtils;
+
 import java.util.*;
 
 /**
@@ -15,7 +18,7 @@ public class TNamespace {
 
     public TNamespace(TObject owner, THeapMemory heapMemory) {
         this.owner = owner;
-        stack.addFirst(new HashMap<String, TReference>());
+        stack.addFirst(new HashMap<>());
         heap = heapMemory;
     }
 
@@ -43,7 +46,7 @@ public class TNamespace {
 
 
     public TObject getReferencedObject(String identifier) {
-        TReference r = getFirstReferenceInStack(identifier);
+        TReference r = getFirstReferenceInScope(identifier);
         if (r == null) return InternalUtils.throwError(TBaseTypes.REFERENCE_NOT_FOUND_ERROR_CLASS,
                         "No <Reference> object found for identifier: '" + identifier + "' " +
                                 "in " + owner + "'s memory.");
@@ -64,21 +67,22 @@ public class TNamespace {
         stack.getLast().put(reference.getTIdentifier().getIdentifierString(), reference);
     }
 
-    public int pushNewStack() {
-        return pushStack(new HashMap<String, TReference>());
+    public int pushNewScope() {
+        return pushScope(new HashMap<>(), new HashMap<>());
+
     }
 
-    public int popStack() {
+    public int popScope() {
         stack.removeLast();
         return stack.size();
     }
 
-    public int pushStack(HashMap<String, TReference> memory) {
+    public int pushScope(HashMap<String, TReference> memory, HashMap<LiteralPattern, TReference> literalScope) {
         stack.addLast(memory);
         return stack.size();
     }
 
-    public TReference getFirstReferenceInStack(String identifier) {
+    public TReference getFirstReferenceInScope(String identifier) {
         Iterator<Map<String, TReference>> i = stack.descendingIterator();
         while (i.hasNext()) {
             TReference ref = i.next().get(identifier);
@@ -86,6 +90,12 @@ public class TNamespace {
         }
         return null;
     }
+
+
+
+
+
+
 
     //TODO: garbage collector
 }

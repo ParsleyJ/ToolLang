@@ -1,5 +1,7 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.utils.InternalUtils;
+
 import java.util.List;
 
 /**
@@ -43,13 +45,13 @@ public class TMethod extends TObject {
         if (tmp != null) return tmp;
 
         //a stack is added in namespace, containing the arguments
-        self.getNamespace().pushNewStack();
+        self.getNamespace().pushNewScope();
         //TODO: add parameters in stack
 
         //another stack is automatically added for the block execution
         TObject result = bodyBlock.evaluate(self.getNamespace(), TBaseTypes.DEFAULT_INTERPRETER_OBJECT);
 
-        self.getNamespace().popStack();
+        self.getNamespace().popScope();
 
         return result;
     }

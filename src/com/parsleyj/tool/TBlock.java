@@ -1,5 +1,7 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.interpreter.ToolInterpreter;
+
 import java.util.ArrayList;
 
 /**
@@ -30,14 +32,14 @@ public class TBlock extends TStatement {
     @Override
     public TObject evaluate(TNamespace namespace, ToolInterpreter interpreter) {
         TObject res = TBaseTypes.NULL_OBJECT;
-        namespace.pushNewStack();
+        namespace.pushNewScope();
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < bodyStatements.size(); i++) {
             TStatement statement = bodyStatements.get(i);
             res = statement.evaluate(namespace, interpreter);
             if(res.getTClass().isOrExtends(TBaseTypes.THROWN_ERROR_CLASS)) break;
         }
-        namespace.popStack();
+        namespace.popScope();
         return res;
     }
 

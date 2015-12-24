@@ -1,4 +1,4 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.utils;
 
 /**
  *

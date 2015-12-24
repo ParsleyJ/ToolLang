@@ -1,5 +1,10 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.interpreter.LiteralPattern;
+import com.parsleyj.tool.interpreter.ToolInterpreter;
+import com.parsleyj.tool.utils.InternalUtils;
+import com.parsleyj.tool.utils.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -307,7 +312,7 @@ public class TBaseTypes {
 
 
         /************** IDENTIFIER CLASS : METAOBJECT ****/
-        IDENTIFIER_CLASS.addLiteralClass(new TLiteral(IDENTIFIER_CLASS, "[_a-zA-Z][_a-zA-Z0-9]*") {
+        IDENTIFIER_CLASS.addLiteralPattern(new LiteralPattern(IDENTIFIER_CLASS, "[_a-zA-Z][_a-zA-Z0-9]*") {
             @Override
             public TObject convertLiteralToTObject(String literalInstance) {
                 return new TIdentifier(literalInstance);
@@ -329,7 +334,7 @@ public class TBaseTypes {
 
         /************** OPERATOR CLASS : METAOBJECT ******/
         //operator characters: !$%^&*_+|~-=:;<>?,./
-        OPERATOR_CLASS.addLiteralClass(new TLiteral(OPERATOR_CLASS, "/[-!$%^&*_+|~=:;<>?,.\\/]/") {
+        OPERATOR_CLASS.addLiteralPattern(new LiteralPattern(OPERATOR_CLASS, "/[-!$%^&*_+|~=:;<>?,.\\/]/") {
             @Override
             public TObject convertLiteralToTObject(String literalInstance) {
                 //TODO: impl
@@ -344,7 +349,7 @@ public class TBaseTypes {
     
 
         /************** STRING CLASS : OBJECT ************/
-        STRING_CLASS.addLiteralClass(new TLiteral(STRING_CLASS, "([\"'])(?:(?=(\\\\?))\\2.)*?\\1") {
+        STRING_CLASS.addLiteralPattern(new LiteralPattern(STRING_CLASS, "([\"'])(?:(?=(\\\\?))\\2.)*?\\1") {
             @Override
             public TObject convertLiteralToTObject(String literalInstance) {
                 return InternalUtils.newStringInstance(StringUtils.unescapeJavaString(
@@ -375,7 +380,7 @@ public class TBaseTypes {
         });
 
         /************** INTEGER CLASS : OBJECT ***********/
-        INTEGER_CLASS.addLiteralClass(new TLiteral(INTEGER_CLASS, "(?<=\\s|^)[-+]?\\d+(?=\\s|$)") { //TODO: support to hex, bin, oct
+        INTEGER_CLASS.addLiteralPattern(new LiteralPattern(INTEGER_CLASS, "(?<=\\s|^)[-+]?\\d+(?=\\s|$)") { //TODO: support to hex, bin, oct
             @Override
             public TObject convertLiteralToTObject(String literalInstance) {
                 return new TObject(INTEGER_CLASS, Integer.parseInt(literalInstance));

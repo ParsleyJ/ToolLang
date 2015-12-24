@@ -1,5 +1,7 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.utils.InternalUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +60,7 @@ public class TObject {
     }
 
     public TReference getField(TField field) {
-        namespace.getFirstReferenceInStack(field.getFieldName().getIdentifierString());
+        namespace.getFirstReferenceInScope(field.getFieldName().getIdentifierString());
         return null;//TODO: impl
     }
 
@@ -67,18 +69,18 @@ public class TObject {
         //first, searches in instance methods
         TMethod m = instanceMethods.get(completeName);
         if (m != null){
-            namespace.pushNewStack();
+            namespace.pushNewScope();
             TObject result = m.invoke(this, params);
-            namespace.popStack();
+            namespace.popScope();
             return result;
         } else { //if nothing was found, search in methods defined in belonging class
             try {
-                namespace.pushNewStack();
+                namespace.pushNewScope();
                 TObject result = getTClass().getClassMethod(completeName).invoke(this, params);
-                namespace.popStack();
+                namespace.popScope();
                 return result;
             }catch (TClass.MethodNotFoundException e){
-                namespace.popStack();
+                namespace.popScope();
                 return InternalUtils.throwError(TBaseTypes.METHOD_NOT_FOUND_ERROR_CLASS,
                         "No method '" + completeName + "' found in object " + this + " ."
                 );

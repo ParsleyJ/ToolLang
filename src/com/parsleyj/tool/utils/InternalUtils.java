@@ -1,4 +1,8 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.utils;
+
+import com.parsleyj.tool.TBaseTypes;
+import com.parsleyj.tool.TClass;
+import com.parsleyj.tool.TObject;
 
 import java.util.ArrayList;
 

@@ -1,13 +1,16 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.interpreter;
+
+import com.parsleyj.tool.TClass;
+import com.parsleyj.tool.TObject;
 
 /**
  * Created by Giuseppe on 17/05/15.
  */
-public abstract class TLiteral extends TokenClass { //TODO: is TLiteral a TObject?
+public abstract class LiteralPattern extends TokenPattern {
 
     private TClass tClass;
 
-    public TLiteral(TClass tClass, String regex) {
+    public LiteralPattern(TClass tClass, String regex) {
         super(regex, "LITERAL");
         this.tClass = tClass;
     }
