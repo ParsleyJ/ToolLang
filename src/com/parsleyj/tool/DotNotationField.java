@@ -15,6 +15,14 @@ public class DotNotationField implements LValue {
         this.ident = ident;
     }
 
+    public RValue getUnevaluatedExpression() {
+        return exp;
+    }
+
+    public Identifier getIdentifier() {
+        return ident;
+    }
+
     @Override
     public void assign(ToolObject o, Memory m) throws ToolInternalException {
         ToolObject object = exp.evaluate(m);

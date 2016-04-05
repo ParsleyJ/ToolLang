@@ -23,4 +23,8 @@ public class ExpressionBlock implements RValue {
     public String toString() {
         return "(" + c + ")";
     }
+
+    public RValue getUnevaluatedExpression() {
+        return c;
+    }
 }

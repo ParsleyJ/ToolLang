@@ -122,30 +122,33 @@ public class TestMain {
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
-                new SpecificCaseComponent(lExp, identifier), identifierToken, openRoundBracketToken, csel, closedRoundBracketToken);
+                new SpecificCaseComponent(lExp, identifier), openRoundBracketToken, csel, closedRoundBracketToken);
+        //todo parameter definition = ident ident ?
+        //todo function definition must go here
+        SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
+                (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
+                rExp, dotToken, new SpecificCaseComponent(lExp, identifier));
+        SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
+                (n, s) -> new MethodCall(s.convert(n.get(0)), new RValue[0]),
+                new SpecificCaseComponent(lExp, dotNotationField), openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
+                (n, s) -> new MethodCall(s.convert(n.get(0)), new RValue[]{s.convert(n.get(2))}),
+                new SpecificCaseComponent(lExp, dotNotationField), openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
+                (n, s) -> new MethodCall(s.convert(n.get(0)), ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
+                new SpecificCaseComponent(lExp, dotNotationField), openRoundBracketToken, csel, closedRoundBracketToken);
         SyntaxCaseDefinition expressionBlock = new SyntaxCaseDefinition(rExp, "expressionBlock",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition definitionBlock = new SyntaxCaseDefinition(rExp, "definitionBlock",
                 (n, s) -> new ToolBlock(s.convert(n.get(1))),
                 openCurlyBracketToken, rExp, closedCurlyBracketToken);
-        //todo parameter definition = ident ident
-        //todo parameter multivalue
-        //todo function definition must go here
-        //todo function call must go here
-        //todo dot notation must go here
-        SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
-                (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
-                rExp, dotToken, new SpecificCaseComponent(lExp, identifier));
-        SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
-                (n, s) -> new MethodCall(s.convert(n.get(0)), s.convert(n.get(1))),
-                rExp, dotToken, new SpecificCaseComponent(rExp, methodCall0));
-        SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
-                (n, s) -> new MethodCall(s.convert(n.get(0)), s.convert(n.get(1))),
-                rExp, dotToken, new SpecificCaseComponent(rExp, methodCall1));
-        SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
-                (n, s) -> new MethodCall(s.convert(n.get(0)), s.convert(n.get(1))),
-                rExp, dotToken, new SpecificCaseComponent(rExp, methodCall2));
+        SyntaxCaseDefinition methodCall3 = new SyntaxCaseDefinition(rExp, "methodCall3",
+                (n,s) -> new MethodCall(
+                        BaseTypes.C_TOOL,
+                        ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        new RValue[]{((ExpressionBlock) s.convert(n.get(1))).getUnevaluatedExpression()}),
+                new SpecificCaseComponent(lExp, identifier), new SpecificCaseComponent(rExp, expressionBlock));
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, new SpecificCaseComponent(lExp, identifier));
@@ -212,9 +215,10 @@ public class TestMain {
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
                 methodCall0, methodCall1, methodCall2,
-                expressionBlock, definitionBlock,
                 dotNotationField,
                 dotNotationMethodCall0, dotNotationMethodCall1, dotNotationMethodCall2,
+                expressionBlock, definitionBlock,
+                methodCall3,
                 newVarDeclaration,
                 getBlockDefinitionOperation,
                 identifier,
@@ -262,16 +266,20 @@ public class TestMain {
         p.executeProgram(m);
     }
 
+    public static final boolean DEBUG_PRINTS = false;
     public static void test2() {
+        Program.VERBOSE = DEBUG_PRINTS;
         Scanner sc = new Scanner(System.in);
         String memName = "M";
         Memory m = new Memory(memName);
         m.pushScope();
         m.addObjectToHeap(BaseTypes.O_NULL);
         m.loadClasses(BaseTypes.getAllBaseClasses());
-        ToolString testInteger = new ToolString("yay");
-        m.addObjectToHeap(testInteger);
-        BaseTypes.C_TOOL.addReferenceMember(new Reference("test", testInteger.getId()));
+        ToolString testString = new ToolString("yay");
+        m.addObjectToHeap(testString);
+        BaseTypes.C_TOOL.addReferenceMember(new Reference("test", testString.getId()));
+        ProgramGenerator pg = getDefaultInterpreter();
+        pg.setPrintDebugMessages(DEBUG_PRINTS);
         while (true) {
             StringBuilder sb = new StringBuilder();
             while (true) {
@@ -286,16 +294,14 @@ public class TestMain {
 
             if (programString.equals("exit")) break;
 
-            ProgramGenerator pg = getDefaultInterpreter();
-            //pg.setPrintDebugMessages(true);
             Program prog = pg.generate("testParsed", programString, (p, c) -> {
                 RValue e = (RValue) p.getRootSemanticObject();
                 try {
                     ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
                     System.out.println("RESULT = " + to);
                 } catch (ToolInternalException e1) {
-                    e1.printStackTrace();
-                    System.err.println("exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
+                    if(DEBUG_PRINTS)e1.printStackTrace();
+                    System.err.println("Tool Exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
                 }
                 return true;
             });

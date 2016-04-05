@@ -31,6 +31,12 @@ public class MethodCall implements RValue {
         this.argumentExpressions = methodCall.getArgumentExpressions();
     }
 
+    public MethodCall(DotNotationField dotNotationField, RValue[] argumentExpressions){
+        this.callerExpression = dotNotationField.getUnevaluatedExpression();
+        this.name = dotNotationField.getIdentifier().getIdentifierString();
+        this.argumentExpressions = argumentExpressions;
+    }
+
     public RValue getCallerExpression() {
         return callerExpression;
     }
@@ -60,13 +66,24 @@ public class MethodCall implements RValue {
         ToolMethod tm;
         if (isStatic) {
             tm = ((ToolClass)caller).findClassMethod(name, argumentsTypes);
+            if (tm == null) {
+                StringBuilder sb = new StringBuilder("Method not found: "+ ((ToolClass)caller).getClassName()+"."+name+"(");
+                //noinspection Duplicates
+                for (int i = 0; i < argumentsTypes.size(); i++) {
+                    ToolClass argumentType = argumentsTypes.get(i);
+                    sb.append(argumentType.getClassName());
+                    if(i < argumentsTypes.size()-1) sb.append(", ");
+                }
+                sb.append(")");
+                throw new MethodNotFoundException(sb.toString());
+            }
         } else {
             tm = caller.getBelongingClass().findInstanceMethod(name, argumentsTypes);
             if (tm == null) {
                 StringBuilder sb = new StringBuilder("Method not found: <"+ caller.getBelongingClass().getClassName()+">."+name+"(");
+                //noinspection Duplicates
                 for (int i = 0; i < argumentsTypes.size(); i++) {
                     ToolClass argumentType = argumentsTypes.get(i);
-
                     sb.append(argumentType.getClassName());
                     if(i < argumentsTypes.size()-1) sb.append(", ");
                 }
