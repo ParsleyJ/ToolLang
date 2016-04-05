@@ -16,7 +16,7 @@ public class ExpressionBlock implements RValue {
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolInternalException {
-        return ToolMethodCall.executeScopedBlockWithNoParameters(c, memory);
+        return MethodCall.executeScopedBlockWithNoParameters(c, memory);
     }
 
     @Override

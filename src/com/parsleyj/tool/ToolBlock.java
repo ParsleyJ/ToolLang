@@ -25,7 +25,7 @@ public class ToolBlock extends ToolObject {
     }
 
     public ToolObject execute(Memory memory) throws ToolInternalException {
-        return ToolMethodCall.executeScopedBlockWithNoParameters(x, memory);
+        return MethodCall.executeScopedBlockWithNoParameters(x, memory);
     }
 
     @Override

@@ -106,16 +106,16 @@ public class TestMain {
                 new SimpleWrapConverterMethod(),
                 identifierToken);
         SyntaxCaseDefinition methodCall1 = new SyntaxCaseDefinition(rExp, "methodCall1",
-                (n, s) -> (RValue) memory -> new ToolMethodCall(
+                (n, s) -> new MethodCall(
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
-                        new ToolObject[]{((RValue) s.convert(n.get(2))).evaluate(memory)}).evaluate(memory),
+                        new RValue[]{s.convert(n.get(2))}),
                 new SpecificCaseComponent(lExp, identifier), openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition methodCall2 = new SyntaxCaseDefinition(rExp, "methodCall2",
-                (n, s) -> (RValue) memory -> new ToolMethodCall(
+                (n, s) -> new MethodCall(
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
-                        ((CommaSeparatedExpressionList) s.convert(n.get(2))).generateArrayOfObjects(memory)).evaluate(memory),
+                        ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
                 new SpecificCaseComponent(lExp, identifier), identifierToken, openRoundBracketToken, csel, closedRoundBracketToken);
         SyntaxCaseDefinition expressionBlock = new SyntaxCaseDefinition(rExp, "expressionBlock",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
@@ -142,19 +142,24 @@ public class TestMain {
                 getBlockDefinitionOperatorToken, rExp);
         //--- identifier priority is here.
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
-                new CBOConverterMethod<ToolObject>((a, b) -> new BinaryOperationMethodCall(a, "asterisk", b)),
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "asterisk", b)),
                 rExp, asteriskToken, rExp);
         SyntaxCaseDefinition slashOperation = new SyntaxCaseDefinition(rExp, "slashOperation",
-                new CBOConverterMethod<ToolObject>((a, b) -> new BinaryOperationMethodCall(a, "slash", b)),
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "slash", b)),
                 rExp, slashToken, rExp);
         SyntaxCaseDefinition percentSignOperation = new SyntaxCaseDefinition(rExp, "percentSignOperation",
-                new CBOConverterMethod<ToolObject>((a, b) -> new BinaryOperationMethodCall(a, "percentSign", b)),
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "percentSign", b)),
                 rExp, percentSignToken, rExp);
         SyntaxCaseDefinition plusOperation = new SyntaxCaseDefinition(rExp, "plusOperation",
-                new CBOConverterMethod<ToolObject>((a, b) -> new BinaryOperationMethodCall(a, "plus", b)),
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "plus", b)),
                 rExp, plusToken, rExp);
         SyntaxCaseDefinition minusOperation = new SyntaxCaseDefinition(rExp, "minusOperation",
-                new CBOConverterMethod<ToolObject>((a, b) -> new BinaryOperationMethodCall(a, "minus", b)),
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "minus", b)),
                 rExp, minusToken, rExp);
 
         SyntaxCaseDefinition arrayLiteral = new SyntaxCaseDefinition(rExp, "arrayLiteral",

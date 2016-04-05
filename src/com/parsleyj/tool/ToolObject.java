@@ -13,6 +13,10 @@ public class ToolObject implements RValue {
         return nativeVal;
     }
 
+    public boolean isNull() {
+        return false;
+    }
+
     private static class IDGenerator {
 
         private static int id = 0;

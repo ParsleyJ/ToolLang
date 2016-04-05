@@ -11,7 +11,12 @@ import java.util.List;
  */
 public class BaseTypes {
 
-    public static final ToolObject O_NULL = new ToolObject(null); //todo: null class? not a null object but an "external value"?
+    public static final ToolObject O_NULL = new ToolObject(null){
+        @Override
+        public boolean isNull() {
+            return true;
+        }
+    }; //todo: null class? not a null object but an "external value"?
     public static final ToolClass C_OBJECT = new ToolClass("Object", null);
     public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);
     public static final ToolClass C_CLASS = new ToolClass("Class", C_OBJECT);
@@ -30,6 +35,7 @@ public class BaseTypes {
     public static final ToolExceptionClass C_INVALID_CONDITIONAL_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidConditionalExpressionException");
     public static final ToolExceptionClass C_BAD_METHOD_CALL_EXCEPTION = new ToolExceptionClass("BadMethodCallException");
     public static final ToolExceptionClass C_METHOD_NOT_FOUND_EXCEPTION = new ToolExceptionClass("MethodNotFoundException");
+    public static final ToolExceptionClass C_CALL_ON_NULL_EXCEPTION = new ToolExceptionClass("CallOnNullException");
 
     static{
         C_TOOL.addClassMethod(new ToolMethod(Visibility.Public, "skip", new ParameterDefinition[0], memory -> O_NULL));
