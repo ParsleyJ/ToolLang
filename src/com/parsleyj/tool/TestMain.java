@@ -105,6 +105,12 @@ public class TestMain {
         SyntaxCaseDefinition identifier = new SyntaxCaseDefinition(lExp, "identifier", //THIS IS DEFINED HERE BUT ITS PRIORITY IS RIGHT BEFORE asteriskOperation
                 new SimpleWrapConverterMethod(),
                 identifierToken);
+        SyntaxCaseDefinition methodCall0 = new SyntaxCaseDefinition(rExp, "methodCall0",
+                (n, s) -> new MethodCall(
+                        BaseTypes.C_TOOL,
+                        ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        new RValue[0]),
+                new SpecificCaseComponent(lExp, identifier), openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition methodCall1 = new SyntaxCaseDefinition(rExp, "methodCall1",
                 (n, s) -> new MethodCall(
                         BaseTypes.C_TOOL,
@@ -131,6 +137,15 @@ public class TestMain {
         SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
                 (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, dotToken, new SpecificCaseComponent(lExp, identifier));
+        SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
+                (n, s) -> new MethodCall(s.convert(n.get(0)), s.convert(n.get(1))),
+                rExp, dotToken, new SpecificCaseComponent(rExp, methodCall0));
+        SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
+                (n, s) -> new MethodCall(s.convert(n.get(0)), s.convert(n.get(1))),
+                rExp, dotToken, new SpecificCaseComponent(rExp, methodCall1));
+        SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
+                (n, s) -> new MethodCall(s.convert(n.get(0)), s.convert(n.get(1))),
+                rExp, dotToken, new SpecificCaseComponent(rExp, methodCall2));
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, new SpecificCaseComponent(lExp, identifier));
@@ -196,9 +211,10 @@ public class TestMain {
 
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
-                methodCall1, methodCall2,
-                //expressionBlock, definitionBlock,
+                methodCall0, methodCall1, methodCall2,
+                expressionBlock, definitionBlock,
                 dotNotationField,
+                dotNotationMethodCall0, dotNotationMethodCall1, dotNotationMethodCall2,
                 newVarDeclaration,
                 getBlockDefinitionOperation,
                 identifier,
@@ -271,7 +287,7 @@ public class TestMain {
             if (programString.equals("exit")) break;
 
             ProgramGenerator pg = getDefaultInterpreter();
-            pg.setPrintDebugMessages(true);
+            //pg.setPrintDebugMessages(true);
             Program prog = pg.generate("testParsed", programString, (p, c) -> {
                 RValue e = (RValue) p.getRootSemanticObject();
                 try {

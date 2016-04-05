@@ -25,6 +25,24 @@ public class MethodCall implements RValue {
         this.argumentExpressions = argumentExpressions;
     }
 
+    public MethodCall(RValue callerExpression, MethodCall methodCall){
+        this.callerExpression = callerExpression;
+        this.name = methodCall.getName();
+        this.argumentExpressions = methodCall.getArgumentExpressions();
+    }
+
+    public RValue getCallerExpression() {
+        return callerExpression;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public RValue[] getArgumentExpressions() {
+        return argumentExpressions;
+    }
+
     public ToolObject evaluate(Memory memory) throws ToolInternalException {
         ToolObject caller = callerExpression.evaluate(memory);
         if(caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
