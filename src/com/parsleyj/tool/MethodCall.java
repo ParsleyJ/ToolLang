@@ -81,4 +81,15 @@ public class MethodCall implements RValue {
         return result;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(callerExpression+"."+name+"(");
+        for (int i = 0; i < argumentExpressions.length; i++) {
+            RValue argumentType = argumentExpressions[i];
+            sb.append(argumentType);
+            if(i < argumentExpressions.length-1) sb.append(", ");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
 }

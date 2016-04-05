@@ -17,8 +17,4 @@ public class BinaryOperationMethodCall extends MethodCall {
         this.i2 = i2;
     }
 
-    @Override
-    public String toString() {
-        return i1 + "." + methodName + "(" + i2 + ")";
-    }
 }
