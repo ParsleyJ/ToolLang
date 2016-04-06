@@ -17,7 +17,18 @@ public class MethodTable {
     }
 
     public ToolMethod resolve(String name, List<ToolClass> argumentTypes) {
-        //TODO: THIS IS TEMPORARY, implement substitution principle
+        //TODO: THIS IS TEMPORARY, implement correct function call resolution
+        //todo step1: get all candidates (correct names, visible from call point(?))
+        /*todo step2: select viable functions among candidates.
+          todo      a viable function is a function that has types and number of arguments
+          todo      compatible with the the call. */
+        //todo      Compatible means it can be converted (following some specific rules) in the other type
+        //todo step3: choose the best function among the viables. cases:
+        //todo              1) there are no viable functions: throw MethodNotFoundException
+        //todo              2) there is 1 viable function: that's the one!
+        //todo              3) there are more than 1 functions: a rank system must be used and:
+        //todo                  3.1) there is one method at first place: that's the one!
+        //todo                  3.2) there are more than one method at first place: throw AmbiguousMethodCallException
         for (ToolMethod method : methods) {
             boolean found = true;
             List<ToolClass> methodArgumentTypes = method.getArgumentTypes();
