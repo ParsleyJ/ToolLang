@@ -34,7 +34,7 @@ public class DotNotationField implements LValue {
     public ToolObject evaluate(Memory memory) throws ToolInternalException {
         ToolObject object = exp.evaluate(memory);
         Reference r = object.getReferenceMember(ident.getIdentifierString());
-        return memory.getObjectByReference(r);
+        return memory.getObjectById(r.getPointedId());
     }
 
     @Override

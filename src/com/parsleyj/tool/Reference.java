@@ -11,7 +11,7 @@ public class Reference extends ToolObject {
 
     public Reference(String identifierString) {
         this.identifierString = identifierString;
-        this.id = 0;
+        this.id = BaseTypes.O_NULL.getId();
     }
 
     public Reference(String identifierString, Integer id) {
@@ -36,11 +36,6 @@ public class Reference extends ToolObject {
 
     public void setPointedId(Integer id) {
         this.id = id;
-    }
-
-    @Override
-    public ToolObject evaluate(Memory memory) {
-        return memory.getObjectByReference(this);
     }
 
 

@@ -9,9 +9,6 @@ import com.parsleyj.tool.exceptions.ToolInternalException;
 public class ToolObject implements RValue {
     private int referenceCount = 0;
 
-    public Object getNativeValue() {
-        return nativeVal;
-    }
 
     public boolean isNull() {
         return false;
@@ -25,11 +22,10 @@ public class ToolObject implements RValue {
         }
 
     }
-    private ToolClass belongingClass;
 
+    private ToolClass belongingClass;
     private Integer id = IDGenerator.generate();
-    private Object nativeVal = null;
-    private Scope scope = new Scope();
+    private Scope scope = new Scope(Scope.ScopeType.Object);
     public ToolObject() {
         this.belongingClass = BaseTypes.C_OBJECT;
     }
@@ -38,13 +34,14 @@ public class ToolObject implements RValue {
         this.belongingClass = belongingClass;
     }
 
-    public ToolObject(ToolClass belongingClass, Object nativeVal) {
-        this.belongingClass = belongingClass;
-        this.nativeVal = nativeVal;
-    }
 
     public void addReferenceMember(Reference reference) {
-        this.scope.putReference(reference);
+        try {
+
+            this.scope.putReference(reference);
+        } catch (AddedReference addedReference) {
+            //
+        }
     }
 
     @Override
@@ -60,8 +57,9 @@ public class ToolObject implements RValue {
         ++this.referenceCount;
     }
 
-    public void decreaseReferenceCount() {
+    public void decreaseReferenceCount() throws CounterIsZeroRemoveObject {
         --this.referenceCount;
+        if(this.referenceCount <= 0) throw new CounterIsZeroRemoveObject();
     }
 
     public Reference getReferenceMember(String identifierString) {
@@ -76,8 +74,8 @@ public class ToolObject implements RValue {
         return id;
     }
 
-    public Object nativeValue() {
-        return nativeVal;
+    public Scope getMembersScope() {
+        return scope;
     }
 
     @Override
@@ -85,11 +83,9 @@ public class ToolObject implements RValue {
         return "<"+(
                 getBelongingClass() == null ?
                         "NULL" :
-                        (getBelongingClass().getClassName()+":"+(
-                                getNativeValue() == null?
-                                        "":
-                                        getNativeValue())))
-                +"@id:"+getId()+">";
+                        getBelongingClass().getClassName()
+                )
+                +":"+"@id:"+getId()+">";
     }
 
     public String getPrintString() {

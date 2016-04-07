@@ -11,7 +11,7 @@ public class ToolBlock extends ToolObject {
     private boolean evaluateAsObject = true;
 
     public ToolBlock(RValue x) {
-        super(BaseTypes.C_BLOCK, x);
+        super(BaseTypes.C_BLOCK);
         this.x = x;
     }
 

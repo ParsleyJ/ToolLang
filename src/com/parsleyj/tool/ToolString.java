@@ -8,7 +8,7 @@ public class ToolString extends ToolObject {
     private String string;
 
     public ToolString(String string) {
-        super(BaseTypes.C_STRING, string);
+        super(BaseTypes.C_STRING);
         this.string = string;
     }
 

@@ -13,6 +13,8 @@ import java.util.*;
  */
 public class Memory implements ConfigurationElement {
 
+    public static final String SELF_IDENTIFIER = "this";
+
     private final String name;
     private ArrayDeque<Scope> scopes = new ArrayDeque<>();
     private Table<Integer, ToolObject> objectTable = new Table<>();
@@ -27,8 +29,20 @@ public class Memory implements ConfigurationElement {
     }
 
     public void pushScope(){
-        scopes.add(new Scope());
+        scopes.add(new Scope(Scope.ScopeType.Regular));
     }
+
+    public void pushStaticMethodCallFrame(){
+        scopes.add(new Scope(Scope.ScopeType.MethodCall));
+    }
+
+    public void pushInstanceMethodCallFrame(ToolObject selfObject) throws ReferenceAlreadyExistsException {
+        Scope scope =new Scope(Scope.ScopeType.MethodCall);
+        scopes.add(scope);
+
+    }
+
+
 
     public Scope getTopScope(){
         return scopes.getLast();
@@ -36,20 +50,11 @@ public class Memory implements ConfigurationElement {
 
     public ToolObject getObjectByIdentifier(String identifierString) throws ReferenceNotFoundException {
         Reference r = getReferenceByIdentifier(identifierString);
-        return getObjectByReference(r);
+        return getObjectById(r.getPointedId());
     }
 
     public ToolObject getObjectById(Integer id){
         ToolObject to = objectTable.get(id);
-        if (to == null) {
-            return BaseTypes.O_NULL;
-        }
-        return to;
-    }
-
-    public ToolObject getObjectByReference(Reference ref){ //todo this could lead to error when managing with references not in memory:
-                                                           //todo remove this and use only getObjectById?
-        ToolObject to = objectTable.get(ref.getPointedId());
         if (to == null) {
             return BaseTypes.O_NULL;
         }
@@ -71,7 +76,7 @@ public class Memory implements ConfigurationElement {
     public ToolObject getSelfObject() {
         ToolObject result = null;
         try {
-            result = getObjectByIdentifier("self");//TODO: change with a defined identifier, or a separate reference system.
+            result = getObjectByIdentifier(SELF_IDENTIFIER);
         } catch (ReferenceNotFoundException e) {
             e.printStackTrace(); //Throw internal error ToolException
         }
@@ -102,12 +107,15 @@ public class Memory implements ConfigurationElement {
     }
 
     public Reference updateReference(Reference r, ToolObject o) throws ReferenceNotFoundException{
-        ToolObject oldO = getObjectByReference(r);
-        oldO.decreaseReferenceCount();
-        if(oldO.getReferenceCount() <= 0) objectTable.remove(oldO.getId());
-        o.increaseReferenceCount();
+        ToolObject oldO = getObjectById(r.getPointedId());
+        try {
+            oldO.decreaseReferenceCount();
+        } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
+            removeObject(oldO.getId());
+        }
         objectTable.put(o.getId(),o);
         r.setPointedId(o.getId());
+        o.increaseReferenceCount();
         return r;
     }
 
@@ -141,26 +149,39 @@ public class Memory implements ConfigurationElement {
     }
 
     public void popScopeAndGC() {
-        Scope p = this.scopes.removeLast();
-        Table<String, Reference> t = p.getReferenceTable();
-        List<PhantomReference> lpr = p.getPhantomReferences();
+        gcScopeBeforeDisposal(getTopScope());
+        this.scopes.removeLast();
+    }
+
+    public void removeObject(int id){
+        ToolObject o = objectTable.get(id);
+        gcScopeBeforeDisposal(o.getMembersScope());
+        objectTable.remove(id);
+    }
+
+    private void gcScopeBeforeDisposal(Scope scope){
+        Table<String, Reference> t = scope.getReferenceTable();
+        List<PhantomReference> lpr = scope.getPhantomReferences();
         for (PhantomReference pr : lpr){
             Integer id = pr.getPointedId();
             ToolObject to = objectTable.get(id);
             if(to == null) continue;
-            to.decreaseReferenceCount();
-            if(to.getReferenceCount() <= 0){
-                objectTable.remove(id);
+            try {
+                to.decreaseReferenceCount();
+            } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
+                removeObject(id);
             }
+
         }
         for (String s: t.keySet()) {
             Reference r = t.get(s);
             Integer id = r.getPointedId();
             ToolObject to = objectTable.get(id);
             if(to == null) continue;
-            to.decreaseReferenceCount();
-            if(to.getReferenceCount() <= 0){
-                objectTable.remove(id);
+            try {
+                to.decreaseReferenceCount();
+            } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
+                removeObject(id);
             }
         }
     }

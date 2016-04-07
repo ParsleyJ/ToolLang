@@ -23,7 +23,7 @@ public class MethodTable {
           todo      a viable function is a function that has types and number of arguments
           todo      compatible with the the call. */
         //todo      Compatible means it can be converted (following some specific rules) in the other type
-        //todo step3: choose the best function among the viables. cases:
+        //todo step3: choose the best function among the viable ones. cases:
         //todo              1) there are no viable functions: throw MethodNotFoundException
         //todo              2) there is 1 viable function: that's the one!
         //todo              3) there are more than 1 functions: a rank system must be used and:

@@ -12,7 +12,7 @@ public interface RValue extends SemanticObject{
     public static boolean evaluateAsConditional(RValue r, Memory m) throws ToolInternalException {
         ToolObject to = r.evaluate(m);
         if(to.getBelongingClass().isOrExtends(BaseTypes.C_BOOLEAN)){
-            return (Boolean) to.getNativeValue();
+            return ((ToolBoolean) to).getBoolValue();
         }
         else throw new InvalidConditionalExpressionException("The expression: ("+r+") did not return a Boolean value");
 

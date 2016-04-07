@@ -12,7 +12,7 @@ public class ToolInteger extends ToolObject {
     private Integer integer;
 
     public ToolInteger(Integer integer) {
-        super(BaseTypes.C_INTEGER, integer);
+        super(BaseTypes.C_INTEGER);
         this.integer = integer;
     }
 
