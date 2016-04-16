@@ -1,7 +1,11 @@
 package com.parsleyj.toolparser.parser;
 
+import com.parsleyj.toolparser.tokenizer.TokenCategory;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a syntax case. For example, in this simple
@@ -11,10 +15,12 @@ import java.util.List;
  * by a {@link SyntaxCase}.
  */
 public class SyntaxCase{
+
+    public enum ParsingDirection {LeftToRight, RightToLeft}
+
     private String caseName;
     private List<SyntaxCaseComponent> structure;
-    private boolean discardWhenFound = false;
-
+    private ParsingDirection parsingDirection = ParsingDirection.LeftToRight;
     /**
      * Creates a new syntax case with the given name and structure.
      * @param caseName the name of this case.
@@ -24,6 +30,7 @@ public class SyntaxCase{
         this.caseName = caseName;
         this.structure = Arrays.asList(structure);
     }
+
 
     /**
      * @return the structure of this syntax case.
@@ -46,19 +53,25 @@ public class SyntaxCase{
         this.caseName = caseName;
     }
 
-    /**
-     * todo: doc
-     * @return
-     */
-    public boolean isDiscardWhenFound() {
-        return discardWhenFound;
+
+
+    public void setStructure(List<SyntaxCaseComponent> structure) {
+        this.structure = structure;
     }
 
-    /**
-     * todo: doc
-     * @param discardWhenFound
-     */
-    public void setDiscardWhenFound(boolean discardWhenFound) {
-        this.discardWhenFound = discardWhenFound;
+    public ParsingDirection getParsingDirection() {
+        return parsingDirection;
+    }
+
+    public SyntaxCase setParsingDirection(ParsingDirection parsingDirection) {
+        this.parsingDirection = parsingDirection;
+        return this;
+    }
+
+    public List<TokenCategory> getTerminalSymbols(){
+        return structure.stream()
+                .filter(syntaxCaseComponent -> syntaxCaseComponent instanceof TokenCategory)
+                .map(syntaxCaseComponent -> (TokenCategory) syntaxCaseComponent)
+                .collect(Collectors.toList());
     }
 }

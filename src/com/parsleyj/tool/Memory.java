@@ -39,7 +39,7 @@ public class Memory implements ConfigurationElement {
     public void pushInstanceMethodCallFrame(ToolObject selfObject) throws ReferenceAlreadyExistsException {
         Scope scope =new Scope(Scope.ScopeType.MethodCall);
         scopes.add(scope);
-
+        newLocalReference(SELF_IDENTIFIER, selfObject);
     }
 
 

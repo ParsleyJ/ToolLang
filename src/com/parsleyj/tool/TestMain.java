@@ -62,7 +62,7 @@ public class TestMain {
         TokenCategoryDefinition closedSquareBracketToken = new TokenCategoryDefinition("CLOSED_SQUARE_BRACKET", "\\Q]\\E");
         TokenCategoryDefinition numeralToken = new TokenCategoryDefinition("NUMERAL", "(0|([1-9]\\d*))",// "(?<=\\s|^)[-+]?\\d+(?=\\s|$)"
                 g -> new ToolInteger(Integer.decode(g)));
-        TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", " ", true);//not rejectable
+        TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", " ", true);
         TokenCategoryDefinition newLineToken = new TokenCategoryDefinition("NEWLINE", "\\Q\n\\E", true);
 
         TokenCategoryDefinition[] lexicon = new TokenCategoryDefinition[]{
@@ -137,9 +137,11 @@ public class TestMain {
         SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
                 (n, s) -> new MethodCall(s.convert(n.get(0)), ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
                 new SpecificCaseComponent(lExp, dotNotationField), openRoundBracketToken, csel, closedRoundBracketToken);
-        SyntaxCaseDefinition expressionBlock = new SyntaxCaseDefinition(rExp, "expressionBlock",
+
+        SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
+
         SyntaxCaseDefinition definitionBlock = new SyntaxCaseDefinition(rExp, "definitionBlock",
                 (n, s) -> new ToolBlock(s.convert(n.get(1))),
                 openCurlyBracketToken, rExp, closedCurlyBracketToken);
@@ -148,7 +150,7 @@ public class TestMain {
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         new RValue[]{((ExpressionBlock) s.convert(n.get(1))).getUnevaluatedExpression()}),
-                new SpecificCaseComponent(lExp, identifier), new SpecificCaseComponent(rExp, expressionBlock));
+                new SpecificCaseComponent(lExp, identifier), new SpecificCaseComponent(rExp, expressionBetweenRoundBrackets));
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, new SpecificCaseComponent(lExp, identifier));
@@ -217,7 +219,7 @@ public class TestMain {
                 methodCall0, methodCall1, methodCall2,
                 dotNotationField,
                 dotNotationMethodCall0, dotNotationMethodCall1, dotNotationMethodCall2,
-                expressionBlock, definitionBlock,
+                expressionBetweenRoundBrackets, definitionBlock,
                 methodCall3,
                 newVarDeclaration,
                 getBlockDefinitionOperation,

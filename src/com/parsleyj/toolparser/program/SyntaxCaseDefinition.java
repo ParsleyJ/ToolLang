@@ -31,8 +31,5 @@ public class SyntaxCaseDefinition extends SyntaxCase {
         return converter;
     }
 
-    public SyntaxCaseDefinition discardWhenFound(boolean discardWhenFound) {
-        super.setDiscardWhenFound(discardWhenFound);
-        return this;
-    }
+
 }

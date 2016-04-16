@@ -21,4 +21,12 @@ public class SpecificCaseComponent implements SyntaxCaseComponent {
     public String getSyntaxComponentName() {
         return clas.getSyntaxComponentName()+":"+cas.getCaseName();
     }
+
+    public SyntaxClass getClas() {
+        return clas;
+    }
+
+    public SyntaxCase getCas() {
+        return cas;
+    }
 }

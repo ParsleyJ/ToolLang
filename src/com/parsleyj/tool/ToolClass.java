@@ -1,5 +1,7 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,13 +25,13 @@ public class ToolClass extends ToolObject {
     }
 
 
-    public ToolMethod findInstanceMethod(String name, List<ToolClass> argumentTypes) {
+    public ToolMethod findInstanceMethod(String name, List<ToolClass> argumentTypes) throws AmbiguousMethodCallException {
         ToolMethod result = instanceMethodTable.resolve(name, argumentTypes);
         if (result == null && parentClass != null) return parentClass.findInstanceMethod(name, argumentTypes);
         return result;
     }
 
-    public ToolMethod findClassMethod(String name, List<ToolClass> argumentTypes) {
+    public ToolMethod findClassMethod(String name, List<ToolClass> argumentTypes) throws AmbiguousMethodCallException {
         return classMethodTable.resolve(name, argumentTypes);
     }
 
@@ -73,13 +75,29 @@ public class ToolClass extends ToolObject {
         return fieldMap;
     }
 
-    public boolean isOrExtends(ToolClass cBoolean) {
-        ToolClass tmp = cBoolean;
+    public boolean isOrExtends(ToolClass type) {
+        ToolClass tmp = type;
         while (tmp != null){
             if(Objects.equals(this.getId(), tmp.getId())) return true;
             tmp = tmp.getParentClass();
         }
         return false;
+    }
+
+    public int getConvertibility(ToolClass c){
+        ToolClass tmp = c;
+        int points = 0;
+        while (tmp != c || !Objects.equals(tmp.getId(), c.getId())){
+            ++points;
+            tmp = tmp.getParentClass();
+        }
+        //TODO: consider user-defined conversions
+        return points;
+    }
+
+    public boolean canBeConvertedTo(ToolClass type){
+        return isOrExtends(type);
+        //TODO: consider user-defined conversions
     }
 
     @Override

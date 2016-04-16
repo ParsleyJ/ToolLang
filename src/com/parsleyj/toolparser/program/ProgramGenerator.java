@@ -92,7 +92,7 @@ public class ProgramGenerator {
         Parser parser = new Parser(grammar);
         ParseTreeNode tree = null;
         try{
-            tree = parser.priorityBasedParse(tokenList);
+            tree = parser.parse(tokenList);
             if(printDebugMessages){
                 System.out.println();
                 System.out.println("PARSER RESULT:");

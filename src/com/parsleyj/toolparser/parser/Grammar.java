@@ -25,7 +25,7 @@ public class Grammar {
      *                              the Grammar. The order is important: the first syntax cases will be
      *                              searched first by the parser, so it can be used to set precedence rules.
      */
-    public Grammar(SyntaxCaseDefinition... syntaxCaseDefinitions) {
+    public Grammar(SyntaxCaseDefinition... syntaxCaseDefinitions){
         HashSet<SyntaxClass> classHashSet = new HashSet<>();
         this.priorityCaseList = new ArrayList<>();
         for(SyntaxCaseDefinition definition: syntaxCaseDefinitions){

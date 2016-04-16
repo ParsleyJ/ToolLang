@@ -8,4 +8,5 @@ public interface SyntaxCaseComponent {
      * @return an unique String name identifying this {@link SyntaxCaseComponent}
      */
     String getSyntaxComponentName();
+
 }

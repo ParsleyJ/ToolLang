@@ -93,9 +93,10 @@ public class MethodCall implements RValue {
         }
 
         ToolObject result;
-        memory.pushScope();
         if (!isStatic) {
-            memory.newLocalReference("this", caller); //TODO: use defined self/this keyword
+            memory.pushInstanceMethodCallFrame(caller);
+        }else{
+            memory.pushStaticMethodCallFrame();
         }
         for (int i = 0; i < tm.getArgumentNames().size(); ++i)
             memory.newLocalReference(tm.getArgumentNames().get(i), arguments.get(i));

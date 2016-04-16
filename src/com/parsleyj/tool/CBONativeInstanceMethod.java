@@ -1,6 +1,8 @@
 package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.BadMethodCallException;
+import com.parsleyj.tool.exceptions.ToolArithmeticException;
+import com.parsleyj.tool.exceptions.ToolInternalException;
 
 /**
  * Created by Giuseppe on 04/04/16.
@@ -33,6 +35,6 @@ public class CBONativeInstanceMethod<T extends ToolObject> extends ToolMethod {
     }
 
     public interface Body<T extends ToolObject> {
-        public T exec(T a, T b, Memory memory);
+        public T exec(T a, T b, Memory memory) throws ToolInternalException;
     }
 }

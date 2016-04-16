@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class BaseTypes {
 
-    public static final ToolObject O_NULL = new ToolObject(null){
+    public static final ToolObject O_NULL = new ToolObject(null){//TODO: special Null class: is or extends returns always true
         @Override
         public boolean isNull() {
             return true;
@@ -34,11 +34,12 @@ public class BaseTypes {
     public static final ToolExceptionClass C_REFERENCE_NOT_FOUND_EXCEPTION = new ToolExceptionClass("ReferenceNotFoundException");
     public static final ToolExceptionClass C_INVALID_CONDITIONAL_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidConditionalExpressionException");
     public static final ToolExceptionClass C_BAD_METHOD_CALL_EXCEPTION = new ToolExceptionClass("BadMethodCallException");
+    public static final ToolExceptionClass C_AMBIGUOUS_METHOD_CALL_EXCEPTION = new ToolExceptionClass("AmbiguousMethodCallException");
     public static final ToolExceptionClass C_METHOD_NOT_FOUND_EXCEPTION = new ToolExceptionClass("MethodNotFoundException");
     public static final ToolExceptionClass C_CALL_ON_NULL_EXCEPTION = new ToolExceptionClass("CallOnNullException");
+    public static final ToolExceptionClass C_ARITHMETIC_EXCEPTION = new ToolExceptionClass("ArithmeticException");
 
     static{
-        C_TOOL.addClassMethod(new ToolMethod(Visibility.Public, "skip", new ParameterDefinition[0], memory -> O_NULL));
         C_TOOL.addClassMethod(new ToolMethod(
                 Visibility.Public,
                 "print",
