@@ -51,6 +51,7 @@ public class SyntaxClass implements SyntaxCaseComponent {
         return extendedClass;
     }
 
+
     /**
      * @return the cases that generate instances of this syntax class.
      */
@@ -80,6 +81,20 @@ public class SyntaxClass implements SyntaxCaseComponent {
     @Override
     public String getSyntaxComponentName() {
         return name;
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
+    }
+
+    public boolean isOrExtends(SyntaxClass c){
+        SyntaxClass x = this;
+        while(x != null){
+            if(x.getSyntaxComponentName().equals(c.getSyntaxComponentName())) return true;
+            x = x.getExtendedClass();
+        }
+        return false;
     }
 
 }

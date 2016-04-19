@@ -73,11 +73,11 @@ public class Grammar {
      * @param components the list of case components that should match the SyntaxCase
      * @return a pair of {@link SyntaxClass} and {@link SyntaxCase} of the found case.
      */
-    public Pair<SyntaxClass, SyntaxCase> lookup(List<SyntaxCaseComponent> components){
+    /*public Pair<SyntaxClass, SyntaxCase> lookup(List<SyntaxCaseComponent> components){
         return lookup(components, classList);
-    }
+    }*/
 
-    public static Pair<SyntaxClass, SyntaxCase> lookup(List<SyntaxCaseComponent> components, List<SyntaxClass> list) {
+    /*public static Pair<SyntaxClass, SyntaxCase> lookup(List<SyntaxCaseComponent> components, List<SyntaxClass> list) {
         SyntaxCase tempCase = new SyntaxCase("", components.toArray(new SyntaxCaseComponent[components.size()]));
         for (SyntaxClass clas : list) {
             for(SyntaxCase cas : clas.getSyntaxCases()){
@@ -87,7 +87,7 @@ public class Grammar {
             }
         }
         return null;
-    }
+    }*/
 
     /*public Boolean isPriorityGreaterOrEqual(List<SyntaxCaseComponent> a, List<SyntaxCaseComponent> b){
         SyntaxCase tempCaseA = new SyntaxCase("", a.toArray(new SyntaxCaseComponent[a.size()]));
@@ -146,7 +146,7 @@ public class Grammar {
      * @param t the Token
      * @return the {@link TokenCategory} if found, {@code null} otherwise.
      */
-    public TokenCategory getTokenClass(Token t){
+    public TokenCategory getTokenCategory(Token t){
         for(SyntaxClass syntaxClass: classList) {
             for(SyntaxCase syntaxCase: syntaxClass.getSyntaxCases()) {
                 for(SyntaxCaseComponent syntaxCaseComponent: syntaxCase.getStructure()) {

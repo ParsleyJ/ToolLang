@@ -59,4 +59,9 @@ public class TokenCategory implements SyntaxCaseComponent {
     public String getSyntaxComponentName() {
         return tokenClassName;
     }
+
+    @Override
+    public boolean isTerminal() {
+        return true;
+    }
 }

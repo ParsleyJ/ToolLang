@@ -22,6 +22,11 @@ public class SpecificCaseComponent implements SyntaxCaseComponent {
         return clas.getSyntaxComponentName()+":"+cas.getCaseName();
     }
 
+    @Override
+    public boolean isTerminal() {
+        return false;
+    }
+
     public SyntaxClass getClas() {
         return clas;
     }

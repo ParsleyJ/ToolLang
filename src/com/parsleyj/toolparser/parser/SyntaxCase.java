@@ -21,14 +21,16 @@ public class SyntaxCase{
     private String caseName;
     private List<SyntaxCaseComponent> structure;
     private ParsingDirection parsingDirection = ParsingDirection.LeftToRight;
+    private SyntaxClass belongingClass;
     /**
      * Creates a new syntax case with the given name and structure.
      * @param caseName the name of this case.
      * @param structure a varargs list of case components.
      */
-    public SyntaxCase(String caseName, SyntaxCaseComponent... structure) {
+    public SyntaxCase(String caseName, SyntaxClass belongingClass, SyntaxCaseComponent... structure) {
         this.caseName = caseName;
         this.structure = Arrays.asList(structure);
+        this.belongingClass = belongingClass;
     }
 
 
@@ -54,6 +56,13 @@ public class SyntaxCase{
     }
 
 
+    public SyntaxClass getBelongingClass() {
+        return belongingClass;
+    }
+
+    public void setBelongingClass(SyntaxClass belongingClass) {
+        this.belongingClass = belongingClass;
+    }
 
     public void setStructure(List<SyntaxCaseComponent> structure) {
         this.structure = structure;

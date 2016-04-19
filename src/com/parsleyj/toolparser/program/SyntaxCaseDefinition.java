@@ -18,7 +18,7 @@ public class SyntaxCaseDefinition extends SyntaxCase {
     private final CheckedCaseConverter converter;
 
     public SyntaxCaseDefinition(SyntaxClass belongingClass, String caseName, CaseConverterMethod method, SyntaxCaseComponent... structure) {
-        super(caseName, structure);
+        super(caseName, belongingClass, structure);
         this.belongingClass = belongingClass;
         this.converter = new CheckedCaseConverter(this, method);
     }

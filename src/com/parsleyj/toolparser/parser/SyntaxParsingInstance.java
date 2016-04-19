@@ -22,6 +22,11 @@ public class SyntaxParsingInstance implements SyntaxCaseComponent {
         return syntaxClass.getSyntaxComponentName();
     }
 
+    @Override
+    public boolean isTerminal() {
+        return false;
+    }
+
     public String getSyntaxCaseName(){
         return syntaxCase.getCaseName();
     }

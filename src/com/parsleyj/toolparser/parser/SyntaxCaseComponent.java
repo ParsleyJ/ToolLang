@@ -9,4 +9,6 @@ public interface SyntaxCaseComponent {
      */
     String getSyntaxComponentName();
 
+    boolean isTerminal();
+
 }

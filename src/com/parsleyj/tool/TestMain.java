@@ -20,6 +20,10 @@ import java.util.Scanner;
  */
 public class TestMain {
 
+    public static SyntaxClass rExp = new SyntaxClass("rExp");
+    public static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp
+    public static SyntaxClass csel = new SyntaxClass("csel");
+
     public static ProgramGenerator getDefaultInterpreter() {
         String memoryName = "DefaultMemory";
 
@@ -82,9 +86,7 @@ public class TestMain {
         };
 
 
-        SyntaxClass rExp = new SyntaxClass("rExp");
-        SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp
-        SyntaxClass csel = new SyntaxClass("csel");
+
 
         SyntaxCaseDefinition nullLiteral = new SyntaxCaseDefinition(rExp, "nullLiteral",
                 new SimpleWrapConverterMethod(),
@@ -268,7 +270,7 @@ public class TestMain {
         p.executeProgram(m);
     }
 
-    public static final boolean DEBUG_PRINTS = false;
+    public static final boolean DEBUG_PRINTS = true;
     public static void test2() {
         Program.VERBOSE = DEBUG_PRINTS;
         Scanner sc = new Scanner(System.in);
@@ -280,7 +282,7 @@ public class TestMain {
         ToolString testString = new ToolString("yay");
         m.addObjectToHeap(testString);
         BaseTypes.C_TOOL.addReferenceMember(new Reference("test", testString.getId()));
-        ProgramGenerator pg = getDefaultInterpreter();
+        ProgramGenerator pg = getDefaultInterpreterMini();
         pg.setPrintDebugMessages(DEBUG_PRINTS);
         while (true) {
             StringBuilder sb = new StringBuilder();
@@ -296,7 +298,7 @@ public class TestMain {
 
             if (programString.equals("exit")) break;
 
-            Program prog = pg.generate("testParsed", programString, (p, c) -> {
+            Program prog = pg.generate("testParsed", programString, rExp, (p, c) -> {
                 RValue e = (RValue) p.getRootSemanticObject();
                 try {
                     ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
@@ -309,6 +311,85 @@ public class TestMain {
             });
             prog.executeProgram(m);
         }
+    }
+
+    private static ProgramGenerator getDefaultInterpreterMini() {
+        TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
+                ToolString::new);
+        TokenCategoryDefinition nullToken = new TokenCategoryDefinition("SKIP_KEYWORD", "\\Qnull\\E",
+                (g) -> BaseTypes.O_NULL);
+        TokenCategoryDefinition trueToken = new TokenCategoryDefinition("TRUE_KEYWORD", "\\Qtrue\\E",
+                (g) -> new True());
+        TokenCategoryDefinition falseToken = new TokenCategoryDefinition("FALSE_KEYWORD", "\\Qfalse\\E",
+                (g) -> new False());
+        TokenCategoryDefinition whileToken = new TokenCategoryDefinition("WHILE_KEYWORD", "\\Qwhile\\E");
+        TokenCategoryDefinition doToken = new TokenCategoryDefinition("DO_KEYWORD", "\\Qdo\\E");
+        TokenCategoryDefinition ifToken = new TokenCategoryDefinition("IF_KEYWORD", "\\Qif\\E");
+        TokenCategoryDefinition thenToken = new TokenCategoryDefinition("THEN_KEYWORD", "\\Qthen\\E");
+        TokenCategoryDefinition elseToken = new TokenCategoryDefinition("ELSE_KEYWORD", "\\Qelse\\E");
+        TokenCategoryDefinition andOperatorToken = new TokenCategoryDefinition("AND_OPERATOR", "\\Qand\\E");
+        TokenCategoryDefinition orOperatorToken = new TokenCategoryDefinition("OR_OPERATOR", "\\Qor\\E");
+        TokenCategoryDefinition notOperatorToken = new TokenCategoryDefinition("NOT_OPERATOR", "\\Qnot\\E");
+        TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
+                Identifier::new);
+        TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
+        TokenCategoryDefinition commaToken = new TokenCategoryDefinition("COMMA", "\\Q,\\E");
+        TokenCategoryDefinition plusToken = new TokenCategoryDefinition("PLUS", "\\Q+\\E");
+        TokenCategoryDefinition minusToken = new TokenCategoryDefinition("MINUS", "\\Q-\\E");
+        TokenCategoryDefinition asteriskToken = new TokenCategoryDefinition("ASTERISK", "\\Q*\\E");
+        TokenCategoryDefinition slashToken = new TokenCategoryDefinition("SLASH", "\\Q/\\E");
+        TokenCategoryDefinition percentSignToken = new TokenCategoryDefinition("PERCENT_SIGN", "\\Q%\\E");
+        TokenCategoryDefinition getBlockDefinitionOperatorToken = new TokenCategoryDefinition("GET_BLOCK_DEFINITION_OPERATOR", "\\Q&\\E");
+        TokenCategoryDefinition assignmentOperatorToken = new TokenCategoryDefinition("ASSIGNMENT_OPERATOR", "\\Q=\\E");
+        TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
+        TokenCategoryDefinition greaterOperatorToken = new TokenCategoryDefinition("GREATER_OPERATOR", "\\Q>\\E");
+        TokenCategoryDefinition lessOperatorToken = new TokenCategoryDefinition("LESS_OPERATOR", "\\Q<\\E");
+        TokenCategoryDefinition semicolonToken = new TokenCategoryDefinition("SEMICOLON", "\\Q;\\E");
+        TokenCategoryDefinition openRoundBracketToken = new TokenCategoryDefinition("OPEN_ROUND_BRACKET", "\\Q(\\E");
+        TokenCategoryDefinition closedRoundBracketToken = new TokenCategoryDefinition("CLOSED_ROUND_BRACKET", "\\Q)\\E");
+        TokenCategoryDefinition openCurlyBracketToken = new TokenCategoryDefinition("OPEN_CURLY_BRACKET", "\\Q{\\E");
+        TokenCategoryDefinition closedCurlyBracketToken = new TokenCategoryDefinition("CLOSED_CURLY_BRACKET", "\\Q}\\E");
+        TokenCategoryDefinition openSquareBracketToken = new TokenCategoryDefinition("OPEN_SQUARE_BRACKET", "\\Q[\\E");
+        TokenCategoryDefinition closedSquareBracketToken = new TokenCategoryDefinition("CLOSED_SQUARE_BRACKET", "\\Q]\\E");
+        TokenCategoryDefinition numeralToken = new TokenCategoryDefinition("NUMERAL", "(0|([1-9]\\d*))",// "(?<=\\s|^)[-+]?\\d+(?=\\s|$)"
+                g -> new ToolInteger(Integer.decode(g)));
+        TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", " ", true);
+        TokenCategoryDefinition newLineToken = new TokenCategoryDefinition("NEWLINE", "\\Q\n\\E", true);
+
+        TokenCategoryDefinition[] lexicon = new TokenCategoryDefinition[]{
+                stringToken,
+                nullToken, trueToken, falseToken, whileToken, doToken, ifToken, thenToken, elseToken,
+                andOperatorToken, orOperatorToken, notOperatorToken,
+                identifierToken, dotToken, commaToken,
+                plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
+                getBlockDefinitionOperatorToken,
+                equalsOperatorToken, greaterOperatorToken, lessOperatorToken,
+                assignmentOperatorToken, semicolonToken,
+                openRoundBracketToken, closedRoundBracketToken,
+                openCurlyBracketToken, closedCurlyBracketToken,
+                openSquareBracketToken, closedSquareBracketToken,
+                numeralToken,
+                blankToken, newLineToken
+        };
+
+
+
+        SyntaxCaseDefinition numeral = new SyntaxCaseDefinition(rExp, "numeral",
+                new SimpleWrapConverterMethod(),
+                numeralToken);
+        SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
+                (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
+                openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition plusOperation = new SyntaxCaseDefinition(rExp, "plusOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "plus", b)),
+                rExp, plusToken, rExp);
+        SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
+                numeral,
+                expressionBetweenRoundBrackets,
+                plusOperation
+        };
+        return new ProgramGenerator(lexicon, grammar);
     }
 
     public static void main(String[] args) {

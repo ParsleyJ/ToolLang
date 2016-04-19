@@ -1,7 +1,7 @@
 package com.parsleyj.toolparser.parser;
 
 /**
- * Thrown by the Parser when the parsing operation with a non valid tree.
+ * Thrown by the OldParser when the parsing operation with a non valid tree.
  */
 public class ParseFailedException extends RuntimeException {
     private ParseTreeNode failureTree;

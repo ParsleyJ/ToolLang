@@ -1,10 +1,7 @@
 package com.parsleyj.toolparser.program;
 
 import com.parsleyj.toolparser.configuration.Configuration;
-import com.parsleyj.toolparser.parser.Grammar;
-import com.parsleyj.toolparser.parser.ParseFailedException;
-import com.parsleyj.toolparser.parser.ParseTreeNode;
-import com.parsleyj.toolparser.parser.Parser;
+import com.parsleyj.toolparser.parser.*;
 import com.parsleyj.toolparser.semanticsconverter.CaseConverter;
 import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
 import com.parsleyj.toolparser.semanticsconverter.SemanticsConverter;
@@ -17,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Helpful class used to define a {@link Tokenizer}, a {@link Parser}
+ * Helpful class used to define a {@link Tokenizer}, a {@link RecursiveParser}
  * and a {@link SemanticsConverter}, which inputs and outputs are chained
  * in order to generate a {@link Program} object from the input {@link String}
  * program.
@@ -33,7 +30,7 @@ public class ProgramGenerator {
      * Creates a program generator with the given {@link TokenCategoryDefinition}s and the
      * {@link SyntaxCaseDefinition}s.
      * The {@code Definition}s objects are used to create the {@link ProgramGenerator}'s
-     * internal {@link Tokenizer}, {@link Parser} and {@link SemanticsConverter}. The order
+     * internal {@link Tokenizer}, {@link RecursiveParser} and {@link SemanticsConverter}. The order
      * of both arrays is meaningful: see params descriptions for more.
      * @param tokenCategories  an ordered array of the token categories with eventual method converters.
 *                              The tokenizer searches the patterns in the input program string following
@@ -75,7 +72,7 @@ public class ProgramGenerator {
      * @param stepMethod the method used to let the program make a computational step.
      * @return the Program object.
      */
-    public Program generate(String name, String inputProgram, final ProgramExecutionMethod stepMethod){
+    public Program generate(String name, String inputProgram, SyntaxClass rootClass, final ProgramExecutionMethod stepMethod){
         Tokenizer tokenizer = new Tokenizer(tokenCategories);
         List<Token> tokenList = tokenizer.tokenize(inputProgram);
 
@@ -89,8 +86,8 @@ public class ProgramGenerator {
             });
         }
 
-        Parser parser = new Parser(grammar);
-        ParseTreeNode tree = null;
+        Parser parser = new RecursiveParser(grammar, rootClass);
+        ParseTreeNode tree;
         try{
             tree = parser.parse(tokenList);
             if(printDebugMessages){
