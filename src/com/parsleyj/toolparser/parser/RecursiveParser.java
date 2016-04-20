@@ -247,6 +247,7 @@ public class RecursiveParser implements Parser {
             //TODO: something wrong happens when (2)+1, after evaluating "(2)", he finds a "plus" and there are no candidates starting with "plus"
             //TODO: must this be: candidatesStartingWith(<allTheContentsOfFoundSequence>, etc...)?
             //TODO: or (maybe instead of using a "foundSequence") i have to repush to the stream the nodes just found?
+            //TODO: maybe here i should consider priority and associativity.
             List<SyntaxCase> candidates = PJ.reverse(candidatesStartingWith(first.isTerminal() ? first.getTokenCategory() : first.getSyntaxClass()));
             for (SyntaxCase candidate : candidates) {
                 List<ParseTreeNode> tmpSequence = new ArrayList<>();
