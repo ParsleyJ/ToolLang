@@ -2,8 +2,9 @@ package com.parsleyj.toolparser.parser;
 
 import com.parsleyj.toolparser.tokenizer.Token;
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
-import com.parsleyj.utils.PJ;
-import com.parsleyj.utils.Pair;
+import com.parsleyj.utils.*;
+import com.parsleyj.utils.reversiblestream.ReversibleStream;
+import com.parsleyj.utils.reversiblestream.StackedReversibleStream;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,115 +20,6 @@ public class RecursiveParser implements Parser {
     private Grammar grammar;
     private SyntaxClass rootClass;
 
-    public static class ParseNodeStream {
-
-        private List<ParseTreeNode> nodes;
-        private ArrayDeque<Integer> checkPoints = new ArrayDeque<>();
-        private int index = 0;
-
-        public ParseNodeStream(List<ParseTreeNode> nodes) {
-            this.nodes = nodes;
-        }
-
-        public void checkPoint() {
-            checkPoints.addFirst(index);
-        }
-
-        public void rollback() {
-            index = checkPoints.pop();
-        }
-
-        public void commit() {
-            checkPoints.pop();
-        }
-
-        public ParseTreeNode getNext() throws NoEnoughElementsException {
-            if(index >= nodes.size()) throw new NoEnoughElementsException();
-            return nodes.get(index++);
-        }
-
-        public ParseTreeNode get(int index) {
-            return nodes.get(index);
-        }
-
-        public List<ParseTreeNode> getNext(int howMany) throws NoEnoughElementsException {
-            if(index + howMany >= nodes.size()) throw new NoEnoughElementsException();
-            List<ParseTreeNode> result = nodes.subList(index, index + howMany);
-            index += howMany;
-            return result;
-        }
-
-        public void pushFront(ParseTreeNode pts){
-            nodes.add(0, pts);
-        }
-
-        public int moveCursor(int offset) {
-            return index += offset;
-        }
-
-        public ParseTreeNode peek() {
-            return nodes.get(index);
-        }
-
-        public ParseTreeNode peek(int index) {
-            return nodes.get(index);
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public boolean isEmpty() {
-            return index >= nodes.size();
-        }
-
-        public int remainingCount() {
-            return nodes.size() - index;
-        }
-
-        public ParseNodeStream subStreamUntilDelimiter(SyntaxCaseComponent delimiter) {
-            if(delimiter == null){
-                ParseNodeStream pns = new ParseNodeStream(nodes.subList(index, nodes.size()));
-                index = nodes.size();
-                return pns;
-            }
-            for (int i = index; i < nodes.size(); ++i) {
-                if (nodes.get(i).isTerminal() ?
-                        nodes.get(i).getTokenCategory().getSyntaxComponentName().equals(delimiter.getSyntaxComponentName()) :
-                        nodes.get(i).getSyntaxClass().getSyntaxComponentName().equals(delimiter.getSyntaxComponentName())) {
-                    ParseNodeStream pns = new ParseNodeStream(nodes.subList(index, i));
-                    index = i;
-                    return pns;
-                }
-            }
-            return null;
-        }
-
-        public ParseNodeStream subStreamUntilDelimiterIncluded(SyntaxCaseComponent delimiter) {
-            if(delimiter == null){
-                ParseNodeStream pns = new ParseNodeStream(nodes.subList(index, nodes.size()));
-                index = nodes.size();
-                return pns;
-            }
-            for (int i = index; i < nodes.size(); ++i) {
-                if (nodes.get(i).isTerminal() ?
-                        nodes.get(i).getTokenCategory().getSyntaxComponentName().equals(delimiter.getSyntaxComponentName()) :
-                        nodes.get(i).getSyntaxClass().getSyntaxComponentName().equals(delimiter.getSyntaxComponentName())) {
-                    ParseNodeStream pns = new ParseNodeStream(nodes.subList(index, i+1));
-                    index = i+1;
-                    return pns;
-                }
-            }
-            return null;
-        }
-
-        public List<ParseTreeNode> toList() {
-            return nodes.subList(index, nodes.size());
-        }
-
-        public class NoEnoughElementsException extends Exception {
-        }
-    }
 
     private enum Delta {
         Only_T,
@@ -256,19 +148,19 @@ public class RecursiveParser implements Parser {
     }
 
 
-    private ParseTreeNode recursiveDescentParse(ParseNodeStream ts, TokenCategory delimiter, SyntaxClass rootClass) {
+    private ParseTreeNode recursiveDescentParse(ReversibleStream<ParseTreeNode> ts, TokenCategory delimiter, SyntaxClass rootClass) {
         ts.checkPoint();
         if (ts.remainingCount() == 1 || (
                         delimiter != null &&
                         ts.remainingCount() > 1 &&
-                        ts.peek(ts.getIndex() + 1).isTerminal() &&
-                        ts.peek(ts.getIndex() + 1).getTokenCategory().getTokenClassName().equals(delimiter.getTokenClassName()))) {
+                        ts.peek(1).isTerminal() &&
+                        ts.peek(1).getTokenCategory().getTokenClassName().equals(delimiter.getTokenClassName()))) {
             if (!ts.peek().isTerminal() && ts.peek().getSyntaxClass().isOrExtends(rootClass)) {
                 try {
                     ParseTreeNode ptn = ts.getNext();
                     ts.commit();
                     return ptn;
-                } catch (ParseNodeStream.NoEnoughElementsException e) {
+                } catch (NoEnoughElementsException e) {
                     ts.rollback();
                     throw newParseFailedException(Collections.emptyList());
                 }
@@ -301,7 +193,7 @@ public class RecursiveParser implements Parser {
                             break;
                         }
 
-                        if (i == 0) { //todo: move to private method
+                        if (i == 0) {
                             if (component.isTerminal()) {
                                 ParseTreeNode terminalNode = ts.getNext();
                                 if (!terminalNode.getTokenCategory().getTokenClassName().equals(component.getSyntaxComponentName())) {
@@ -314,7 +206,9 @@ public class RecursiveParser implements Parser {
                                 SyntaxCaseComponent nextComponent = structure.get(i + 1);
                                 if (nextComponent.isTerminal()) {
                                     try {
-                                        ParseNodeStream pns = ts.subStreamUntilDelimiter(nextComponent);
+                                        ReversibleStream<ParseTreeNode> pns = ts.subStreamUntilPredicate((arg1) -> arg1.isTerminal() ?
+                                                arg1.getTokenCategory().getSyntaxComponentName().equals(nextComponent.getSyntaxComponentName()) :
+                                                arg1.getSyntaxClass().getSyntaxComponentName().equals(nextComponent.getSyntaxComponentName()));
                                         if (pns == null) {
                                             found = false;
                                             break;
@@ -329,7 +223,7 @@ public class RecursiveParser implements Parser {
                                     throw new InvalidSyntaxCaseDefinitionException();
                                 }
                             }
-                        } else if (i == structure.size() - 1) { //todo: move to private method
+                        } else if (i == structure.size() - 1) {
                             if (component.isTerminal()) {
                                 ParseTreeNode terminalNode = ts.getNext();
                                 if (!terminalNode.getTokenCategory().getTokenClassName().equals(component.getSyntaxComponentName())) {
@@ -347,7 +241,7 @@ public class RecursiveParser implements Parser {
                                     break;
                                 }
                             }
-                        } else { //todo: move to private method
+                        } else {
                             if (component.isTerminal()) {
                                 ParseTreeNode terminalNode = ts.getNext();
                                 if (!terminalNode.getTokenCategory().getTokenClassName().equals(component.getSyntaxComponentName())) {
@@ -372,7 +266,7 @@ public class RecursiveParser implements Parser {
                             }
                         }
                     }
-                } catch (ParseNodeStream.NoEnoughElementsException e) {
+                } catch (NoEnoughElementsException e) {
                     found = false;
                 }
                 if (found) {
@@ -386,34 +280,14 @@ public class RecursiveParser implements Parser {
             }
 
         }
-        if(!foundSomething && !foundSequence.isEmpty()){
-            foundSequence.addAll(ts.subStreamUntilDelimiter(delimiter).toList()); //BUG TROVATO! subStreamUntilDelimiter non tiene conto del bilanciamento
-            if(delimiter!=null) {
-                foundSequence.add(ts.peek()); //adds the eventual delimiter without removing it from the original stream
-            }
-        }else if(!foundSomething){
-            ts.rollback();
-            throw newParseFailedException(Collections.emptyList());
-        }
         if (foundSequence.size() == 1 && foundSequence.get(0).getSyntaxClass().isOrExtends(rootClass)) {
             ts.commit();
             return foundSequence.get(0);
-        } else {
-            try {
-                ParseTreeNode ptn = recursiveDescentParse(new ParseNodeStream(foundSequence), delimiter, rootClass);
-                ts.commit();
-                return ptn;
-            } catch (ParseFailedException e) {
-                ts.rollback();
-                throw e;
-            } /*catch (ParseNodeStream.NoEnoughElementsException e) {
-                ts.rollback();
-                throw newParseFailedException(Collections.emptyList()); //TODO put a better found sequence
-            }*/
-        }
+        } else throw newParseFailedException(foundSequence);
     }
 
-    private boolean findUniqueComponent(ParseNodeStream ts, List<ParseTreeNode> tmpSequence, SyntaxCaseComponent component) throws ParseNodeStream.NoEnoughElementsException {
+
+    private boolean findUniqueComponent(ReversibleStream<ParseTreeNode> ts, List<ParseTreeNode> tmpSequence, SyntaxCaseComponent component) throws NoEnoughElementsException {
         if (component.isTerminal()) {
             ParseTreeNode terminalNode = ts.getNext();
             if (!terminalNode.getTokenCategory().getTokenClassName().equals(component.getSyntaxComponentName())) {
@@ -438,7 +312,7 @@ public class RecursiveParser implements Parser {
     @Override
     public ParseTreeNode parse(List<Token> tokens) {
         PARSE_TREE_NODE_FACTORY = new ParseTreeNodeFactory();
-        ParseNodeStream ts = new ParseNodeStream(promoteHighPriorityTerminals(generateListFromToken(tokens, PARSE_TREE_NODE_FACTORY)));
+        StackedReversibleStream<ParseTreeNode> ts = new StackedReversibleStream<>(promoteHighPriorityTerminals(generateListFromToken(tokens, PARSE_TREE_NODE_FACTORY)));
         return recursiveDescentParse(ts, null, rootClass);
     }
 
