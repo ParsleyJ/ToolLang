@@ -4,9 +4,9 @@ import com.parsleyj.toolparser.configuration.Configuration;
 
 /**
  * Functional interface used to define how a {@link Program} makes
- * a computational step.
+ * a computational execute.
  */
 @FunctionalInterface
 public interface ProgramExecutionMethod {
-    boolean step(Program program, Configuration configuration);
+    boolean execute(Program program, Configuration configuration);
 }

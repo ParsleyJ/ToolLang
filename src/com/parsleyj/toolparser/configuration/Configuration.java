@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 /**
  * A collection of configuration elements. This class with its elements propagates through
- * the semantic objects of the program by calling the {@code step(Configuration configuration)} methods.
+ * the semantic objects of the program by calling the {@code execute(Configuration configuration)} methods.
  */
 public class Configuration{
 

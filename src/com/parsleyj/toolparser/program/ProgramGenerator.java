@@ -69,10 +69,10 @@ public class ProgramGenerator {
      * by tokenizing it, parsing it and converting the parse tree.
      * @param name the name of the program
      * @param inputProgram the program input string
-     * @param stepMethod the method used to let the program make a computational step.
+     * @param executionMethod the method used to let the program make a computational execute.
      * @return the Program object.
      */
-    public Program generate(String name, String inputProgram, SyntaxClass rootClass, final ProgramExecutionMethod stepMethod){
+    public Program generate(String name, String inputProgram, SyntaxClass rootClass, final ProgramExecutionMethod executionMethod){
         Tokenizer tokenizer = new Tokenizer(tokenCategories);
         List<Token> tokenList = tokenizer.tokenize(inputProgram);
 
@@ -99,8 +99,8 @@ public class ProgramGenerator {
             }
             return new Program(name, generateRootSemanticObject(tree)){
                 @Override
-                public boolean step(Configuration configuration) {
-                    return stepMethod.step(this, configuration);
+                public boolean execute(Configuration configuration) {
+                    return executionMethod.execute(this, configuration);
                 }
             };
         } catch (ParseFailedException e){

@@ -255,7 +255,7 @@ public class TestMain {
                                 new ToolInteger(2)
                         ))) {
             @Override
-            public boolean step(Configuration configuration) {
+            public boolean execute(Configuration configuration) {
                 RValue e = (RValue) this.getRootSemanticObject();
                 try {
                     e.evaluate((Memory) configuration.getConfigurationElement(memName));

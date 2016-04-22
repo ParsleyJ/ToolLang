@@ -49,14 +49,14 @@ public abstract class Program {
     }
 
     /**
-     * Executes the program and prints the track of execution and the configuration state at each step.
+     * Executes the program and prints the track of execution and the configuration state at each execute.
      * @param configurationElements the configuration elements
      */
     public void executeProgram(ConfigurationElement... configurationElements){
         Configuration configuration = new Configuration(configurationElements);
         printState(this, configuration);
 
-        while(!this.step(configuration)){
+        while(!this.execute(configuration)){
             printSepAndState(this, configuration);
         }
 
@@ -65,12 +65,12 @@ public abstract class Program {
     }
 
     /**
-     * Makes a computational step.
+     * Makes a computational execute.
      *
      * @param configuration the configuration
      * @return true if the program reached a "ended" state; false otherwise.
      */
-    public abstract boolean step(Configuration configuration);
+    public abstract boolean execute(Configuration configuration);
 
     public String getProgramName() {
         return programName;

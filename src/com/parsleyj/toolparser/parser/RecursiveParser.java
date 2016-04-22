@@ -42,6 +42,7 @@ public class RecursiveParser implements Parser {
         }
 
         public ParseTreeNode getNext() throws NoEnoughElementsException {
+            if(index >= nodes.size()) throw new NoEnoughElementsException();
             return nodes.get(index++);
         }
 
@@ -50,9 +51,14 @@ public class RecursiveParser implements Parser {
         }
 
         public List<ParseTreeNode> getNext(int howMany) throws NoEnoughElementsException {
+            if(index + howMany >= nodes.size()) throw new NoEnoughElementsException();
             List<ParseTreeNode> result = nodes.subList(index, index + howMany);
             index += howMany;
             return result;
+        }
+
+        public void pushFront(ParseTreeNode pts){
+            nodes.add(0, pts);
         }
 
         public int moveCursor(int offset) {
@@ -80,6 +86,11 @@ public class RecursiveParser implements Parser {
         }
 
         public ParseNodeStream subStreamUntilDelimiter(SyntaxCaseComponent delimiter) {
+            if(delimiter == null){
+                ParseNodeStream pns = new ParseNodeStream(nodes.subList(index, nodes.size()));
+                index = nodes.size();
+                return pns;
+            }
             for (int i = index; i < nodes.size(); ++i) {
                 if (nodes.get(i).isTerminal() ?
                         nodes.get(i).getTokenCategory().getSyntaxComponentName().equals(delimiter.getSyntaxComponentName()) :
@@ -90,6 +101,28 @@ public class RecursiveParser implements Parser {
                 }
             }
             return null;
+        }
+
+        public ParseNodeStream subStreamUntilDelimiterIncluded(SyntaxCaseComponent delimiter) {
+            if(delimiter == null){
+                ParseNodeStream pns = new ParseNodeStream(nodes.subList(index, nodes.size()));
+                index = nodes.size();
+                return pns;
+            }
+            for (int i = index; i < nodes.size(); ++i) {
+                if (nodes.get(i).isTerminal() ?
+                        nodes.get(i).getTokenCategory().getSyntaxComponentName().equals(delimiter.getSyntaxComponentName()) :
+                        nodes.get(i).getSyntaxClass().getSyntaxComponentName().equals(delimiter.getSyntaxComponentName())) {
+                    ParseNodeStream pns = new ParseNodeStream(nodes.subList(index, i+1));
+                    index = i+1;
+                    return pns;
+                }
+            }
+            return null;
+        }
+
+        public List<ParseTreeNode> toList() {
+            return nodes.subList(index, nodes.size());
         }
 
         public class NoEnoughElementsException extends Exception {
@@ -242,7 +275,12 @@ public class RecursiveParser implements Parser {
             }
         }
         List<ParseTreeNode> foundSequence = new ArrayList<>();
-        while (!ts.isEmpty() && (delimiter == null || !ts.peek().isTerminal() || !ts.peek().getTokenCategory().getTokenClassName().equals(delimiter.getTokenClassName()))) {
+        boolean foundSomething = true;
+        while (foundSomething && !ts.isEmpty() &&
+                        (delimiter == null ||
+                        !ts.peek().isTerminal() ||
+                        !ts.peek().getTokenCategory().getTokenClassName().equals(delimiter.getTokenClassName()))) {
+            foundSomething = false;
             ParseTreeNode first = ts.peek();
             //TODO: something wrong happens when (2)+1, after evaluating "(2)", he finds a "plus" and there are no candidates starting with "plus"
             //TODO: must this be: candidatesStartingWith(<allTheContentsOfFoundSequence>, etc...)?
@@ -258,20 +296,12 @@ public class RecursiveParser implements Parser {
                     for (int i = 0; i < structure.size(); i++) {
                         SyntaxCaseComponent component = structure.get(i);
 
-                        if (structure.size() == 1) { //todo: move to private method
-                            if (component.isTerminal()) {
-                                ParseTreeNode terminalNode = ts.getNext();
-                                if (!terminalNode.getTokenCategory().getTokenClassName().equals(component.getSyntaxComponentName())) {
-                                    found = false;
-                                    break;
-                                } else {
-                                    tmpSequence.add(terminalNode);
-                                    break;
-                                }
-                            } else {
-                                throw new InvalidSyntaxCaseDefinitionException();
-                            }
-                        } else if (i == 0) { //todo: move to private method
+                        if (structure.size() == 1) {
+                            found = findUniqueComponent(ts, tmpSequence, component);
+                            break;
+                        }
+
+                        if (i == 0) { //todo: move to private method
                             if (component.isTerminal()) {
                                 ParseTreeNode terminalNode = ts.getNext();
                                 if (!terminalNode.getTokenCategory().getTokenClassName().equals(component.getSyntaxComponentName())) {
@@ -346,6 +376,7 @@ public class RecursiveParser implements Parser {
                     found = false;
                 }
                 if (found) {
+                    foundSomething = true;
                     ts.commit();
                     ParseTreeNode ptn = newNonTerminalNode(candidate.getBelongingClass(), candidate, tmpSequence);
                     foundSequence.add(ptn);
@@ -354,6 +385,15 @@ public class RecursiveParser implements Parser {
                 }
             }
 
+        }
+        if(!foundSomething && !foundSequence.isEmpty()){
+            foundSequence.addAll(ts.subStreamUntilDelimiter(delimiter).toList()); //BUG TROVATO! subStreamUntilDelimiter non tiene conto del bilanciamento
+            if(delimiter!=null) {
+                foundSequence.add(ts.peek()); //adds the eventual delimiter without removing it from the original stream
+            }
+        }else if(!foundSomething){
+            ts.rollback();
+            throw newParseFailedException(Collections.emptyList());
         }
         if (foundSequence.size() == 1 && foundSequence.get(0).getSyntaxClass().isOrExtends(rootClass)) {
             ts.commit();
@@ -366,21 +406,25 @@ public class RecursiveParser implements Parser {
             } catch (ParseFailedException e) {
                 ts.rollback();
                 throw e;
-            }
-            /*SyntaxCase instanceCase = new SyntaxCase("", null, foundSequence.stream()
-                    .map(a -> a.isTerminal() ? a.getTokenCategory() : new SyntaxParsingInstance(a.getSyntaxClass(), a.getSyntaxCase()))
-                    .collect(Collectors.toList())
-                    .toArray(new SyntaxCaseComponent[foundSequence.size()]));
-            for (SyntaxCase sc : getAllSyntaxCasesForClass(rootClass)) {
-                if (Grammar.caseMatch(instanceCase, sc)) {
-                    ParseTreeNode ptn = newNonTerminalNode(rootClass, sc, foundSequence);
-                    ts.commit();
-                    return ptn;
-                }
+            } /*catch (ParseNodeStream.NoEnoughElementsException e) {
+                ts.rollback();
+                throw newParseFailedException(Collections.emptyList()); //TODO put a better found sequence
             }*/
         }
-        /*ts.rollback();
-        throw newParseFailedException(foundSequence);*/
+    }
+
+    private boolean findUniqueComponent(ParseNodeStream ts, List<ParseTreeNode> tmpSequence, SyntaxCaseComponent component) throws ParseNodeStream.NoEnoughElementsException {
+        if (component.isTerminal()) {
+            ParseTreeNode terminalNode = ts.getNext();
+            if (!terminalNode.getTokenCategory().getTokenClassName().equals(component.getSyntaxComponentName())) {
+                return false;
+            } else {
+                tmpSequence.add(terminalNode);
+                return true;
+            }
+        } else {
+            throw new InvalidSyntaxCaseDefinitionException();
+        }
     }
 
     private ParseFailedException newParseFailedException(List<ParseTreeNode> foundSequence) {
