@@ -21,11 +21,6 @@ public class RecursiveParser implements Parser {
     private SyntaxClass rootClass;
 
 
-    private enum Delta {
-        Only_T,
-        Mixed
-    }
-
     public RecursiveParser(Grammar grammar, SyntaxClass rootClass) {
         this.grammar = grammar;
         this.rootClass = rootClass;
@@ -150,34 +145,30 @@ public class RecursiveParser implements Parser {
 
     private ParseTreeNode recursiveDescentParse(ReversibleStream<ParseTreeNode> ts, TokenCategory delimiter, SyntaxClass rootClass) {
         ts.checkPoint();
-        if (ts.remainingCount() == 1 || (
-                        delimiter != null &&
-                        ts.remainingCount() > 1 &&
-                        ts.peek(1).isTerminal() &&
-                        ts.peek(1).getTokenCategory().getTokenClassName().equals(delimiter.getTokenClassName()))) {
-            if (!ts.peek().isTerminal() && ts.peek().getSyntaxClass().isOrExtends(rootClass)) {
-                try {
-                    ParseTreeNode ptn = ts.getNext();
-                    ts.commit();
-                    return ptn;
-                } catch (NoEnoughElementsException e) {
-                    ts.rollback();
-                    throw newParseFailedException(Collections.emptyList());
-                }
-            }
-        }
-        List<ParseTreeNode> foundSequence = new ArrayList<>();
         boolean foundSomething = true;
         while (foundSomething && !ts.isEmpty() &&
                         (delimiter == null ||
                         !ts.peek().isTerminal() ||
                         !ts.peek().getTokenCategory().getTokenClassName().equals(delimiter.getTokenClassName()))) {
+
+            if (ts.remainingCount() == 1 || (
+                    delimiter != null &&
+                            ts.remainingCount() > 1 &&
+                            ts.peek(1).isTerminal() &&
+                            ts.peek(1).getTokenCategory().getTokenClassName().equals(delimiter.getTokenClassName()))) {
+                if (!ts.peek().isTerminal() && ts.peek().getSyntaxClass().isOrExtends(rootClass)) {
+                    try {
+                        ParseTreeNode ptn = ts.getNext();
+                        ts.commit();
+                        return ptn;
+                    } catch (NoEnoughElementsException e) {
+                        ts.rollback();
+                        throw newParseFailedException(Collections.emptyList());
+                    }
+                }
+            }
             foundSomething = false;
             ParseTreeNode first = ts.peek();
-            //TODO: something wrong happens when (2)+1, after evaluating "(2)", he finds a "plus" and there are no candidates starting with "plus"
-            //TODO: must this be: candidatesStartingWith(<allTheContentsOfFoundSequence>, etc...)?
-            //TODO: or (maybe instead of using a "foundSequence") i have to repush to the stream the nodes just found?
-            //TODO: maybe here i should consider priority and associativity.
             List<SyntaxCase> candidates = PJ.reverse(candidatesStartingWith(first.isTerminal() ? first.getTokenCategory() : first.getSyntaxClass()));
             for (SyntaxCase candidate : candidates) {
                 List<ParseTreeNode> tmpSequence = new ArrayList<>();
@@ -273,17 +264,16 @@ public class RecursiveParser implements Parser {
                     foundSomething = true;
                     ts.commit();
                     ParseTreeNode ptn = newNonTerminalNode(candidate.getBelongingClass(), candidate, tmpSequence);
-                    foundSequence.add(ptn);
+                    //foundSequence.add(ptn);
+                    ts.pushFront(ptn);
                 } else {
                     ts.rollback();
                 }
             }
 
         }
-        if (foundSequence.size() == 1 && foundSequence.get(0).getSyntaxClass().isOrExtends(rootClass)) {
-            ts.commit();
-            return foundSequence.get(0);
-        } else throw newParseFailedException(foundSequence);
+        if(foundSomething) return recursiveDescentParse(ts, delimiter, rootClass);
+        else throw newParseFailedException(ts.toList());
     }
 
 

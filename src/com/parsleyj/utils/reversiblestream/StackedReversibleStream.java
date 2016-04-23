@@ -88,13 +88,18 @@ public class StackedReversibleStream <T> implements ReversibleStream<T> {
 
     @Override
     public ReversibleStream<T> subStreamUntilPredicate(Predicate<T> predicate) {
-        if(predicate == null) return new StackedReversibleStream<>(this.toList());
-        for(int i = 0; i < remainingCount(); ++i){
-            if(predicate.evaluate(this.peek(i))){
-                try {
-                    return new StackedReversibleStream<>(this.getNext(i));
-                } catch (NoEnoughElementsException e) {
-                    e.printStackTrace(); //this never happens
+        if(predicate == null) try {
+            return new StackedReversibleStream<>(this.getNext(remainingCount()));
+        } catch (NoEnoughElementsException e) {
+            e.printStackTrace(); //this never happens
+        }else {
+            for(int i = 0; i < remainingCount(); ++i){
+                if(predicate.evaluate(this.peek(i))){
+                    try {
+                        return new StackedReversibleStream<>(this.getNext(i));
+                    } catch (NoEnoughElementsException e) {
+                        e.printStackTrace(); //this never happens
+                    }
                 }
             }
         }
