@@ -11,4 +11,8 @@ public interface SyntaxCaseComponent {
 
     boolean isTerminal();
 
+    default boolean matches(SyntaxCaseComponent x){
+        return this.getSyntaxComponentName().equals(x.getSyntaxComponentName());
+    }
+
 }

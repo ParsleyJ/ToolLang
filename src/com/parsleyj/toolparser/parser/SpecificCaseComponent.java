@@ -34,4 +34,6 @@ public class SpecificCaseComponent implements SyntaxCaseComponent {
     public SyntaxCase getCas() {
         return cas;
     }
+
+
 }

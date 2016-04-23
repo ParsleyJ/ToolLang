@@ -31,7 +31,7 @@ public class TestMain {
 
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
                 ToolString::new);
-        TokenCategoryDefinition nullToken = new TokenCategoryDefinition("SKIP_KEYWORD", "\\Qnull\\E",
+        TokenCategoryDefinition nullToken = new TokenCategoryDefinition("NULL_KEYWORD", "\\Qnull\\E",
                 (g) -> BaseTypes.O_NULL);
         TokenCategoryDefinition trueToken = new TokenCategoryDefinition("TRUE_KEYWORD", "\\Qtrue\\E",
                 (g) -> new True());
@@ -272,7 +272,7 @@ public class TestMain {
         p.executeProgram(m);
     }
 
-    public static final boolean DEBUG_PRINTS = true;
+    public static final boolean DEBUG_PRINTS = false;
     public static void test2() {
         Program.VERBOSE = DEBUG_PRINTS;
         Scanner sc = new Scanner(System.in);
@@ -323,7 +323,7 @@ public class TestMain {
     private static ProgramGenerator getDefaultInterpreterMini() {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
                 ToolString::new);
-        TokenCategoryDefinition nullToken = new TokenCategoryDefinition("SKIP_KEYWORD", "\\Qnull\\E",
+        TokenCategoryDefinition nullToken = new TokenCategoryDefinition("NULL_KEYWORD", "\\Qnull\\E",
                 (g) -> BaseTypes.O_NULL);
         TokenCategoryDefinition trueToken = new TokenCategoryDefinition("TRUE_KEYWORD", "\\Qtrue\\E",
                 (g) -> new True());
@@ -395,6 +395,15 @@ public class TestMain {
         SyntaxCaseDefinition string = new SyntaxCaseDefinition(rExp, "string",
                 new SimpleWrapConverterMethod(),
                 stringToken);
+        SyntaxCaseDefinition identifier = new SyntaxCaseDefinition(lExp, "identifier", //THIS IS DEFINED HERE BUT ITS PRIORITY IS RIGHT BEFORE asteriskOperation
+                new SimpleWrapConverterMethod(),
+                identifierToken);
+        SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
+                (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
+                rExp, dotToken, new SpecificCaseComponent(lExp, identifier));
+        SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
+                (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                dotToken, new SpecificCaseComponent(lExp, identifier));
         SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
@@ -418,11 +427,29 @@ public class TestMain {
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "plus", b)),
                 rExp, plusToken, rExp);
+        SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",
+                (n, s) -> new IfThenElseStatement(s.convert(n.get(1)), s.convert(n.get(3)), s.convert(n.get(5))),
+                ifToken, rExp, thenToken, rExp, elseToken, rExp);
+        SyntaxCaseDefinition ifThenStatement = new SyntaxCaseDefinition(rExp, "ifThenStatement",
+                (n, s) -> new IfThenStatement(s.convert(n.get(1)), s.convert(n.get(3))),
+                ifToken, rExp, thenToken, rExp);
+        SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "ifThenStatement",
+                (n, s) -> new WhileStatement(s.convert(n.get(1)), s.convert(n.get(3))),
+                whileToken, rExp, doToken, rExp);
+        SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(lExp, "assignment",
+                (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
+                lExp, assignmentOperatorToken, rExp);
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
+                newVarDeclaration,
+                dotNotationField,
                 expressionBetweenRoundBrackets,
+                identifier,
                 asteriskOperation, slashOperation, percentSignOperation,
                 minusOperation, plusOperation,
+                ifThenElseStatement, ifThenStatement,
+                whileStatement,
+                assignment
         };
         return new ProgramGenerator(lexicon, grammar);
     }

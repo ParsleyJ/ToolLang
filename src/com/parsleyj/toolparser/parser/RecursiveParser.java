@@ -433,8 +433,8 @@ public class RecursiveParser implements Parser {
         PARSE_TREE_NODE_FACTORY = new ParseTreeNodeFactory();
         StackedReversibleStream<ParseTreeNode> ts = new StackedReversibleStream<>(
                 promoteHighPriorityTerminals(
-                        generateListFromToken(tokens, PARSE_TREE_NODE_FACTORY)))
-                .setDebug(System.err);
+                        generateListFromToken(tokens, PARSE_TREE_NODE_FACTORY)));
+                //.setDebug(System.err);
         return recursiveDescentParse(ts, null, null, rootClass);
     }
 
