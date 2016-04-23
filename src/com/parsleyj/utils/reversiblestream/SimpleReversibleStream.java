@@ -37,7 +37,7 @@ public class SimpleReversibleStream<T> implements ReversibleStream<T> {
     }
 
     @Override
-    public T getNext() throws NoEnoughElementsException {
+    public T popLeft() throws NoEnoughElementsException {
         if (index >= elements.size()) throw new NoEnoughElementsException(remainingCount(), index-elements.size());
         return elements.get(index++);
     }
@@ -45,7 +45,7 @@ public class SimpleReversibleStream<T> implements ReversibleStream<T> {
 
 
     @Override
-    public List<T> getNext(int howMany) throws NoEnoughElementsException {
+    public List<T> popLeft(int howMany) throws NoEnoughElementsException {
         if (index + howMany >= elements.size()) throw new NoEnoughElementsException(remainingCount(), howMany);
         List<T> result = elements.subList(index, index + howMany);
         index += howMany;
@@ -53,18 +53,18 @@ public class SimpleReversibleStream<T> implements ReversibleStream<T> {
     }
 
     @Override
-    public void pushFront(T element) {
+    public void pushLeft(T element) {
         elements.add(0, element);
     }
 
 
     @Override
-    public T peek() {
+    public T peekLeft() {
         return elements.get(index);
     }
 
     @Override
-    public T peek(int offset) {
+    public T peekLeft(int offset) {
         return elements.get(index + offset);
     }
 
@@ -83,7 +83,7 @@ public class SimpleReversibleStream<T> implements ReversibleStream<T> {
     }
 
     @Override
-    public ReversibleStream<T> subStreamUntilPredicate(Predicate<T> predicate) {
+    public ReversibleStream<T> leftSubStreamUntilPredicate(Predicate<T> predicate) {
         if (predicate == null) {
             SimpleReversibleStream<T> pns = new SimpleReversibleStream<>(elements.subList(index, elements.size()));
             index = elements.size();

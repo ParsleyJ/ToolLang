@@ -31,5 +31,10 @@ public class SyntaxCaseDefinition extends SyntaxCase {
         return converter;
     }
 
+    public SyntaxCaseDefinition parsingDirection(SyntaxCase.ParsingDirection parsingDirection){
+        setParsingDirection(parsingDirection);
+        return this;
+    }
+
 
 }

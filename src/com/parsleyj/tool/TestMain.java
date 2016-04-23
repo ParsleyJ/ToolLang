@@ -2,7 +2,9 @@ package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.toolparser.configuration.Configuration;
+import com.parsleyj.toolparser.parser.ParseFailedException;
 import com.parsleyj.toolparser.parser.SpecificCaseComponent;
+import com.parsleyj.toolparser.parser.SyntaxCase;
 import com.parsleyj.toolparser.parser.SyntaxClass;
 import com.parsleyj.toolparser.program.Program;
 import com.parsleyj.toolparser.program.ProgramGenerator;
@@ -298,18 +300,23 @@ public class TestMain {
 
             if (programString.equals("exit")) break;
 
-            Program prog = pg.generate("testParsed", programString, rExp, (p, c) -> {
-                RValue e = (RValue) p.getRootSemanticObject();
-                try {
-                    ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
-                    System.out.println("RESULT = " + to);
-                } catch (ToolInternalException e1) {
-                    if(DEBUG_PRINTS)e1.printStackTrace();
-                    System.err.println("Tool Exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
-                }
-                return true;
-            });
-            prog.executeProgram(m);
+            Program prog = null;
+            try {
+                prog = pg.generate("testParsed", programString, rExp, (p, c) -> {
+                    RValue e = (RValue) p.getRootSemanticObject();
+                    try {
+                        ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
+                        System.out.println("RESULT = " + to);
+                    } catch (ToolInternalException e1) {
+                        if (DEBUG_PRINTS) e1.printStackTrace();
+                        System.err.println("Tool Exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
+                    }
+                    return true;
+                });
+                prog.executeProgram(m);
+            } catch (Throwable t){
+                t.printStackTrace();
+            }
         }
     }
 
@@ -373,24 +380,54 @@ public class TestMain {
         };
 
 
-
+        SyntaxCaseDefinition nullLiteral = new SyntaxCaseDefinition(rExp, "nullLiteral",
+                new SimpleWrapConverterMethod(),
+                nullToken);
+        SyntaxCaseDefinition trueConst = new SyntaxCaseDefinition(rExp, "trueConst",
+                new SimpleWrapConverterMethod(),
+                trueToken);
+        SyntaxCaseDefinition falseConst = new SyntaxCaseDefinition(rExp, "falseConst",
+                new SimpleWrapConverterMethod(),
+                falseToken);
         SyntaxCaseDefinition numeral = new SyntaxCaseDefinition(rExp, "numeral",
                 new SimpleWrapConverterMethod(),
                 numeralToken);
+        SyntaxCaseDefinition string = new SyntaxCaseDefinition(rExp, "string",
+                new SimpleWrapConverterMethod(),
+                stringToken);
         SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "asterisk", b)),
+                rExp, asteriskToken, rExp);
+        SyntaxCaseDefinition slashOperation = new SyntaxCaseDefinition(rExp, "slashOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "slash", b)),
+                rExp, slashToken, rExp);
+        SyntaxCaseDefinition percentSignOperation = new SyntaxCaseDefinition(rExp, "percentSignOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "percentSign", b)),
+                rExp, percentSignToken, rExp);
+        SyntaxCaseDefinition minusOperation = new SyntaxCaseDefinition(rExp, "minusOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "minus", b)),
+                rExp, minusToken, rExp);
         SyntaxCaseDefinition plusOperation = new SyntaxCaseDefinition(rExp, "plusOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "plus", b)),
                 rExp, plusToken, rExp);
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
-                numeral,
+                nullLiteral, trueConst, falseConst, numeral, string,
                 expressionBetweenRoundBrackets,
-                plusOperation
+                asteriskOperation, slashOperation, percentSignOperation,
+                minusOperation, plusOperation,
         };
         return new ProgramGenerator(lexicon, grammar);
     }
+
+    //todo - this fails: (2+(4%(4/2)))*(5*4/2)/6
 
     public static void main(String[] args) {
         test2();

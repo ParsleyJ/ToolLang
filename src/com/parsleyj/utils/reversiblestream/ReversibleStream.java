@@ -15,22 +15,23 @@ public interface ReversibleStream<T> {
 
     void commit();
 
-    T getNext() throws NoEnoughElementsException;
+    void pushLeft(T element);
 
-    List<T> getNext(int howMany) throws NoEnoughElementsException;
+    T popLeft() throws NoEnoughElementsException;
 
-    void pushFront(T element);
+    List<T> popLeft(int howMany) throws NoEnoughElementsException;
 
-    T peek();
+    T peekLeft();
 
-    T peek(int offset);
+    T peekLeft(int offset);
+
+
 
     boolean isEmpty();
 
     int remainingCount();
 
-    ReversibleStream<T> subStreamUntilPredicate(Predicate<T> predicate);
-
+    ReversibleStream<T> leftSubStreamUntilPredicate(Predicate<T> predicate);
 
     List<T> toList();
 

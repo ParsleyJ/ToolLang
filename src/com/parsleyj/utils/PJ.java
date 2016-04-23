@@ -1,15 +1,17 @@
 package com.parsleyj.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Giuseppe on 18/04/16.
  * TODO: javadoc
  */
 public class PJ{
+
+    @SafeVarargs
+    public static <T> List<T> list(T... elements){
+        return Arrays.asList(elements);
+    }
 
     public static <T> List<T> reverse(List<T> l){
         List<T> result = new ArrayList<>(l);
