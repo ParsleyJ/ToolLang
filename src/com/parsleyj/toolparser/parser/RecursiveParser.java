@@ -34,7 +34,7 @@ public class RecursiveParser implements Parser {
                 promoteHighPriorityTerminals(
                         generateListFromToken(tokens, PARSE_TREE_NODE_FACTORY)));
         //.setDebug(System.err);
-        return recursiveDescentParse(ts, null, null, rootClass);
+        return recursiveDescentParse(ts, null, null, rootClass, null);
     }
 
     public class InvalidSyntaxCaseDefinitionException extends RuntimeException {
@@ -45,26 +45,31 @@ public class RecursiveParser implements Parser {
             DoubleSidedReversibleStream<ParseTreeNode> ts,
             TokenCategory leftDelimiter,
             TokenCategory rightDelimiter,
-            SyntaxClass rootClass) {
+            SyntaxClass rootClass,
+            SyntaxCase specificCase) {
         if (leftDelimiter != null && rightDelimiter != null)
             throw newParseFailedException(ts.toList());
 
         ts.checkPoint();
         boolean foundSomething = true;
-        boolean delimitersCheck =
-                (rightDelimiter == null || !ts.peekLeft().isTerminal() || !ts.peekLeft().getTokenCategory().matches(rightDelimiter)) &&
-                        (leftDelimiter == null || !ts.peekRight().isTerminal() || !ts.peekRight().getTokenCategory().matches(leftDelimiter));
-        while (foundSomething && !ts.isEmpty() && delimitersCheck) {
-
+        boolean enteredWhileFirstTime = false;
+        while (foundSomething && !ts.isEmpty() && delimitersCheck(ts, leftDelimiter, rightDelimiter)) {
+            enteredWhileFirstTime = true;
             if (oneNodeInStream(ts, leftDelimiter, rightDelimiter)) {
                 if ((leftDelimiter == null && rightDelimiter == null) ||
-                        (leftDelimiter!=null ? (
+                        (leftDelimiter != null ? (
                                 !ts.peekRight().isTerminal() && ts.peekRight().getSyntaxClass().isOrExtends(rootClass))
                                 : (!ts.peekLeft().isTerminal() && ts.peekLeft().getSyntaxClass().isOrExtends(rootClass)))) {
                     try {
                         ParseTreeNode ptn;
                         if (leftDelimiter != null) ptn = ts.popRight();
                         else ptn = ts.popLeft();
+                        if (specificCase != null) {
+                            if (!ptn.getSyntaxCase().getCaseName().equals(specificCase.getCaseName())) {
+                                ts.rollback();
+                                throw newParseFailedException(Collections.singletonList(ptn));
+                            }
+                        }
                         ts.commit();
                         return ptn;
                     } catch (NoEnoughElementsException e) {
@@ -73,25 +78,43 @@ public class RecursiveParser implements Parser {
                     }
                 }
             }
-            foundSomething = false;
-            List<SyntaxCase> candidates = findCandidates(ts);
-            for (SyntaxCase candidate : candidates) {
+            if (specificCase != null) {
+                if (specificCase.getParsingDirection() == SyntaxCase.ParsingDirection.LeftToRight) {
+                    foundSomething = leftToRightParse(ts, leftDelimiter, false, specificCase);
 
-                if (candidate.getParsingDirection() == SyntaxCase.ParsingDirection.LeftToRight) {
-                    foundSomething = leftToRightParse(ts, leftDelimiter, foundSomething, candidate);
+                } else if (specificCase.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
+                    foundSomething = rightToLeftParse(ts, rightDelimiter, false, specificCase);
 
-                } else if (candidate.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
-                    foundSomething = rightToLeftParse(ts, rightDelimiter, foundSomething, candidate);
+                }
+            } else {
+                foundSomething = false;
+                List<SyntaxCase> candidates = findCandidates(ts);
+                for (SyntaxCase candidate : candidates) {
 
+                    if (candidate.getParsingDirection() == SyntaxCase.ParsingDirection.LeftToRight) {
+                        foundSomething = leftToRightParse(ts, leftDelimiter, foundSomething, candidate);
+
+                    } else if (candidate.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
+                        foundSomething = rightToLeftParse(ts, rightDelimiter, foundSomething, candidate);
+
+                    }
                 }
             }
         }
-        if (foundSomething) return recursiveDescentParse(ts, leftDelimiter, rightDelimiter, rootClass);
+        if (foundSomething && enteredWhileFirstTime) {
+            return recursiveDescentParse(ts, leftDelimiter, rightDelimiter, rootClass, specificCase);
+        }
         else {
+            ts.rollback();
             List<ParseTreeNode> l = ts.toList();
-            if(l != null) throw newParseFailedException(ts.toList());
+            if (l != null) throw newParseFailedException(ts.toList());
             else throw newParseFailedException(new ArrayList<>());
         }
+    }
+
+    private boolean delimitersCheck(DoubleSidedReversibleStream<ParseTreeNode> ts, TokenCategory leftDelimiter, TokenCategory rightDelimiter) {
+        return (rightDelimiter == null || !ts.peekLeft().isTerminal() || !ts.peekLeft().getTokenCategory().matches(rightDelimiter)) &&
+                (leftDelimiter == null || !ts.peekRight().isTerminal() || !ts.peekRight().getTokenCategory().matches(leftDelimiter));
     }
 
     private boolean rightToLeftParse(DoubleSidedReversibleStream<ParseTreeNode> ts, TokenCategory rightDelimiter, boolean foundSomething, SyntaxCase candidate) {
@@ -102,13 +125,18 @@ public class RecursiveParser implements Parser {
             List<SyntaxCaseComponent> structure = candidate.getStructure();
             if (structure.size() == 1) {
                 found = findUniqueComponent(ts, tmpSequence, structure.get(0));
-            }else for (int i = 0; i < structure.size(); i++) {
+            } else for (int i = 0; i < structure.size(); i++) {
                 SyntaxCaseComponent component = structure.get(i);
+
+                SpecificCaseComponent specificCase = null;
+                if (component instanceof SpecificCaseComponent) {
+                    specificCase = (SpecificCaseComponent) component;
+                }
 
                 if (i == 0) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popLeft();
-                        if (!terminalNode.getTokenCategory().matches(component)) {
+                        if (terminalNode.isTerminal() && !terminalNode.getTokenCategory().matches(component)) {
                             found = false;
                             break;
                         } else {
@@ -123,7 +151,12 @@ public class RecursiveParser implements Parser {
                                     found = false;
                                     break;
                                 }
-                                ParseTreeNode node = recursiveDescentParse(pns, null, null, (SyntaxClass) component);
+                                ParseTreeNode node;
+                                if (specificCase != null) {
+                                    node = recursiveDescentParse(pns, null, null, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
+                                } else {
+                                    node = recursiveDescentParse(pns, null, null, (SyntaxClass) component, null);
+                                }
                                 tmpSequence.add(node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -136,7 +169,7 @@ public class RecursiveParser implements Parser {
                 } else if (i == structure.size() - 1) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popLeft();
-                        if (!terminalNode.getTokenCategory().matches(component)) {
+                        if (terminalNode.isTerminal() && !terminalNode.getTokenCategory().matches(component)) {
                             found = false;
                             break;
                         } else {
@@ -144,7 +177,12 @@ public class RecursiveParser implements Parser {
                         }
                     } else {
                         try {
-                            ParseTreeNode node = recursiveDescentParse(ts, null, rightDelimiter, (SyntaxClass) component);
+                            ParseTreeNode node;
+                            if (specificCase != null) {
+                                node = recursiveDescentParse(ts, null, null, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
+                            } else {
+                                node = recursiveDescentParse(ts, null, rightDelimiter, (SyntaxClass) component, null);
+                            }
                             tmpSequence.add(node);
                         } catch (ParseFailedException pfe) {
                             found = false;
@@ -154,7 +192,7 @@ public class RecursiveParser implements Parser {
                 } else {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popLeft();
-                        if (!terminalNode.getTokenCategory().matches(component)) {
+                        if (terminalNode.isTerminal() && !terminalNode.getTokenCategory().matches(component)) {
                             found = false;
                             break;
                         } else {
@@ -164,7 +202,12 @@ public class RecursiveParser implements Parser {
                         SyntaxCaseComponent nextComponent = structure.get(i + 1);
                         if (nextComponent.isTerminal()) {
                             try {
-                                ParseTreeNode node = recursiveDescentParse(ts, null, (TokenCategory) nextComponent, (SyntaxClass) component);
+                                ParseTreeNode node;
+                                if (specificCase != null) {
+                                    node = recursiveDescentParse(ts, null, (TokenCategory) nextComponent, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
+                                } else {
+                                    node = recursiveDescentParse(ts, null, (TokenCategory) nextComponent, (SyntaxClass) component, null);
+                                }
                                 tmpSequence.add(node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -201,10 +244,15 @@ public class RecursiveParser implements Parser {
             else for (int i = structure.size() - 1; i >= 0; --i) {
                 SyntaxCaseComponent component = structure.get(i);
 
+                SpecificCaseComponent specificCase = null;
+                if (component instanceof SpecificCaseComponent) {
+                    specificCase = (SpecificCaseComponent) component;
+                }
+
                 if (i == structure.size() - 1) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popRight();
-                        if (!terminalNode.getTokenCategory().matches(component)) {
+                        if (terminalNode.isTerminal() && !terminalNode.getTokenCategory().matches(component)) {
                             found = false;
                             break;
                         } else {
@@ -219,7 +267,12 @@ public class RecursiveParser implements Parser {
                                     found = false;
                                     break;
                                 }
-                                ParseTreeNode node = recursiveDescentParse(pns, null, null, (SyntaxClass) component);
+                                ParseTreeNode node;
+                                if(specificCase!=null){
+                                    node = recursiveDescentParse(pns, null, null, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
+                                }else{
+                                    node = recursiveDescentParse(pns, null, null, (SyntaxClass) component, null);
+                                }
                                 tmpSequence.add(0, node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -232,7 +285,7 @@ public class RecursiveParser implements Parser {
                 } else if (i == 0) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popRight();
-                        if (!terminalNode.getTokenCategory().matches(component)) {
+                        if (terminalNode.isTerminal() && !terminalNode.getTokenCategory().matches(component)) {
                             found = false;
                             break;
                         } else {
@@ -240,7 +293,12 @@ public class RecursiveParser implements Parser {
                         }
                     } else {
                         try {
-                            ParseTreeNode node = recursiveDescentParse(ts, leftDelimiter, null, (SyntaxClass) component);
+                            ParseTreeNode node;
+                            if (specificCase != null) {
+                                node = recursiveDescentParse(ts, leftDelimiter, null, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
+                            } else {
+                                node = recursiveDescentParse(ts, leftDelimiter, null, (SyntaxClass) component, null);
+                            }
                             tmpSequence.add(0, node);
                         } catch (ParseFailedException pfe) {
                             found = false;
@@ -250,7 +308,7 @@ public class RecursiveParser implements Parser {
                 } else {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popRight();
-                        if (!terminalNode.getTokenCategory().matches(component)) {
+                        if (terminalNode.isTerminal() && !terminalNode.getTokenCategory().matches(component)) {
                             found = false;
                             break;
                         } else {
@@ -260,7 +318,12 @@ public class RecursiveParser implements Parser {
                         SyntaxCaseComponent nextComponent = structure.get(i - 1);
                         if (nextComponent.isTerminal()) {
                             try {
-                                ParseTreeNode node = recursiveDescentParse(ts, (TokenCategory) nextComponent, null, (SyntaxClass) component);
+                                ParseTreeNode node;
+                                if (specificCase != null) {
+                                    node = recursiveDescentParse(ts, (TokenCategory) nextComponent, null, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
+                                } else {
+                                    node = recursiveDescentParse(ts, (TokenCategory) nextComponent, null, (SyntaxClass) component, null);
+                                }
                                 tmpSequence.add(0, node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -308,7 +371,10 @@ public class RecursiveParser implements Parser {
                     if (syntaxCase.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
                         for (int i = 0; i < leftComponents.size(); ++i) {
                             SyntaxCaseComponent component = leftComponents.get(i);
-                            if (!syntaxCase.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                            if(component instanceof SyntaxClass && syntaxCase.getStructure().get(i) instanceof SyntaxClass){
+                                if(!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(i)))
+                                    return false;
+                            } else if (!syntaxCase.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
                                 return false;
                             }
                         }
@@ -317,7 +383,11 @@ public class RecursiveParser implements Parser {
                     } else if (syntaxCase.getParsingDirection() == SyntaxCase.ParsingDirection.LeftToRight) {
                         for (int i = 0; i < rightComponents.size(); ++i) {
                             SyntaxCaseComponent component = rightComponents.get(i);
-                            if (!syntaxCase.getStructure().get(syntaxCase.getStructure().size()-1-i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                            int j =syntaxCase.getStructure().size() - 1 - i;
+                            if(component instanceof SyntaxClass && syntaxCase.getStructure().get(i) instanceof SyntaxClass){
+                                if(!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(j)))
+                                    return false;
+                            } else if (!syntaxCase.getStructure().get(j).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
                                 return false;
                             }
                         }
@@ -341,7 +411,6 @@ public class RecursiveParser implements Parser {
         ptn.setTerminal(true);
         return ptn;
     }
-
 
 
     private ParseTreeNode newNonTerminalNode(SyntaxClass cl, SyntaxCase cs, List<ParseTreeNode> children) {
@@ -378,7 +447,7 @@ public class RecursiveParser implements Parser {
                 ++start;
             }
             for (int i = start; i < result.size(); ++i)
-                result.add(result.get(i));
+                tmp.add(result.get(i));
 
             result = tmp;
         }
@@ -389,15 +458,15 @@ public class RecursiveParser implements Parser {
 
     private DoubleSidedReversibleStream<ParseTreeNode> getLeftSubStream(DoubleSidedReversibleStream<ParseTreeNode> ts, SyntaxCaseComponent nextComponent) {
         return (DoubleSidedReversibleStream<ParseTreeNode>) ts.leftSubStreamUntilPredicate((arg1) -> arg1.isTerminal() ?
-                arg1.getTokenCategory().matches(nextComponent):
+                arg1.getTokenCategory().matches(nextComponent) :
                 arg1.getSyntaxClass().matches(nextComponent));
     }
 
     private DoubleSidedReversibleStream<ParseTreeNode> getRightSubStream(DoubleSidedReversibleStream<ParseTreeNode> ts, SyntaxCaseComponent nextComponent) {
         return (DoubleSidedReversibleStream<ParseTreeNode>) ts.rightSubStreamUntilPredicate(
                 (arg1) -> arg1.isTerminal() ?
-                arg1.getTokenCategory().matches(nextComponent) :
-                arg1.getSyntaxClass().matches(nextComponent));
+                        arg1.getTokenCategory().matches(nextComponent) :
+                        arg1.getSyntaxClass().matches(nextComponent));
     }
 
     private boolean oneNodeInStream(DoubleSidedReversibleStream<ParseTreeNode> ts, TokenCategory leftDelimiter, TokenCategory rightDelimiter) {
@@ -425,7 +494,7 @@ public class RecursiveParser implements Parser {
     private boolean findUniqueComponent(ReversibleStream<ParseTreeNode> ts, List<ParseTreeNode> tmpSequence, SyntaxCaseComponent component) throws NoEnoughElementsException {
         if (component.isTerminal()) {
             ParseTreeNode terminalNode = ts.popLeft();
-            if (!terminalNode.getTokenCategory().matches(component)) {
+            if (terminalNode.isTerminal() && !terminalNode.getTokenCategory().matches(component)) {
                 return false;
             } else {
                 tmpSequence.add(terminalNode);

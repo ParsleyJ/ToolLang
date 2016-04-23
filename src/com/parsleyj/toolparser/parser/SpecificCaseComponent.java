@@ -27,11 +27,11 @@ public class SpecificCaseComponent implements SyntaxCaseComponent {
         return false;
     }
 
-    public SyntaxClass getClas() {
+    public SyntaxClass getSyntaxClass() {
         return clas;
     }
 
-    public SyntaxCase getCas() {
+    public SyntaxCase getSyntaxCase() {
         return cas;
     }
 
