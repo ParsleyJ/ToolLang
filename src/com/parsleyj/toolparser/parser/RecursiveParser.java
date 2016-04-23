@@ -46,15 +46,8 @@ public class RecursiveParser implements Parser {
             TokenCategory leftDelimiter,
             TokenCategory rightDelimiter,
             SyntaxClass rootClass) {
-        SyntaxCase.ParsingDirection previousParsingDirection;
         if (leftDelimiter != null && rightDelimiter != null)
             throw newParseFailedException(ts.toList());
-        else if (leftDelimiter != null)
-            previousParsingDirection = SyntaxCase.ParsingDirection.LeftToRight;
-        else if (rightDelimiter != null)
-            previousParsingDirection = SyntaxCase.ParsingDirection.RightToLeft;
-        else
-            previousParsingDirection = null;
 
         ts.checkPoint();
         boolean foundSomething = true;
@@ -64,8 +57,8 @@ public class RecursiveParser implements Parser {
         while (foundSomething && !ts.isEmpty() && delimitersCheck) {
 
             if (oneNodeInStream(ts, leftDelimiter, rightDelimiter)) {
-                if (previousParsingDirection == null ||
-                        (previousParsingDirection == SyntaxCase.ParsingDirection.LeftToRight ? (
+                if ((leftDelimiter == null && rightDelimiter == null) ||
+                        (leftDelimiter!=null ? (
                                 !ts.peekRight().isTerminal() && ts.peekRight().getSyntaxClass().isOrExtends(rootClass))
                                 : (!ts.peekLeft().isTerminal() && ts.peekLeft().getSyntaxClass().isOrExtends(rootClass)))) {
                     try {
@@ -83,11 +76,13 @@ public class RecursiveParser implements Parser {
             foundSomething = false;
             List<SyntaxCase> candidates = findCandidates(ts);
             for (SyntaxCase candidate : candidates) {
-                SyntaxCase.ParsingDirection currentParsingDirection = candidate.getParsingDirection();
-                if (currentParsingDirection == SyntaxCase.ParsingDirection.LeftToRight) {
+
+                if (candidate.getParsingDirection() == SyntaxCase.ParsingDirection.LeftToRight) {
                     foundSomething = leftToRightParse(ts, leftDelimiter, foundSomething, candidate);
-                } else if (currentParsingDirection == SyntaxCase.ParsingDirection.RightToLeft) {
+
+                } else if (candidate.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
                     foundSomething = rightToLeftParse(ts, rightDelimiter, foundSomething, candidate);
+
                 }
             }
         }
@@ -331,12 +326,6 @@ public class RecursiveParser implements Parser {
                 }).collect(Collectors.toList());
     }
 
-    private boolean areOnlyTerminals(List<ParseTreeNode> ptns) {
-        for (ParseTreeNode ptn : ptns)
-            if (!ptn.isTerminal()) return false;
-        return true;
-    }
-
 
     private boolean isOnlyTerminals(SyntaxCase sc) {
         for (SyntaxCaseComponent scc : sc.getStructure())
@@ -344,9 +333,6 @@ public class RecursiveParser implements Parser {
         return true;
     }
 
-    private boolean startsWithTerminal(SyntaxCase sc) {
-        return sc.getStructure().get(0).isTerminal();
-    }
 
     private ParseTreeNode newTerminalNode(Token t) {
         ParseTreeNode ptn = PARSE_TREE_NODE_FACTORY.newNodeTree();
@@ -431,7 +417,7 @@ public class RecursiveParser implements Parser {
     private List<SyntaxCase> findCandidates(DoubleSidedReversibleStream<ParseTreeNode> ts) {
         ParseTreeNode firstLeft = ts.peekLeft();
         ParseTreeNode firstRight = ts.peekRight();
-        return (List<SyntaxCase>) PJ.reverse(candidatesStartingWith(
+        return PJ.reverse(candidatesStartingWith(
                 firstLeft.isTerminal() ? PJ.list(firstLeft.getTokenCategory()) : PJ.list(firstLeft.getSyntaxClass()),
                 firstRight.isTerminal() ? PJ.list(firstRight.getTokenCategory()) : PJ.list(firstRight.getSyntaxClass())));
     }
@@ -449,7 +435,6 @@ public class RecursiveParser implements Parser {
             throw new InvalidSyntaxCaseDefinitionException();
         }
     }
-
 
     private ParseFailedException newParseFailedException(List<ParseTreeNode> foundSequence) {
         ParseTreeNode errorNode = PARSE_TREE_NODE_FACTORY.newNodeTree(foundSequence.toArray(new ParseTreeNode[foundSequence.size()]));
