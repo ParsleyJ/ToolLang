@@ -44,13 +44,13 @@ public class BaseTypes {
                 Visibility.Public,
                 "print",
                 new ParameterDefinition[]{
-                        new ParameterDefinition("x", C_INTEGER)
+                        new ParameterDefinition("x", C_OBJECT)
                 }, memory -> {
                     ToolObject x = memory.getObjectByIdentifier("x");
-                    if(x.getBelongingClass().isOrExtends(C_INTEGER)){
-                        System.out.println("PRINT: "+x.getPrintString());
+                    if(x.getBelongingClass().isOrExtends(C_OBJECT)){
+                        System.out.println(x.getPrintString());
                         return x;
-                    } else throw new BadMethodCallException("Something went wrong while attempting to call <Integer>.print(Integer)");
+                    } else throw new BadMethodCallException("Something went wrong while attempting to call Tool.print(Object)");
                 }
         ));
 

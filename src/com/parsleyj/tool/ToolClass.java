@@ -76,9 +76,9 @@ public class ToolClass extends ToolObject {
     }
 
     public boolean isOrExtends(ToolClass type) {
-        ToolClass tmp = type;
+        ToolClass tmp = this;
         while (tmp != null){
-            if(Objects.equals(this.getId(), tmp.getId())) return true;
+            if(Objects.equals(type.getId(), tmp.getId())) return true;
             tmp = tmp.getParentClass();
         }
         return false;

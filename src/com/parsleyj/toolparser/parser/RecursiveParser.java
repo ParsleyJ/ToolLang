@@ -371,6 +371,7 @@ public class RecursiveParser implements Parser {
                     if (syntaxCase.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
                         for (int i = 0; i < leftComponents.size(); ++i) {
                             SyntaxCaseComponent component = leftComponents.get(i);
+                            //noinspection Duplicates
                             if(component instanceof SyntaxClass && syntaxCase.getStructure().get(i) instanceof SyntaxClass){
                                 if(!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(i)))
                                     return false;
@@ -384,7 +385,8 @@ public class RecursiveParser implements Parser {
                         for (int i = 0; i < rightComponents.size(); ++i) {
                             SyntaxCaseComponent component = rightComponents.get(i);
                             int j =syntaxCase.getStructure().size() - 1 - i;
-                            if(component instanceof SyntaxClass && syntaxCase.getStructure().get(i) instanceof SyntaxClass){
+                            //noinspection Duplicates
+                            if(component instanceof SyntaxClass && syntaxCase.getStructure().get(j) instanceof SyntaxClass){
                                 if(!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(j)))
                                     return false;
                             } else if (!syntaxCase.getStructure().get(j).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {

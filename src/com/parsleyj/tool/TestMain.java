@@ -2,8 +2,6 @@ package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.toolparser.configuration.Configuration;
-import com.parsleyj.toolparser.parser.ParseFailedException;
-import com.parsleyj.toolparser.parser.SpecificCaseComponent;
 import com.parsleyj.toolparser.parser.SyntaxCase;
 import com.parsleyj.toolparser.parser.SyntaxClass;
 import com.parsleyj.toolparser.program.Program;
@@ -33,18 +31,16 @@ public class TestMain {
         m.pushScope();
 
         Program p = new Program("testNonParsed",
-                new Assignment(
-                        new Identifier("x"),
-                        new BinaryOperationMethodCall(
-                                new ToolInteger(1),
-                                "add",
-                                new ToolInteger(2)
-                        ))) {
+                new IfThenElseStatement(new False(),
+                        new ToolInteger(1),
+                        new IfThenStatement(new True(),
+                                new ToolInteger(2)))) {
             @Override
             public boolean execute(Configuration configuration) {
                 RValue e = (RValue) this.getRootSemanticObject();
                 try {
-                    e.evaluate((Memory) configuration.getConfigurationElement(memName));
+                    ToolObject to = e.evaluate((Memory) configuration.getConfigurationElement(memName));
+                    if (PRINT_RESULTS) System.out.println("RESULT = " + to);
                 } catch (ToolInternalException e1) {
                     e1.printStackTrace();
                     System.err.println("exception not handled of type " + e1.getExceptionObject().getBelongingClass() + ": " + e1.getExceptionObject().getExplain());
@@ -56,10 +52,11 @@ public class TestMain {
         p.executeProgram(m);
     }
 
-    public static final boolean DEBUG_PRINTS = false;
+    public static final boolean PRINT_DEBUG = true;
     public static final boolean MULTILINE = false;
+    public static final boolean PRINT_RESULTS = true;
     public static void test2() {
-        Program.VERBOSE = DEBUG_PRINTS;
+        Program.VERBOSE = PRINT_DEBUG;
         Scanner sc = new Scanner(System.in);
         String memName = "M";
         Memory m = new Memory(memName);
@@ -70,7 +67,7 @@ public class TestMain {
         m.addObjectToHeap(testString);
         BaseTypes.C_TOOL.addReferenceMember(new Reference("test", testString.getId()));
         ProgramGenerator pg = getDefaultInterpreterMini();
-        pg.setPrintDebugMessages(DEBUG_PRINTS);
+        pg.setPrintDebugMessages(PRINT_DEBUG);
         while (true) {
             StringBuilder sb = new StringBuilder();
             if(MULTILINE) {
@@ -95,9 +92,9 @@ public class TestMain {
                     RValue e = (RValue) p.getRootSemanticObject();
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
-                        System.out.println("RESULT = " + to);
+                        if (PRINT_RESULTS) System.out.println("RESULT = " + to);
                     } catch (ToolInternalException e1) {
-                        if (DEBUG_PRINTS) e1.printStackTrace();
+                        if (PRINT_DEBUG) e1.printStackTrace();
                         System.err.println("Tool Exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
                     }
                     return true;
@@ -110,13 +107,14 @@ public class TestMain {
     }
 
     private static SyntaxClass rExp = new SyntaxClass("rExp");
+
     private static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp
     private static SyntaxClass ident = new SyntaxClass("ident", lExp);
     private static SyntaxClass csel = new SyntaxClass("csel");
 
     private static ProgramGenerator getDefaultInterpreterMini() {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
-                ToolString::new);
+                ToolString::newFromLiteral);
         TokenCategoryDefinition nullToken = new TokenCategoryDefinition("NULL_KEYWORD", "\\Qnull\\E",
                 (g) -> BaseTypes.O_NULL);
         TokenCategoryDefinition trueToken = new TokenCategoryDefinition("TRUE_KEYWORD", "\\Qtrue\\E",
@@ -193,15 +191,33 @@ public class TestMain {
         SyntaxCaseDefinition identifier = new SyntaxCaseDefinition(ident, "identifier",
                 new SimpleWrapConverterMethod(),
                 identifierToken);
+        SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
+                (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
+                openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition functionCall0 = new SyntaxCaseDefinition(rExp, "functionCall0",
+                (n, s) -> new MethodCall(
+                        BaseTypes.C_TOOL,
+                        ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        new RValue[]{s.convert(n.get(2))}),
+                ident, openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition functionCall1 = new SyntaxCaseDefinition(rExp, "functionCall1",
+                (n, s) -> new MethodCall(
+                        BaseTypes.C_TOOL,
+                        ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        new RValue[]{s.convert(n.get(2))}),
+                ident, openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition functionCall2 = new SyntaxCaseDefinition(rExp, "functionCall2",
+                (n, s) -> new MethodCall(
+                        BaseTypes.C_TOOL,
+                        ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
+                ident, openRoundBracketToken, csel, closedRoundBracketToken);
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, ident);
         SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
                 (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, dotToken, ident);
-        SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
-                (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
-                openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "asterisk", b)),
@@ -222,29 +238,50 @@ public class TestMain {
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "plus", b)),
                 rExp, plusToken, rExp);
+        SyntaxCaseDefinition arrayLiteral = new SyntaxCaseDefinition(rExp, "arrayLiteral",
+                (n, s) -> (RValue) m -> {
+                    CommaSeparatedExpressionList cselist = s.convert(n.get(1));
+                    return cselist.generateToolList(m);
+                },
+                openSquareBracketToken, csel, closedSquareBracketToken);
         SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",
                 (n, s) -> new IfThenElseStatement(s.convert(n.get(1)), s.convert(n.get(3)), s.convert(n.get(5))),
-                ifToken, rExp, thenToken, rExp, elseToken, rExp);
+                ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
         SyntaxCaseDefinition ifThenStatement = new SyntaxCaseDefinition(rExp, "ifThenStatement",
                 (n, s) -> new IfThenStatement(s.convert(n.get(1)), s.convert(n.get(3))),
-                ifToken, rExp, thenToken, rExp);
-        SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "ifThenStatement",
+                ifToken, rExp, thenToken, rExp).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
+        SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "whileStatement",
                 (n, s) -> new WhileStatement(s.convert(n.get(1)), s.convert(n.get(3))),
                 whileToken, rExp, doToken, rExp);
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(lExp, "assignment",
                 (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
                 lExp, assignmentOperatorToken, rExp);
+        SyntaxCaseDefinition commaSeparatedExpressionListBase = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListBase",
+                new UBOConverterMethod<CommaSeparatedExpressionList, RValue, RValue>(CommaSeparatedExpressionList::new),
+                rExp, commaToken, rExp);
+        SyntaxCaseDefinition commaSeparatedExpressionListStep = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListStep",
+                new UBOConverterMethod<CommaSeparatedExpressionList, CommaSeparatedExpressionList, RValue>(CommaSeparatedExpressionList::new),
+                csel, commaToken, rExp);
+        SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
+                new CBOConverterMethod<RValue>(SequentialComposition::new),
+                rExp, semicolonToken, rExp);
+
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
                 identifier,
+                expressionBetweenRoundBrackets,
+                functionCall0, functionCall1, functionCall2,
                 newVarDeclaration,
                 dotNotationField,
-                expressionBetweenRoundBrackets,
                 asteriskOperation, slashOperation, percentSignOperation,
                 minusOperation, plusOperation,
+                arrayLiteral,
                 ifThenElseStatement, ifThenStatement,
                 whileStatement,
-                assignment
+                assignment,
+                commaSeparatedExpressionListBase,
+                commaSeparatedExpressionListStep,
+                sequentialComposition
         };
         return new ProgramGenerator(lexicon, grammar);
     }
