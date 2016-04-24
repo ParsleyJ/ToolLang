@@ -214,7 +214,7 @@ public class TestMain {
                 ident, openRoundBracketToken, csel, closedRoundBracketToken);
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                dotToken, ident);
+                dotToken, ident).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
         SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
                 (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, dotToken, ident);
@@ -253,9 +253,9 @@ public class TestMain {
         SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "whileStatement",
                 (n, s) -> new WhileStatement(s.convert(n.get(1)), s.convert(n.get(3))),
                 whileToken, rExp, doToken, rExp);
-        SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(lExp, "assignment",
+        SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
                 (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
-                lExp, assignmentOperatorToken, rExp);
+                lExp, assignmentOperatorToken, rExp).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
         SyntaxCaseDefinition commaSeparatedExpressionListBase = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListBase",
                 new UBOConverterMethod<CommaSeparatedExpressionList, RValue, RValue>(CommaSeparatedExpressionList::new),
                 rExp, commaToken, rExp);
