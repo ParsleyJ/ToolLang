@@ -179,7 +179,7 @@ public class RecursiveParser implements Parser {
                         try {
                             ParseTreeNode node;
                             if (specificCase != null) {
-                                node = recursiveDescentParse(ts, null, null, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
+                                node = recursiveDescentParse(ts, null, rightDelimiter, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
                             } else {
                                 node = recursiveDescentParse(ts, null, rightDelimiter, (SyntaxClass) component, null);
                             }
@@ -367,7 +367,7 @@ public class RecursiveParser implements Parser {
     private List<SyntaxCase> candidatesStartingWith(List<SyntaxCaseComponent> leftComponents, List<SyntaxCaseComponent> rightComponents) {
         return grammar.getPriorityCaseList().stream()
                 .map(Pair::getSecond)
-                .filter(syntaxCase -> {
+                .filter(syntaxCase -> {//todo: maybe bug: if assignment is r-t-l, in .x = 2 assignment does not get chosen as candidate
                     if (syntaxCase.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
                         for (int i = 0; i < leftComponents.size(); ++i) {
                             SyntaxCaseComponent component = leftComponents.get(i);
