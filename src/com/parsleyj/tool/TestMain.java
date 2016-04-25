@@ -212,6 +212,15 @@ public class TestMain {
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
                 ident, openRoundBracketToken, csel, closedRoundBracketToken);
+        SyntaxCaseDefinition arrayLiteral = new SyntaxCaseDefinition(rExp, "arrayLiteral",
+                (n, s) -> (RValue) m -> {
+                    CommaSeparatedExpressionList cselist = s.convert(n.get(1));
+                    return cselist.generateToolList(m);
+                },
+                openSquareBracketToken, csel, closedSquareBracketToken);
+        /*SyntaxCaseDefinition arraySubscription = new SyntaxCaseDefinition(rExp, "arraySubscription",
+                (),
+                rExp, openSquareBracketToken, csel, closedSquareBracketToken);*/
         SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
                 (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, dotToken, ident);
@@ -238,12 +247,6 @@ public class TestMain {
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "plus", b)),
                 rExp, plusToken, rExp);
-        SyntaxCaseDefinition arrayLiteral = new SyntaxCaseDefinition(rExp, "arrayLiteral",
-                (n, s) -> (RValue) m -> {
-                    CommaSeparatedExpressionList cselist = s.convert(n.get(1));
-                    return cselist.generateToolList(m);
-                },
-                openSquareBracketToken, csel, closedSquareBracketToken);
         SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",
                 (n, s) -> new IfThenElseStatement(s.convert(n.get(1)), s.convert(n.get(3)), s.convert(n.get(5))),
                 ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);

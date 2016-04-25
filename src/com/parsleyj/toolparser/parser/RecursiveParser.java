@@ -79,6 +79,7 @@ public class RecursiveParser implements Parser {
                 }
             }
             if (specificCase != null) {
+
                 if (specificCase.getParsingDirection() == SyntaxCase.ParsingDirection.LeftToRight) {
                     foundSomething = leftToRightParse(ts, leftDelimiter, false, specificCase);
 
@@ -87,6 +88,16 @@ public class RecursiveParser implements Parser {
 
                 }
             } else {
+                //TODO: BUG: "if 1+1 then 1" cannot be parsed because "if E then E else E" is rtl, while "E + E" is trl and there are other things on the right when sub-parsing.
+                //TODO: possible solution:
+                // The recursive function must accept a "previousDirection" argument.
+                // When the previousDirection is different from the direction of the current candidate, a "search for delimiter" algorithm must
+                // start, which removes from a safe copy the stream all the things after the delimiter.
+                // The delimiter must be the right one, so the recursive function must have an additional "skipDelimiter" argument in order to
+                // not consider delimiters of sub expressions.
+                // Then the ltrParse or rtlParse function can be called on the safe copy of the stream.
+                // UPDATE: the skipDelimiter, sadly, is not the only one of the caller's candidate. All "previous delimiters" of all the higher
+                // syntax cases in which the searched delimiter appears should be used too.
                 foundSomething = false;
                 List<SyntaxCase> candidates = findCandidates(ts);
                 for (SyntaxCase candidate : candidates) {
@@ -103,8 +114,7 @@ public class RecursiveParser implements Parser {
         }
         if (foundSomething && enteredWhileFirstTime) {
             return recursiveDescentParse(ts, leftDelimiter, rightDelimiter, rootClass, specificCase);
-        }
-        else {
+        } else {
             ts.rollback();
             List<ParseTreeNode> l = ts.toList();
             if (l != null) throw newParseFailedException(ts.toList());
@@ -268,9 +278,9 @@ public class RecursiveParser implements Parser {
                                     break;
                                 }
                                 ParseTreeNode node;
-                                if(specificCase!=null){
+                                if (specificCase != null) {
                                     node = recursiveDescentParse(pns, null, null, specificCase.getSyntaxClass(), specificCase.getSyntaxCase());
-                                }else{
+                                } else {
                                     node = recursiveDescentParse(pns, null, null, (SyntaxClass) component, null);
                                 }
                                 tmpSequence.add(0, node);
@@ -367,34 +377,32 @@ public class RecursiveParser implements Parser {
     private List<SyntaxCase> candidatesStartingWith(List<SyntaxCaseComponent> leftComponents, List<SyntaxCaseComponent> rightComponents) {
         return grammar.getPriorityCaseList().stream()
                 .map(Pair::getSecond)
-                .filter(syntaxCase -> {//todo: maybe bug: if assignment is r-t-l, in .x = 2 assignment does not get chosen as candidate
-                    if (syntaxCase.getParsingDirection() == SyntaxCase.ParsingDirection.RightToLeft) {
-                        for (int i = 0; i < leftComponents.size(); ++i) {
-                            SyntaxCaseComponent component = leftComponents.get(i);
-                            //noinspection Duplicates
-                            if(component instanceof SyntaxClass && syntaxCase.getStructure().get(i) instanceof SyntaxClass){
-                                if(!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(i)))
-                                    return false;
-                            } else if (!syntaxCase.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
-                                return false;
-                            }
+                .filter(syntaxCase -> {
+                    boolean left = true;
+                    for (int i = 0; i < leftComponents.size(); ++i) {
+                        SyntaxCaseComponent component = leftComponents.get(i);
+                        //noinspection Duplicates
+                        if (component instanceof SyntaxClass && syntaxCase.getStructure().get(i) instanceof SyntaxClass) {
+                            if (!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(i)))
+                                left = false;
+                        } else if (!syntaxCase.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                            left = false;
                         }
-                        return true;
+                    }
+                    if(left) return true;
 
-                    } else if (syntaxCase.getParsingDirection() == SyntaxCase.ParsingDirection.LeftToRight) {
-                        for (int i = 0; i < rightComponents.size(); ++i) {
-                            SyntaxCaseComponent component = rightComponents.get(i);
-                            int j =syntaxCase.getStructure().size() - 1 - i;
-                            //noinspection Duplicates
-                            if(component instanceof SyntaxClass && syntaxCase.getStructure().get(j) instanceof SyntaxClass){
-                                if(!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(j)))
-                                    return false;
-                            } else if (!syntaxCase.getStructure().get(j).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                    for (int i = 0; i < rightComponents.size(); ++i) {
+                        SyntaxCaseComponent component = rightComponents.get(i);
+                        int j = syntaxCase.getStructure().size() - 1 - i;
+                        //noinspection Duplicates
+                        if (component instanceof SyntaxClass && syntaxCase.getStructure().get(j) instanceof SyntaxClass) {
+                            if (!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(j)))
                                 return false;
-                            }
+                        } else if (!syntaxCase.getStructure().get(j).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                            return false;
                         }
-                        return true;
-                    } else return false;
+                    }
+                    return true;
                 }).collect(Collectors.toList());
     }
 
@@ -495,19 +503,21 @@ public class RecursiveParser implements Parser {
     }
 
 
-    private boolean streamContainsTerminals(List<? extends SyntaxCaseComponent> terminals, List<ParseTreeNode> sequence){
+    private boolean streamContainsTerminals(List<? extends SyntaxCaseComponent> terminals, List<ParseTreeNode> sequence) {
         //todo (OOO) other improvements can be done:
         //todo  - by checking the exact number of instances of the terminal
         //todo  - by checking the exact order in which the terminals appear
-        for(SyntaxCaseComponent scc:terminals){
-            if(!scc.isTerminal()) throw new RuntimeException("streamContainsTerminals accepts a list of terminals only as first parameter");
+        //todo  - by concurrently calling this method in multithreading
+        for (SyntaxCaseComponent scc : terminals) {
+            if (!scc.isTerminal())
+                throw new RuntimeException("streamContainsTerminals accepts a list of terminals only as first parameter");
             boolean isPresent = false;
-            for(ParseTreeNode ptn: sequence)
-                if(ptn.isTerminal() && ptn.getTokenCategory().matches(scc)){
+            for (ParseTreeNode ptn : sequence)
+                if (ptn.isTerminal() && ptn.getTokenCategory().matches(scc)) {
                     isPresent = true;
                     break;
                 }
-            if(!isPresent) return false;
+            if (!isPresent) return false;
         }
         return true;
     }
