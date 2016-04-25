@@ -88,7 +88,8 @@ public class RecursiveParser implements Parser {
 
                 }
             } else {
-                //TODO: BUG: "if 1+1 then 1" cannot be parsed because "if E then E else E" is rtl, while "E + E" is trl and there are other things on the right when sub-parsing.
+                //TODO: BUG: "if 1+1 then 1" cannot be parsed because "if E then E else E" is rtl, while "E + E" is ltr and there are other
+                //todo:      things on the right in the stream when sub-parsing.
                 //TODO: possible solution:
                 // The recursive function must accept a "previousDirection" argument.
                 // When the previousDirection is different from the direction of the current candidate, a "search for delimiter" algorithm must
