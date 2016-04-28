@@ -41,7 +41,6 @@ public class RecursiveParser implements Parser {
     public class InvalidSyntaxCaseDefinitionException extends RuntimeException {
     }
 
-    //todo BUG: (2*3+(4+1)) ---> 11 ; 2*3+(4+1) ---> 16???
     private ParseTreeNode recursiveDescentParse(
             DoubleSidedReversibleStream<ParseTreeNode> ts,
             TokenCategory leftDelimiter,
