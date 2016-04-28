@@ -284,11 +284,11 @@ public class TestMain {
         SyntaxCaseDefinition logicalAndOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "logicalAnd", b)),
-                rExp, equalsOperatorToken, rExp);
-        SyntaxCaseDefinition logicalOrOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
+                rExp, andOperatorToken, rExp);
+        SyntaxCaseDefinition logicalOrOperation = new SyntaxCaseDefinition(rExp, "logicalOrOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "logicalOr", b)),
-                rExp, equalsOperatorToken, rExp);
+                rExp, orOperatorToken, rExp);
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
                 (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
                 lExp, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);

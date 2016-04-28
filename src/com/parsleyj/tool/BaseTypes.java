@@ -57,6 +57,9 @@ public class BaseTypes {
         C_INTEGER.addInstanceMethods(ToolInteger.getNativeInstanceMethods());
         C_INTEGER.addClassMethods(ToolInteger.getNativeClassMethods());
 
+        C_BOOLEAN.addInstanceMethods(ToolBoolean.getNativeInstanceMethods());
+        C_BOOLEAN.addClassMethods(ToolBoolean.getNativeClassMethods());
+
         C_CLASS.getInstanceMethodTable().add(new ToolMethod(
                 Visibility.Public,
                 "_create_", new ParameterDefinition[]{}, memory -> {
