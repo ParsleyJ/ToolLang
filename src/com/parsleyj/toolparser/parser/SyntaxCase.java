@@ -2,7 +2,6 @@ package com.parsleyj.toolparser.parser;
 
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,8 +14,6 @@ import java.util.stream.Collectors;
  * by a {@link SyntaxCase}.
  */
 public class SyntaxCase{
-
-    public enum ParsingDirection {LeftToRight, RightToLeft}
 
     private String caseName;
     private List<SyntaxCaseComponent> structure;

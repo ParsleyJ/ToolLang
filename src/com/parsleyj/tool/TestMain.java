@@ -2,7 +2,7 @@ package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.toolparser.configuration.Configuration;
-import com.parsleyj.toolparser.parser.SyntaxCase;
+import com.parsleyj.toolparser.parser.ParsingDirection;
 import com.parsleyj.toolparser.parser.SyntaxClass;
 import com.parsleyj.toolparser.program.Program;
 import com.parsleyj.toolparser.program.ProgramGenerator;
@@ -226,7 +226,7 @@ public class TestMain {
                 rExp, dotToken, ident);
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                dotToken, ident).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
+                dotToken, ident).parsingDirection(ParsingDirection.RightToLeft);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "asterisk", b)),
@@ -249,13 +249,13 @@ public class TestMain {
                 rExp, plusToken, rExp);
         SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",
                 (n, s) -> new IfThenElseStatement(s.convert(n.get(1)), s.convert(n.get(3)), s.convert(n.get(5))),
-                ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
+                ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(ParsingDirection.RightToLeft);
         SyntaxCaseDefinition ifThenStatement = new SyntaxCaseDefinition(rExp, "ifThenStatement",
                 (n, s) -> new IfThenStatement(s.convert(n.get(1)), s.convert(n.get(3))),
-                ifToken, rExp, thenToken, rExp).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
+                ifToken, rExp, thenToken, rExp).parsingDirection(ParsingDirection.RightToLeft);
         SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "whileStatement",
                 (n, s) -> new WhileStatement(s.convert(n.get(1)), s.convert(n.get(3))),
-                whileToken, rExp, doToken, rExp).parsingDirection(SyntaxCase.ParsingDirection.RightToLeft);
+                whileToken, rExp, doToken, rExp).parsingDirection(ParsingDirection.RightToLeft);
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
                 (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
                 lExp, assignmentOperatorToken, rExp);
