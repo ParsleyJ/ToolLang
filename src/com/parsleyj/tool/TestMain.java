@@ -10,6 +10,7 @@ import com.parsleyj.toolparser.program.SyntaxCaseDefinition;
 import com.parsleyj.toolparser.program.TokenCategoryDefinition;
 import com.parsleyj.toolparser.semanticsconverter.CBOConverterMethod;
 import com.parsleyj.toolparser.semanticsconverter.UBOConverterMethod;
+import com.parsleyj.toolparser.tokenizer.Token;
 import com.parsleyj.utils.SimpleWrapConverterMethod;
 
 import java.util.Scanner;
@@ -132,6 +133,7 @@ public class TestMain {
         TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
                 Identifier::new);
         TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
+        TokenCategoryDefinition exclamationPointToken = new TokenCategoryDefinition("EXCLAMATION_POINT", "\\Q!\\E");
         TokenCategoryDefinition commaToken = new TokenCategoryDefinition("COMMA", "\\Q,\\E");
         TokenCategoryDefinition plusToken = new TokenCategoryDefinition("PLUS", "\\Q+\\E");
         TokenCategoryDefinition minusToken = new TokenCategoryDefinition("MINUS", "\\Q-\\E");
@@ -141,10 +143,11 @@ public class TestMain {
         TokenCategoryDefinition getBlockDefinitionOperatorToken = new TokenCategoryDefinition("GET_BLOCK_DEFINITION_OPERATOR", "\\Q&\\E");
         TokenCategoryDefinition assignmentOperatorToken = new TokenCategoryDefinition("ASSIGNMENT_OPERATOR", "\\Q=\\E");
         TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
+        TokenCategoryDefinition notEqualsOperatorToken = new TokenCategoryDefinition("NOT_EQUALS_OPERATOR", "\\Q!=\\E");
         TokenCategoryDefinition greaterOperatorToken = new TokenCategoryDefinition("GREATER_OPERATOR", "\\Q>\\E");
-        TokenCategoryDefinition equalGreaterOperatorToken = new TokenCategoryDefinition("EQUAL_GREATER_OPERATOR", "\\Q=>\\E");
+        TokenCategoryDefinition equalGreaterOperatorToken = new TokenCategoryDefinition("EQUAL_GREATER_OPERATOR", "\\Q>=\\E");
         TokenCategoryDefinition lessOperatorToken = new TokenCategoryDefinition("LESS_OPERATOR", "\\Q<\\E");
-        TokenCategoryDefinition equalLessOperatorToken = new TokenCategoryDefinition("EQUAL_LESS_OPERATOR", "\\Q=<\\E");
+        TokenCategoryDefinition equalLessOperatorToken = new TokenCategoryDefinition("EQUAL_LESS_OPERATOR", "\\Q<=\\E");
         TokenCategoryDefinition semicolonToken = new TokenCategoryDefinition("SEMICOLON", "\\Q;\\E");
         TokenCategoryDefinition openRoundBracketToken = new TokenCategoryDefinition("OPEN_ROUND_BRACKET", "\\Q(\\E");
         TokenCategoryDefinition closedRoundBracketToken = new TokenCategoryDefinition("CLOSED_ROUND_BRACKET", "\\Q)\\E");
@@ -231,6 +234,9 @@ public class TestMain {
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, ident).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
+                (n, s) -> new PrefixUnaryOperationMethodCall("logicalNot", s.convert(n.get(1))), //TODO: use symbol inspired method names OR special conventional names (like _operator_)
+                exclamationPointToken, rExp);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "asterisk", b)),
@@ -251,6 +257,41 @@ public class TestMain {
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "plus", b)),
                 rExp, plusToken, rExp);
+        SyntaxCaseDefinition greaterOperation = new SyntaxCaseDefinition(rExp, "greaterOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "greater", b)),
+                rExp, greaterOperatorToken, rExp);
+        SyntaxCaseDefinition equalGreaterOperation = new SyntaxCaseDefinition(rExp, "equalGreaterOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "equalsOrGreater", b)),
+                rExp, equalGreaterOperatorToken, rExp);
+        SyntaxCaseDefinition lessOperation = new SyntaxCaseDefinition(rExp, "lessOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "less", b)),
+                rExp, lessOperatorToken, rExp);
+        SyntaxCaseDefinition equalLessOperation = new SyntaxCaseDefinition(rExp, "equalLessOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "equalsOrLess", b)),
+                rExp, equalLessOperatorToken, rExp);
+        SyntaxCaseDefinition equalsOperation = new SyntaxCaseDefinition(rExp, "equalsOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "equals", b)),
+                rExp, equalsOperatorToken, rExp);
+        SyntaxCaseDefinition notEqualsOperation = new SyntaxCaseDefinition(rExp, "notEqualsOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "notEquals", b)),
+                rExp, notEqualsOperatorToken, rExp);
+        SyntaxCaseDefinition logicalAndOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "logicalAnd", b)),
+                rExp, equalsOperatorToken, rExp);
+        SyntaxCaseDefinition logicalOrOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "logicalOr", b)),
+                rExp, equalsOperatorToken, rExp);
+        SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
+                (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
+                lExp, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",
                 (n, s) -> new IfThenElseStatement(s.convert(n.get(1)), s.convert(n.get(3)), s.convert(n.get(5))),
                 ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(Associativity.RightToLeft);
@@ -260,9 +301,6 @@ public class TestMain {
         SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "whileStatement",
                 (n, s) -> new WhileStatement(s.convert(n.get(1)), s.convert(n.get(3))),
                 whileToken, rExp, doToken, rExp).parsingDirection(Associativity.RightToLeft);
-        SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
-                (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
-                lExp, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition commaSeparatedExpressionListBase = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListBase",
                 new UBOConverterMethod<CommaSeparatedExpressionList, RValue, RValue>(CommaSeparatedExpressionList::new),
                 rExp, commaToken, rExp);
@@ -280,8 +318,14 @@ public class TestMain {
                 functionCall0, functionCall1, functionCall2,
                 dotNotationField,
                 newVarDeclaration,
+                logicalNotOperation,
                 asteriskOperation, slashOperation, percentSignOperation,
                 minusOperation, plusOperation,
+                greaterOperation, equalGreaterOperation,
+                lessOperation, equalLessOperation,
+                equalsOperation, notEqualsOperation,
+                logicalAndOperation,
+                logicalOrOperation,
                 arrayLiteral,
                 ifThenElseStatement, ifThenStatement,
                 whileStatement,
