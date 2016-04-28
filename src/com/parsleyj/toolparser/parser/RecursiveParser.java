@@ -35,10 +35,7 @@ public class RecursiveParser implements Parser {
                 promoteHighPriorityTerminals(
                         generateListFromToken(tokens)));
         //.setDebug(System.err);
-        return recursiveDescentParse(
-                ts, null, null,
-                rootClass, null, null
-        );
+        return recursiveDescentParse(ts, null, null, rootClass);
     }
 
     public class InvalidSyntaxCaseDefinitionException extends RuntimeException {
@@ -46,12 +43,10 @@ public class RecursiveParser implements Parser {
 
     //todo BUG: (2*3+(4+1)) ---> 11 ; 2*3+(4+1) ---> 16???
     private ParseTreeNode recursiveDescentParse(
-            @NotNull DoubleSidedReversibleStream<ParseTreeNode> ts,
+            DoubleSidedReversibleStream<ParseTreeNode> ts,
             TokenCategory leftDelimiter,
             TokenCategory rightDelimiter,
-            @NotNull SyntaxClass rootClass,
-            Associativity previousAssociativity,
-            TokenCategory skipDelimiter) {
+            @NotNull SyntaxClass rootClass) {
         if (leftDelimiter != null && rightDelimiter != null)
             throw newParseFailedException(ts.toList());
 
@@ -83,29 +78,16 @@ public class RecursiveParser implements Parser {
             for (SyntaxCase candidate : candidates) {
 
                 if (candidate.getAssociativity() == Associativity.LeftToRight) {
-                    if(previousAssociativity == null || skipDelimiter == null || candidate.getAssociativity() == previousAssociativity) {
-                        foundSomething = leftToRightParse(ts, leftDelimiter, foundSomething, candidate);
-                    }else{
-                        DoubleSidedReversibleStream<ParseTreeNode> subStream = generateSubExpressionStream(ts, Associativity.LeftToRight, skipDelimiter, rightDelimiter);
-                        foundSomething = leftToRightParse(subStream, null, foundSomething, candidate);
-                        if(foundSomething)
-                            return ts.peekRight();
-                    }
+                    foundSomething = leftToRightParse(ts, leftDelimiter, foundSomething, candidate);
+
                 } else if (candidate.getAssociativity() == Associativity.RightToLeft) {
-                    if(previousAssociativity == null || skipDelimiter == null || candidate.getAssociativity() == previousAssociativity) {
-                        foundSomething = rightToLeftParse(ts, rightDelimiter, foundSomething, candidate);
-                    }else{
-                        DoubleSidedReversibleStream<ParseTreeNode> subStream = generateSubExpressionStream(ts, Associativity.RightToLeft, skipDelimiter, leftDelimiter);
-                        foundSomething = rightToLeftParse(subStream, null, foundSomething, candidate);
-                        if(foundSomething)
-                            return ts.peekLeft();
-                    }
+                    foundSomething = rightToLeftParse(ts, rightDelimiter, foundSomething, candidate);
                 }
             }
 
         }
         if (foundSomething && enteredWhileFirstTime) {
-            return recursiveDescentParse(ts, leftDelimiter, rightDelimiter, rootClass, previousAssociativity, skipDelimiter);
+            return recursiveDescentParse(ts, leftDelimiter, rightDelimiter, rootClass);
         } else {
             ts.rollback();
             List<ParseTreeNode> l = ts.toList();
@@ -150,7 +132,7 @@ public class RecursiveParser implements Parser {
                                 }
 
                                 ParseTreeNode node;
-                                node = recursiveDescentParse(pns, null, null, (SyntaxClass) component, null, null);
+                                node = recursiveDescentParse(pns, null, null, (SyntaxClass) component);
                                 tmpSequence.add(node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -173,7 +155,7 @@ public class RecursiveParser implements Parser {
                         try {
 
                             ParseTreeNode node;
-                            node = recursiveDescentParse(ts, null, rightDelimiter, (SyntaxClass) component, null, null);
+                            node = recursiveDescentParse(ts, null, rightDelimiter, (SyntaxClass) component);
                             tmpSequence.add(node);
                         } catch (ParseFailedException pfe) {
                             found = false;
@@ -197,7 +179,7 @@ public class RecursiveParser implements Parser {
 
                                 ParseTreeNode node;
                                 DoubleSidedReversibleStream<ParseTreeNode> subExpression = generateSubExpressionStream(ts, Associativity.RightToLeft, (TokenCategory) prevComponent, (TokenCategory) nextComponent);
-                                node = recursiveDescentParse(subExpression, null, null, (SyntaxClass) component,  null, null);
+                                node = recursiveDescentParse(subExpression, null, null, (SyntaxClass) component);
                                 tmpSequence.add(node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -254,7 +236,7 @@ public class RecursiveParser implements Parser {
                                     break;
                                 }
                                 ParseTreeNode node;
-                                node = recursiveDescentParse(pns, null, null, (SyntaxClass) component, null, null);
+                                node = recursiveDescentParse(pns, null, null, (SyntaxClass) component);
                                 tmpSequence.add(0, node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -277,7 +259,7 @@ public class RecursiveParser implements Parser {
                         try {
 
                             ParseTreeNode node;
-                            node = recursiveDescentParse(ts, leftDelimiter, null, (SyntaxClass) component, null, null);
+                            node = recursiveDescentParse(ts, leftDelimiter, null, (SyntaxClass) component);
                             tmpSequence.add(0, node);
                         } catch (ParseFailedException pfe) {
                             found = false;
@@ -301,7 +283,7 @@ public class RecursiveParser implements Parser {
 
                                 ParseTreeNode node;
                                 DoubleSidedReversibleStream<ParseTreeNode> subExpression = generateSubExpressionStream(ts, Associativity.LeftToRight, (TokenCategory) prevComponent, (TokenCategory) nextComponent);
-                                node = recursiveDescentParse(subExpression, null, null, (SyntaxClass) component,  null, null);
+                                node = recursiveDescentParse(subExpression, null, null, (SyntaxClass) component);
                                 tmpSequence.add(0, node);
                             } catch (ParseFailedException pfe) {
                                 found = false;
@@ -504,37 +486,40 @@ public class RecursiveParser implements Parser {
         return new ParseFailedException(errorNode);
     }
 
-    private DoubleSidedReversibleStream<ParseTreeNode> generateSubExpressionStream(DoubleSidedReversibleStream<ParseTreeNode> ts, Associativity associativity, TokenCategory prevDelimiter, TokenCategory nextDelimiter){
-        switch (associativity){
-            case LeftToRight:{
+    private DoubleSidedReversibleStream<ParseTreeNode> generateSubExpressionStream(DoubleSidedReversibleStream<ParseTreeNode> ts, Associativity associativity, TokenCategory prevDelimiter, TokenCategory nextDelimiter) {
+        switch (associativity) {
+            case LeftToRight: {
                 List<ParseTreeNode> onErrorList = ts.toList();
                 final Integer[] delimiterCounter = {1};
                 DoubleSidedReversibleStream<ParseTreeNode> subStream =
-                        (DoubleSidedReversibleStream<ParseTreeNode>)ts.rightSubStreamUntilPredicate(arg1 -> {
-                            if(arg1.isTerminal() && arg1.getTokenCategory().matches(prevDelimiter))
+                        (DoubleSidedReversibleStream<ParseTreeNode>) ts.rightSubStreamUntilPredicate(arg1 -> {
+                            if (arg1.isTerminal() && arg1.getTokenCategory().matches(prevDelimiter))
                                 delimiterCounter[0]++;
                             else if (arg1.isTerminal() && arg1.getTokenCategory().matches(nextDelimiter))
                                 delimiterCounter[0]--;
-                            return delimiterCounter[0]<=0;
+                            return delimiterCounter[0] <= 0;
                         });
-                if(delimiterCounter[0]>0) throw newParseFailedException(onErrorList); //TODO: add missing delimiter info
+                if (delimiterCounter[0] > 0)
+                    throw newParseFailedException(onErrorList); //TODO: add missing delimiter info
                 return subStream;
             }
-            case RightToLeft:{
+            case RightToLeft: {
                 List<ParseTreeNode> onErrorList = ts.toList();
                 final Integer[] delimiterCounter = {1};
                 DoubleSidedReversibleStream<ParseTreeNode> subStream =
-                        (DoubleSidedReversibleStream<ParseTreeNode>)ts.leftSubStreamUntilPredicate(arg1 -> {
-                            if(arg1.isTerminal() && arg1.getTokenCategory().matches(prevDelimiter))
+                        (DoubleSidedReversibleStream<ParseTreeNode>) ts.leftSubStreamUntilPredicate(arg1 -> {
+                            if (arg1.isTerminal() && arg1.getTokenCategory().matches(prevDelimiter))
                                 delimiterCounter[0]++;
                             else if (arg1.isTerminal() && arg1.getTokenCategory().matches(nextDelimiter))
                                 delimiterCounter[0]--;
-                            return delimiterCounter[0]<=0;
+                            return delimiterCounter[0] <= 0;
                         });
-                if(delimiterCounter[0]>0) throw newParseFailedException(onErrorList); //TODO: addMissing delimiter info
+                if (delimiterCounter[0] > 0)
+                    throw newParseFailedException(onErrorList); //TODO: addMissing delimiter info
                 return subStream;
             }
-            default: return null;
+            default:
+                return null;
         }
     }
 }
