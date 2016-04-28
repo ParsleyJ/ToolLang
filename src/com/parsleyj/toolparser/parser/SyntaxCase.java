@@ -17,7 +17,7 @@ public class SyntaxCase{
 
     private String caseName;
     private List<SyntaxCaseComponent> structure;
-    private ParsingDirection parsingDirection = ParsingDirection.LeftToRight;
+    private Associativity associativity = Associativity.LeftToRight;
     private SyntaxClass belongingClass;
     /**
      * Creates a new syntax case with the given name and structure.
@@ -65,12 +65,12 @@ public class SyntaxCase{
         this.structure = structure;
     }
 
-    public ParsingDirection getParsingDirection() {
-        return parsingDirection;
+    public Associativity getAssociativity() {
+        return associativity;
     }
 
-    public SyntaxCase setParsingDirection(ParsingDirection parsingDirection) {
-        this.parsingDirection = parsingDirection;
+    public SyntaxCase setAssociativity(Associativity associativity) {
+        this.associativity = associativity;
         return this;
     }
 

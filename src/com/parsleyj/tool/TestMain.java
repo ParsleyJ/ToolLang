@@ -2,7 +2,7 @@ package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.toolparser.configuration.Configuration;
-import com.parsleyj.toolparser.parser.ParsingDirection;
+import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxClass;
 import com.parsleyj.toolparser.program.Program;
 import com.parsleyj.toolparser.program.ProgramGenerator;
@@ -142,7 +142,9 @@ public class TestMain {
         TokenCategoryDefinition assignmentOperatorToken = new TokenCategoryDefinition("ASSIGNMENT_OPERATOR", "\\Q=\\E");
         TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
         TokenCategoryDefinition greaterOperatorToken = new TokenCategoryDefinition("GREATER_OPERATOR", "\\Q>\\E");
+        TokenCategoryDefinition equalGreaterOperatorToken = new TokenCategoryDefinition("EQUAL_GREATER_OPERATOR", "\\Q=>\\E");
         TokenCategoryDefinition lessOperatorToken = new TokenCategoryDefinition("LESS_OPERATOR", "\\Q<\\E");
+        TokenCategoryDefinition equalLessOperatorToken = new TokenCategoryDefinition("EQUAL_LESS_OPERATOR", "\\Q=<\\E");
         TokenCategoryDefinition semicolonToken = new TokenCategoryDefinition("SEMICOLON", "\\Q;\\E");
         TokenCategoryDefinition openRoundBracketToken = new TokenCategoryDefinition("OPEN_ROUND_BRACKET", "\\Q(\\E");
         TokenCategoryDefinition closedRoundBracketToken = new TokenCategoryDefinition("CLOSED_ROUND_BRACKET", "\\Q)\\E");
@@ -162,7 +164,9 @@ public class TestMain {
                 identifierToken, dotToken, commaToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
                 getBlockDefinitionOperatorToken,
-                equalsOperatorToken, greaterOperatorToken, lessOperatorToken,
+                equalsOperatorToken,
+                greaterOperatorToken, equalGreaterOperatorToken,
+                lessOperatorToken, equalLessOperatorToken,
                 assignmentOperatorToken, semicolonToken,
                 openRoundBracketToken, closedRoundBracketToken,
                 openCurlyBracketToken, closedCurlyBracketToken,
@@ -226,7 +230,7 @@ public class TestMain {
                 rExp, dotToken, ident);
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                dotToken, ident).parsingDirection(ParsingDirection.RightToLeft);
+                dotToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "asterisk", b)),
@@ -249,16 +253,16 @@ public class TestMain {
                 rExp, plusToken, rExp);
         SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",
                 (n, s) -> new IfThenElseStatement(s.convert(n.get(1)), s.convert(n.get(3)), s.convert(n.get(5))),
-                ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(ParsingDirection.RightToLeft);
+                ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition ifThenStatement = new SyntaxCaseDefinition(rExp, "ifThenStatement",
                 (n, s) -> new IfThenStatement(s.convert(n.get(1)), s.convert(n.get(3))),
-                ifToken, rExp, thenToken, rExp).parsingDirection(ParsingDirection.RightToLeft);
+                ifToken, rExp, thenToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "whileStatement",
                 (n, s) -> new WhileStatement(s.convert(n.get(1)), s.convert(n.get(3))),
-                whileToken, rExp, doToken, rExp).parsingDirection(ParsingDirection.RightToLeft);
+                whileToken, rExp, doToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
                 (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
-                lExp, assignmentOperatorToken, rExp);
+                lExp, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition commaSeparatedExpressionListBase = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListBase",
                 new UBOConverterMethod<CommaSeparatedExpressionList, RValue, RValue>(CommaSeparatedExpressionList::new),
                 rExp, commaToken, rExp);

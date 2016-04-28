@@ -1,6 +1,6 @@
 package com.parsleyj.toolparser.program;
 
-import com.parsleyj.toolparser.parser.ParsingDirection;
+import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxCase;
 import com.parsleyj.toolparser.parser.SyntaxCaseComponent;
 import com.parsleyj.toolparser.parser.SyntaxClass;
@@ -32,8 +32,8 @@ public class SyntaxCaseDefinition extends SyntaxCase {
         return converter;
     }
 
-    public SyntaxCaseDefinition parsingDirection(ParsingDirection parsingDirection){
-        setParsingDirection(parsingDirection);
+    public SyntaxCaseDefinition parsingDirection(Associativity associativity){
+        setAssociativity(associativity);
         return this;
     }
 
