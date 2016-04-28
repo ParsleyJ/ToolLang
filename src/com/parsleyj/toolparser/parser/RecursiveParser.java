@@ -325,31 +325,24 @@ public class RecursiveParser implements Parser {
         return grammar.getPriorityCaseList().stream()
                 .map(Pair::getSecond)
                 .filter(syntaxCase -> {
-                    boolean left = true;
-                    for (int i = 0; i < leftComponents.size(); ++i) {
-                        SyntaxCaseComponent component = leftComponents.get(i);
-                        //noinspection Duplicates
-                        if (component instanceof SyntaxClass && syntaxCase.getStructure().get(i) instanceof SyntaxClass) {
-                            if (!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(i)))
-                                left = false;
-                        } else if (!syntaxCase.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
-                            left = false;
-                        }
-                    }
-                    if (left) return true;
-
-                    for (int i = 0; i < rightComponents.size(); ++i) {
-                        SyntaxCaseComponent component = rightComponents.get(i);
-                        int j = syntaxCase.getStructure().size() - 1 - i;
-                        //noinspection Duplicates
-                        if (component instanceof SyntaxClass && syntaxCase.getStructure().get(j) instanceof SyntaxClass) {
-                            if (!((SyntaxClass) component).isOrExtends((SyntaxClass) syntaxCase.getStructure().get(j)))
+                    if (syntaxCase.getAssociativity() == Associativity.RightToLeft) {
+                        for (int i = 0; i < leftComponents.size(); ++i) {
+                            SyntaxCaseComponent component = leftComponents.get(i);
+                            if (!syntaxCase.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
                                 return false;
-                        } else if (!syntaxCase.getStructure().get(j).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
-                            return false;
+                            }
                         }
-                    }
-                    return true;
+                        return true;
+
+                    } else if (syntaxCase.getAssociativity() == Associativity.LeftToRight) {
+                        for (int i = 0; i < rightComponents.size(); ++i) {
+                            SyntaxCaseComponent component = rightComponents.get(i);
+                            if (!syntaxCase.getStructure().get(syntaxCase.getStructure().size()-1-i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    } else return false;
                 }).collect(Collectors.toList());
     }
 
