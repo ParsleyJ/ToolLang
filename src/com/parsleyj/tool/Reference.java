@@ -1,5 +1,8 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.objects.BaseTypes;
+import com.parsleyj.tool.objects.ToolObject;
+
 /**
  * Created by Giuseppe on 01/04/16.
  * TODO: javadoc

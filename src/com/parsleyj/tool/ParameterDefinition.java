@@ -1,5 +1,7 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.objects.ToolClass;
+
 /**
  * Created by Giuseppe on 01/04/16.
  * TODO: javadoc

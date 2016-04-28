@@ -1,6 +1,9 @@
 package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.*;
+import com.parsleyj.tool.semantics.*;
 import com.parsleyj.toolparser.configuration.Configuration;
 import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxClass;
@@ -10,7 +13,6 @@ import com.parsleyj.toolparser.program.SyntaxCaseDefinition;
 import com.parsleyj.toolparser.program.TokenCategoryDefinition;
 import com.parsleyj.toolparser.semanticsconverter.CBOConverterMethod;
 import com.parsleyj.toolparser.semanticsconverter.UBOConverterMethod;
-import com.parsleyj.toolparser.tokenizer.Token;
 import com.parsleyj.utils.SimpleWrapConverterMethod;
 
 import java.util.Scanner;
@@ -235,59 +237,59 @@ public class TestMain {
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
-                (n, s) -> new PrefixUnaryOperationMethodCall("logicalNot", s.convert(n.get(1))), //TODO: use symbol inspired method names OR special conventional names (like _operator_)
+                (n, s) -> new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))), //TODO: use symbol inspired method names OR special conventional names (like _operator_)
                 exclamationPointToken, rExp);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "asterisk", b)),
+                        new BinaryOperationMethodCall(a, "_asterisk_", b)),
                 rExp, asteriskToken, rExp);
         SyntaxCaseDefinition slashOperation = new SyntaxCaseDefinition(rExp, "slashOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "slash", b)),
+                        new BinaryOperationMethodCall(a, "_slash_", b)),
                 rExp, slashToken, rExp);
         SyntaxCaseDefinition percentSignOperation = new SyntaxCaseDefinition(rExp, "percentSignOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "percentSign", b)),
+                        new BinaryOperationMethodCall(a, "_percentSign_", b)),
                 rExp, percentSignToken, rExp);
         SyntaxCaseDefinition minusOperation = new SyntaxCaseDefinition(rExp, "minusOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "minus", b)),
+                        new BinaryOperationMethodCall(a, "_minus_", b)),
                 rExp, minusToken, rExp);
         SyntaxCaseDefinition plusOperation = new SyntaxCaseDefinition(rExp, "plusOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "plus", b)),
+                        new BinaryOperationMethodCall(a, "_plus_", b)),
                 rExp, plusToken, rExp);
         SyntaxCaseDefinition greaterOperation = new SyntaxCaseDefinition(rExp, "greaterOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "greater", b)),
+                        new BinaryOperationMethodCall(a, "_greater_", b)),
                 rExp, greaterOperatorToken, rExp);
         SyntaxCaseDefinition equalGreaterOperation = new SyntaxCaseDefinition(rExp, "equalGreaterOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "equalsOrGreater", b)),
+                        new BinaryOperationMethodCall(a, "_equalsOrGreater_", b)),
                 rExp, equalGreaterOperatorToken, rExp);
         SyntaxCaseDefinition lessOperation = new SyntaxCaseDefinition(rExp, "lessOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "less", b)),
+                        new BinaryOperationMethodCall(a, "_less_", b)),
                 rExp, lessOperatorToken, rExp);
         SyntaxCaseDefinition equalLessOperation = new SyntaxCaseDefinition(rExp, "equalLessOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "equalsOrLess", b)),
+                        new BinaryOperationMethodCall(a, "_equalsOrLess_", b)),
                 rExp, equalLessOperatorToken, rExp);
         SyntaxCaseDefinition equalsOperation = new SyntaxCaseDefinition(rExp, "equalsOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "equals", b)),
+                        new BinaryOperationMethodCall(a, "_equals_", b)),
                 rExp, equalsOperatorToken, rExp);
         SyntaxCaseDefinition notEqualsOperation = new SyntaxCaseDefinition(rExp, "notEqualsOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "notEquals", b)),
+                        new BinaryOperationMethodCall(a, "_notEquals_", b)),
                 rExp, notEqualsOperatorToken, rExp);
         SyntaxCaseDefinition logicalAndOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "logicalAnd", b)),
+                        new BinaryOperationMethodCall(a, "_logicalAnd_", b)),
                 rExp, andOperatorToken, rExp);
         SyntaxCaseDefinition logicalOrOperation = new SyntaxCaseDefinition(rExp, "logicalOrOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "logicalOr", b)),
+                        new BinaryOperationMethodCall(a, "_logicalOr_", b)),
                 rExp, orOperatorToken, rExp);
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
                 (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),

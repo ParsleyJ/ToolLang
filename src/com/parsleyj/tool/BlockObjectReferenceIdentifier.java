@@ -1,6 +1,9 @@
 package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.semantics.RValue;
 
 /**
  * Created by Giuseppe on 04/04/16.
