@@ -166,10 +166,10 @@ public class TestMain {
                 stringToken,
                 nullToken, trueToken, falseToken, whileToken, doToken, ifToken, thenToken, elseToken,
                 andOperatorToken, orOperatorToken, notOperatorToken,
-                identifierToken, dotToken, commaToken,
+                identifierToken, dotToken, exclamationPointToken, commaToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
                 getBlockDefinitionOperatorToken,
-                equalsOperatorToken,
+                equalsOperatorToken, notEqualsOperatorToken,
                 greaterOperatorToken, equalGreaterOperatorToken,
                 lessOperatorToken, equalLessOperatorToken,
                 assignmentOperatorToken, semicolonToken,
@@ -237,8 +237,8 @@ public class TestMain {
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
-                (n, s) -> new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))), //TODO: use symbol inspired method names OR special conventional names (like _operator_)
-                exclamationPointToken, rExp);
+                (n, s) -> new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))),
+                exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "_asterisk_", b)),

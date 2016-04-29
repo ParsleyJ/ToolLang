@@ -55,7 +55,8 @@ public class RecursiveParser implements Parser {
         while (foundSomething && !ts.isEmpty() && delimitersCheck(ts, leftDelimiter, rightDelimiter)) {
             enteredWhileFirstTime = true;
             if (oneNodeInStream(ts, leftDelimiter, rightDelimiter)) {
-                if ((leftDelimiter == null && rightDelimiter == null && ts.peekLeft().getSyntaxClass().isOrExtends(rootClass)) ||
+                if ((leftDelimiter == null && rightDelimiter == null
+                        && ts.peekLeft().getSyntaxClass().isOrExtends(rootClass)) ||
                         (leftDelimiter != null ? (
                                 !ts.peekRight().isTerminal() && ts.peekRight().getSyntaxClass().isOrExtends(rootClass))
                                 : (!ts.peekLeft().isTerminal() && ts.peekLeft().getSyntaxClass().isOrExtends(rootClass)))) {

@@ -39,4 +39,9 @@ public class ToolBoolean extends ToolObject{
     public String toString() {
         return "<Boolean:"+x+">";
     }
+
+    @Override
+    public String getPrintString() {
+        return ""+x;
+    }
 }
