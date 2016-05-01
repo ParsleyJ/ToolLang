@@ -55,7 +55,7 @@ public class TestMain {
         p.executeProgram(m);
     }
 
-    public static final boolean PRINT_DEBUG = true;
+    public static final boolean PRINT_DEBUG = false;
     public static final boolean MULTILINE = false;
     public static final boolean PRINT_RESULTS = true;
     public static void test2() {
