@@ -50,6 +50,28 @@ public class ParseTreeNode {
     }
 
     /**
+     * todo doc
+     * @param children
+     */
+    public void setChildren(List<ParseTreeNode> children) {
+        this.children = children;
+    }
+
+    /**
+     * todo doc
+     */
+    public ParseTreeNode getFirstChild(){
+        return children.get(0);
+    }
+
+    /**
+     * todo doc
+     */
+    public ParseTreeNode getLastChild(){
+        return children.get(children.size()-1);
+    }
+
+    /**
      * Returns the node child at the index {@code i}
      * @param i the index
      * @return the node at index {@code i}
@@ -67,7 +89,6 @@ public class ParseTreeNode {
         children.add(ast);
         return this;
     }
-
     /**
      * Adds a node to the children list of this node, at the first position.
      * @param ast the node
@@ -77,6 +98,7 @@ public class ParseTreeNode {
         children.add(0, ast);
         return this;
     }
+
     /**
      * Adds a node to the children list of this node, at the {@code index} position.
      * @param index the index
@@ -178,6 +200,7 @@ public class ParseTreeNode {
     public void printTree(){
         printTree(this, 0);
     }
+
 
     private static void printTree(ParseTreeNode tree, int indentStart){
         StringBuilder sb = new StringBuilder("");

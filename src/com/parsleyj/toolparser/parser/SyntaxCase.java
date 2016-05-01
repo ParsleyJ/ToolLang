@@ -1,6 +1,7 @@
 package com.parsleyj.toolparser.parser;
 
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
+import com.parsleyj.utils.Pair;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,6 +54,7 @@ public class SyntaxCase{
     }
 
 
+    //TODO DOCS
     public SyntaxClass getBelongingClass() {
         return belongingClass;
     }
@@ -79,5 +81,30 @@ public class SyntaxCase{
                 .filter(syntaxCaseComponent -> syntaxCaseComponent instanceof TokenCategory)
                 .map(syntaxCaseComponent -> (TokenCategory) syntaxCaseComponent)
                 .collect(Collectors.toList());
+    }
+
+    public boolean startsWithTerminal(){
+        return structure.get(0).isTerminal();
+    }
+
+    public boolean endsWithTerminal(){
+        return structure.get(structure.size()-1).isTerminal();
+    }
+
+    public boolean hasHigherPriority(SyntaxCase candidate, Grammar grammar) {
+        for (Pair<SyntaxClass, SyntaxCase> syntaxClassSyntaxCasePair : grammar.getPriorityCaseList()) {
+            if(syntaxClassSyntaxCasePair.getSecond().getCaseName().equals(this.getCaseName())) return true;
+            else if(syntaxClassSyntaxCasePair.getSecond().getCaseName().equals(candidate.getCaseName())) return false;
+        }
+        throw new RuntimeException("Neither '"+ this.getCaseName()+ "' or '"+ candidate.getCaseName() + "' syntax cases are in the specified grammar.");
+    }
+
+    public SyntaxCaseComponent getLastComponent(){
+        return getStructure().get(getStructure().size()-1);
+    }
+
+
+    public SyntaxCaseComponent getFirstComponent(){
+        return getStructure().get(0);
     }
 }

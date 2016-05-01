@@ -1,5 +1,7 @@
 package com.parsleyj.toolparser.parser;
 
+import com.parsleyj.utils.Lol;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -89,11 +91,16 @@ public class SyntaxClass implements SyntaxCaseComponent {
     }
 
     public boolean isOrExtends(SyntaxClass c){
+        Lol.vl("<"+this.getSyntaxComponentName()+">.isOrExtends("+c.getSyntaxComponentName()+") ? ");
         SyntaxClass x = this;
         while(x != null){
-            if(x.getSyntaxComponentName().equals(c.getSyntaxComponentName())) return true;
+            if(x.getSyntaxComponentName().equals(c.getSyntaxComponentName())) {
+                Lol.v("Yes.");
+                return true;
+            }
             x = x.getExtendedClass();
         }
+        Lol.v("No.");
         return false;
     }
 

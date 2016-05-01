@@ -2,13 +2,17 @@ package com.parsleyj.toolparser.parser;
 
 import com.parsleyj.toolparser.tokenizer.Token;
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
-import com.parsleyj.utils.*;
+import com.parsleyj.utils.Lol;
+import com.parsleyj.utils.NoEnoughElementsException;
+import com.parsleyj.utils.PJ;
+import com.parsleyj.utils.Pair;
 import com.parsleyj.utils.reversiblestream.DoubleSidedReversibleStream;
 import com.parsleyj.utils.reversiblestream.ReversibleStream;
 import com.parsleyj.utils.reversiblestream.StackedReversibleStream;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -16,6 +20,7 @@ import java.util.stream.Collectors;
  * TODO: javadoc
  */
 public class RecursiveParser implements Parser {
+
 
     public static ParseTreeNodeFactory PARSE_TREE_NODE_FACTORY;
 
@@ -45,7 +50,8 @@ public class RecursiveParser implements Parser {
             DoubleSidedReversibleStream<ParseTreeNode> ts,
             TokenCategory leftDelimiter,
             TokenCategory rightDelimiter,
-            @NotNull SyntaxClass rootClass) {
+            SyntaxClass rootClass) {
+        boolean permissiveMode = rootClass == null;
         if (leftDelimiter != null && rightDelimiter != null)
             throw newParseFailedException(ts.toList());
 
@@ -56,10 +62,10 @@ public class RecursiveParser implements Parser {
             enteredWhileFirstTime = true;
             if (oneNodeInStream(ts, leftDelimiter, rightDelimiter)) {
                 if ((leftDelimiter == null && rightDelimiter == null
-                        && ts.peekLeft().getSyntaxClass().isOrExtends(rootClass)) ||
+                        && (permissiveMode || ts.peekLeft().getSyntaxClass().isOrExtends(rootClass))) ||
                         (leftDelimiter != null ? (
-                                !ts.peekRight().isTerminal() && ts.peekRight().getSyntaxClass().isOrExtends(rootClass))
-                                : (!ts.peekLeft().isTerminal() && ts.peekLeft().getSyntaxClass().isOrExtends(rootClass)))) {
+                                !ts.peekRight().isTerminal() && (permissiveMode || ts.peekRight().getSyntaxClass().isOrExtends(rootClass)))
+                                : (!ts.peekLeft().isTerminal() && (permissiveMode || ts.peekLeft().getSyntaxClass().isOrExtends(rootClass))))) {
                     try {
                         ParseTreeNode ptn;
                         if (leftDelimiter != null) ptn = ts.popRight();
@@ -75,8 +81,9 @@ public class RecursiveParser implements Parser {
 
             foundSomething = false;
             List<SyntaxCase> candidates = findCandidates(ts);
+            Lol.v("Candidates found:"+candidates.size());
             for (SyntaxCase candidate : candidates) {
-
+                Lol.v("\tCandidate: "+ candidate.getCaseName());
                 if (candidate.getAssociativity() == Associativity.LeftToRight) {
                     foundSomething = leftToRightParse(ts, leftDelimiter, foundSomething, candidate);
 
@@ -105,14 +112,16 @@ public class RecursiveParser implements Parser {
         List<ParseTreeNode> tmpSequence = new ArrayList<>();
         boolean found = true;
         ts.checkPoint();
+        ParseTreeNode overlappedNode = null;
         try {
             List<SyntaxCaseComponent> structure = candidate.getStructure();
             if (structure.size() == 1) {
                 found = findUniqueComponent(ts, tmpSequence, structure.get(0));
             } else for (int i = 0; i < structure.size(); i++) {
                 SyntaxCaseComponent component = structure.get(i);
-
-                if (i == 0) {
+                boolean firstComponent = i == 0;
+                boolean lastComponent = i == structure.size() - 1;
+                if (firstComponent) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popLeft();
                         if (terminalNode.isTerminal() && terminalNode.getTokenCategory().matches(component)) {
@@ -142,7 +151,7 @@ public class RecursiveParser implements Parser {
                             throw new InvalidSyntaxCaseDefinitionException();
                         }
                     }
-                } else if (i == structure.size() - 1) {
+                } else if (lastComponent) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popLeft();
                         if (terminalNode.isTerminal() && terminalNode.getTokenCategory().matches(component)) {
@@ -153,11 +162,14 @@ public class RecursiveParser implements Parser {
                         }
                     } else {
                         try {
-
-                            ParseTreeNode node;
-                            node = recursiveDescentParse(ts, null, rightDelimiter, (SyntaxClass) component);
-                            tmpSequence.add(node);
-                        } catch (ParseFailedException pfe) {
+                            ParseTreeNode node = recursiveDescentParse(ts, null, rightDelimiter, null);
+                            ParseTreeNode node2 = leftPriorityOverlap(candidate, tmpSequence, node);
+                            if(node2 == null){
+                                tmpSequence.add(node);
+                            }else{
+                                overlappedNode = node2;
+                            }
+                        } catch (ParseFailedException | OverlapFailedException e) {
                             found = false;
                             break;
                         }
@@ -197,27 +209,61 @@ public class RecursiveParser implements Parser {
         if (found) {
             foundSomething = true;
             ts.commit();
-            ParseTreeNode ptn = newNonTerminalNode(candidate.getBelongingClass(), candidate, tmpSequence);
-            ts.pushLeft(ptn);
+            if(overlappedNode == null){
+                ParseTreeNode ptn = newNonTerminalNode(candidate.getBelongingClass(), candidate, tmpSequence);
+                ts.pushLeft(ptn);
+            }else{
+                ts.pushLeft(overlappedNode);
+            }
         } else {
             ts.rollback();
         }
         return foundSomething;
     }
 
+    public ParseTreeNode leftPriorityOverlap(SyntaxCase candidate, List<ParseTreeNode> previousNodes, ParseTreeNode justParsedNode) throws OverlapFailedException {
+        if(candidate.getLastComponent().isTerminal()) throw new RuntimeException("leftPriorityOverlap() called with a candidate which has a terminal last component");
+        ParseTreeNode tmp = justParsedNode;
+        ParseTreeNode parent = null;
+        while(!tmp.isTerminal()){
+            if(tmp.getFirstChild().isTerminal() ||
+                    tmp.getSyntaxCase().getCaseName().equals(candidate.getCaseName()) ||
+                    tmp.getSyntaxCase().hasHigherPriority(candidate, grammar)) {
+                if(tmp.getSyntaxClass().isOrExtends((SyntaxClass)candidate.getLastComponent())){
+                    if(parent == null) return null;
+                    List<ParseTreeNode> newChildren = new ArrayList<>();
+                    ParseTreeNode n = newNonTerminalNode(candidate.getBelongingClass(), candidate, PJ.tempConcat(previousNodes, tmp));
+                    newChildren.add(n);
+                    newChildren.addAll(parent.getChildren().subList(1, parent.getChildren().size()));
+                    parent.setChildren(newChildren);
+                    return justParsedNode;
+                }else{
+                    throw new OverlapFailedException();
+                }
+
+            }else{
+                parent = tmp;
+                tmp = tmp.getFirstChild();
+            }
+        }
+        throw new OverlapFailedException();
+    }
+
     private boolean leftToRightParse(DoubleSidedReversibleStream<ParseTreeNode> ts, TokenCategory leftDelimiter, boolean foundSomething, SyntaxCase candidate) {
         List<ParseTreeNode> tmpSequence = new ArrayList<>();
         boolean found = true;
         ts.checkPoint();
+        ParseTreeNode overlappedNode = null;
         try {
             List<SyntaxCaseComponent> structure = candidate.getStructure();
             if (structure.size() == 1)
                 found = findUniqueComponent(ts, tmpSequence, structure.get(0));//TODO: check direction ambivalence
             else for (int i = structure.size() - 1; i >= 0; --i) {
                 SyntaxCaseComponent component = structure.get(i);
+                boolean firstComponent = i == structure.size() - 1;
+                boolean lastComponent = i == 0;
 
-
-                if (i == structure.size() - 1) {
+                if (firstComponent) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popRight();
                         if (terminalNode.isTerminal() && terminalNode.getTokenCategory().matches(component)) {
@@ -246,7 +292,7 @@ public class RecursiveParser implements Parser {
                             throw new InvalidSyntaxCaseDefinitionException();
                         }
                     }
-                } else if (i == 0) {
+                } else if (lastComponent) {
                     if (component.isTerminal()) {
                         ParseTreeNode terminalNode = ts.popRight();
                         if (terminalNode.isTerminal() && terminalNode.getTokenCategory().matches(component)) {
@@ -258,10 +304,14 @@ public class RecursiveParser implements Parser {
                     } else {
                         try {
 
-                            ParseTreeNode node;
-                            node = recursiveDescentParse(ts, leftDelimiter, null, (SyntaxClass) component);
-                            tmpSequence.add(0, node);
-                        } catch (ParseFailedException pfe) {
+                            ParseTreeNode node = recursiveDescentParse(ts, leftDelimiter, null, null);
+                            ParseTreeNode node2 = rightPriorityOverlap(candidate, tmpSequence, node);
+                            if(node2 == null) {
+                                tmpSequence.add(0, node);
+                            }else{
+                                overlappedNode = node2;
+                            }
+                        } catch (ParseFailedException | OverlapFailedException e) {
                             found = false;
                             break;
                         }
@@ -301,14 +351,46 @@ public class RecursiveParser implements Parser {
         if (found) {
             foundSomething = true;
             ts.commit();
-            ParseTreeNode ptn = newNonTerminalNode(candidate.getBelongingClass(), candidate, tmpSequence);
-            ts.pushRight(ptn);
+
+            if(overlappedNode == null) {
+                ParseTreeNode ptn = newNonTerminalNode(candidate.getBelongingClass(), candidate, tmpSequence);
+                ts.pushRight(ptn);
+            }else{
+                ts.pushRight(overlappedNode);
+            }
         } else {
             ts.rollback();
         }
         return foundSomething;
     }
 
+    public ParseTreeNode rightPriorityOverlap(SyntaxCase candidate, List<ParseTreeNode> previousNodes, ParseTreeNode justParsedNode) throws OverlapFailedException {
+        if(candidate.getFirstComponent().isTerminal()) throw new RuntimeException("leftPriorityOverlap() called with a candidate which has a terminal last component");
+        ParseTreeNode tmp = justParsedNode;
+        ParseTreeNode parent = null;
+        while(!tmp.isTerminal()){
+            if(tmp.getLastChild().isTerminal() ||
+                    tmp.getSyntaxCase().getCaseName().equals(candidate.getCaseName()) ||
+                    tmp.getSyntaxCase().hasHigherPriority(candidate, grammar)) {
+                if(tmp.getSyntaxClass().isOrExtends((SyntaxClass)candidate.getFirstComponent())){
+                    if(parent == null) return null;
+                    List<ParseTreeNode> newChildren = new ArrayList<>();
+                    ParseTreeNode n = newNonTerminalNode(candidate.getBelongingClass(), candidate, PJ.tempConcat(PJ.list(tmp), previousNodes));
+                    newChildren.addAll(parent.getChildren().subList(0, parent.getChildren().size()-1));
+                    newChildren.add(n);
+                    parent.setChildren(newChildren);
+                    return justParsedNode;
+                }else{
+                    throw new OverlapFailedException();
+                }
+
+            }else{
+                parent = tmp;
+                tmp = tmp.getLastChild();
+            }
+        }
+        throw new OverlapFailedException();
+    }
 
     private List<ParseTreeNode> generateListFromToken(List<Token> tokens) {
         List<ParseTreeNode> treeList = new ArrayList<>();
@@ -321,28 +403,66 @@ public class RecursiveParser implements Parser {
         return treeList;
     }
 
+    @SuppressWarnings("Duplicates")
     private List<SyntaxCase> candidatesStartingWith(List<SyntaxCaseComponent> leftComponents, List<SyntaxCaseComponent> rightComponents) {
+        Lol.v("----candidatesStartingWith()----");
+        Lol.vl("Left components: ");
+        leftComponents.forEach(x -> Lol.vl("<"+x.getSyntaxComponentName()+"> "));
+        Lol.v("");
+        Lol.vl("Right components: ");
+        rightComponents.forEach(x -> Lol.v("<"+x.getSyntaxComponentName()+"> "));
+        Lol.v("");
+
         return grammar.getPriorityCaseList().stream()
                 .map(Pair::getSecond)
-                .filter(syntaxCase -> {
-                    if (syntaxCase.getAssociativity() == Associativity.RightToLeft) {
+                .filter(candidate -> {
+                    Lol.v("checking: "+candidate.getCaseName());
+                    if (candidate.getAssociativity() == Associativity.RightToLeft) {
                         for (int i = 0; i < leftComponents.size(); ++i) {
                             SyntaxCaseComponent component = leftComponents.get(i);
-                            if (!syntaxCase.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                            if(!component.isTerminal() && !candidate.getStructure().get(i).isTerminal()){
+                                if(!((SyntaxClass) component).isOrExtends((SyntaxClass) candidate.getStructure().get(i))){
+                                    Lol.v("Fail.");
+                                    return false;
+                                }
+                            }else if(component.isTerminal() && candidate.getStructure().get(i).isTerminal()){
+                                if(!candidate.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())){
+                                    Lol.v("Fail.");
+                                    return false;
+                                }
+                            }else{
+                                Lol.v("Fail.");
                                 return false;
                             }
                         }
+                        Lol.v("Success.");
                         return true;
 
-                    } else if (syntaxCase.getAssociativity() == Associativity.LeftToRight) {
-                        for (int i = 0; i < rightComponents.size(); ++i) {
-                            SyntaxCaseComponent component = rightComponents.get(i);
-                            if (!syntaxCase.getStructure().get(syntaxCase.getStructure().size()-1-i).getSyntaxComponentName().equals(component.getSyntaxComponentName())) {
+                    } else if (candidate.getAssociativity() == Associativity.LeftToRight) {
+                        for (int j = 0; j < rightComponents.size(); ++j) {
+                            SyntaxCaseComponent component = rightComponents.get(j);
+                            int i = candidate.getStructure().size()-1-j;
+                            if(!component.isTerminal() && !candidate.getStructure().get(i).isTerminal()){
+                                if(!((SyntaxClass) component).isOrExtends((SyntaxClass) candidate.getStructure().get(i))){
+                                    Lol.v("Fail.");
+                                    return false;
+                                }
+                            }else if(component.isTerminal() && candidate.getStructure().get(i).isTerminal()){
+                                if(!candidate.getStructure().get(i).getSyntaxComponentName().equals(component.getSyntaxComponentName())){
+                                    Lol.v("Fail.");
+                                    return false;
+                                }
+                            }else{
+                                Lol.v("Fail.");
                                 return false;
                             }
                         }
+                        Lol.v("Success.");
                         return true;
-                    } else return false;
+                    } else {
+                        Lol.v("END Fail.");
+                        return false;
+                    }
                 }).collect(Collectors.toList());
     }
 
@@ -398,6 +518,15 @@ public class RecursiveParser implements Parser {
 
             result = tmp;
         }
+
+        if(Lol.VERBOSE){
+            ParseTreeNode ptn = PARSE_TREE_NODE_FACTORY.newNodeTree(result.toArray(new ParseTreeNode[result.size()]));
+            SyntaxClass sc = new SyntaxClass("Preparser");
+            ptn.setSyntaxClass(sc);
+            ptn.setSyntaxCase(new SyntaxCase("promoteHighPriorityTerminals() result", sc));
+            ptn.printTree();
+        }
+
         return result;
 
 
@@ -514,5 +643,8 @@ public class RecursiveParser implements Parser {
             default:
                 return null;
         }
+    }
+
+    private class OverlapFailedException extends Exception {
     }
 }

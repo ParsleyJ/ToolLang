@@ -13,6 +13,21 @@ public class PJ{
         return Arrays.asList(elements);
     }
 
+    @SafeVarargs
+    public static <T> List<T> tempConcat(List<T> x, T... y){
+        List<T> x2 = new ArrayList<>(x);
+        x2.addAll(Arrays.asList(y));
+        return x2;
+    }
+
+
+
+    public static <T> List<T> tempConcat(List<T> x, List<T> y){
+        List<T> x2 = new ArrayList<>(x);
+        x2.addAll(y);
+        return x2;
+    }
+
     public static <T> List<T> reverse(List<T> l){
         List<T> result = new ArrayList<>(l);
         Collections.reverse(result);
