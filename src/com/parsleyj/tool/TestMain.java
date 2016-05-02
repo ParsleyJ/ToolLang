@@ -241,6 +241,9 @@ public class TestMain {
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, ident).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
+                (n, s) -> new PrefixUnaryOperationMethodCall("_unaryMinus_", s.convert(n.get(1))),
+                minusToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
                 (n, s) -> new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
@@ -332,6 +335,7 @@ public class TestMain {
                 elementAccessOperation2,
                 dotNotationField,
                 newVarDeclaration,
+                unaryMinusOperation,
                 logicalNotOperation,
                 intervalOperation,
                 asteriskOperation, slashOperation, percentSignOperation,

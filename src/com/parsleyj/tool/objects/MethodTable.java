@@ -1,10 +1,10 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
-import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**

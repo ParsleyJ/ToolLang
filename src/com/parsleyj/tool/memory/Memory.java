@@ -8,7 +8,9 @@ import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
 import com.parsleyj.utils.Table;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by Giuseppe on 30/03/16.

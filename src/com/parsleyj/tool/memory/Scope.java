@@ -1,7 +1,7 @@
 package com.parsleyj.tool.memory;
 
-import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
+import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.utils.Table;
 
 import java.util.ArrayList;

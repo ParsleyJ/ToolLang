@@ -60,6 +60,11 @@ public class ToolInteger extends ToolObject {
     }
 
     @NativeInstanceMethod
+    public static ToolInteger _unaryMinus_(@SelfParameter ToolInteger a){
+        return new ToolInteger(-a.getIntegerValue());
+    }
+
+    @NativeInstanceMethod
     public static ToolBoolean _greater_(@SelfParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() > b.getIntegerValue());
     }

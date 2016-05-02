@@ -1,8 +1,7 @@
 package com.parsleyj.tool.objects;
 
-import com.parsleyj.tool.*;
+import com.parsleyj.tool.ToolBlock;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
-import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
@@ -49,6 +48,9 @@ public class BaseTypes {
     public static final ToolExceptionClass C_METHOD_NOT_FOUND_EXCEPTION = new ToolExceptionClass("MethodNotFoundException");
     public static final ToolExceptionClass C_CALL_ON_NULL_EXCEPTION = new ToolExceptionClass("CallOnNullException");
     public static final ToolExceptionClass C_ARITHMETIC_EXCEPTION = new ToolExceptionClass("ArithmeticException");
+    public static final ToolExceptionClass C_INVALID_INDEX_TYPE_EXCEPTION = new ToolExceptionClass("InvalidIndexTypeException");
+    public static final ToolExceptionClass C_INVALID_INDEX_LIST_EXCEPTION = new ToolExceptionClass("InvalidIndexListException");
+    public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
 
     public static final Map<Class<?>, ToolClass> NATIVE_CLASS_MAP = new MapBuilder<Class<?>, ToolClass>()
             .put(ToolObject.class, C_OBJECT)
@@ -85,7 +87,10 @@ public class BaseTypes {
                 C_AMBIGUOUS_METHOD_CALL_EXCEPTION,
                 C_METHOD_NOT_FOUND_EXCEPTION,
                 C_CALL_ON_NULL_EXCEPTION,
-                C_ARITHMETIC_EXCEPTION
+                C_ARITHMETIC_EXCEPTION,
+                C_INVALID_INDEX_TYPE_EXCEPTION,
+                C_INVALID_INDEX_LIST_EXCEPTION,
+                C_INDEX_OUT_OF_BOUNDS_EXCEPTION
         );
     }
 

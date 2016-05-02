@@ -1,7 +1,6 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.semantics.RValue;
-import com.parsleyj.utils.Lol;
 
 import java.util.ArrayList;
 import java.util.List;

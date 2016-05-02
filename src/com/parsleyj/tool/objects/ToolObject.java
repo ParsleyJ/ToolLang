@@ -1,11 +1,7 @@
 package com.parsleyj.tool.objects;
 
-import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.exceptions.ToolNativeException;
-import com.parsleyj.tool.memory.AddedReference;
-import com.parsleyj.tool.memory.CounterIsZeroRemoveObject;
-import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.memory.Scope;
+import com.parsleyj.tool.memory.*;
 import com.parsleyj.tool.semantics.RValue;
 
 /**

@@ -1,5 +1,9 @@
 package com.parsleyj.tool.objects;
 
+import com.parsleyj.tool.exceptions.IndexOutOfBoundsExceptionTool;
+import com.parsleyj.tool.exceptions.InvalidIndexListException;
+import com.parsleyj.tool.exceptions.InvalidIndexTypeException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 
@@ -35,22 +39,23 @@ public class ToolList extends ToolObject {
     }
 
     @NativeInstanceMethod
-    public static ToolObject _elementAt_(@SelfParameter ToolList self, ToolList indexes) {
+    public static ToolObject _elementAt_(@SelfParameter ToolList self, ToolList indexes) throws ToolNativeException {
         List<Integer> flattenIndexes = getFlattenIndexList(indexes);
 
-        if (flattenIndexes.size() < 1) throw new InvalidIndexListException();
+        if (flattenIndexes.size() < 1) throw new InvalidIndexListException("At least one index is needed.");
 
         if (flattenIndexes.size() == 1) return elementAtWithBackIndexes(self, flattenIndexes.get(0));
 
-        List<ToolObject> resultListContents = flattenIndexes.stream()
-                .map(ind -> elementAtWithBackIndexes(self, ind))
-                .collect(Collectors.toList());
+        List<ToolObject> resultListContents = new ArrayList<>();
+        for (Integer index : flattenIndexes) {
+            resultListContents.add(elementAtWithBackIndexes(self, index));
+        }
         return new ToolList(resultListContents);
 
     }
 
-    private static List<Integer> getFlattenIndexList(ToolList indexes) {
-        if (!allIndexesAreIntegersOrLists(indexes)) throw new InvalidIndexTypeException();
+    private static List<Integer> getFlattenIndexList(ToolList indexes) throws ToolNativeException {
+        if (!allIndexesAreIntegersOrLists(indexes)) throw new InvalidIndexTypeException("All index elements have to be Integers (or derivates) or Lists of Integers (or derivates).");
         List<Integer> result = new ArrayList<>();
         for (ToolObject to : indexes.getToolObjects()) {
             if(to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER)){
@@ -62,13 +67,13 @@ public class ToolList extends ToolObject {
         return result;
     }
 
-    private static ToolObject elementAtWithBackIndexes(ToolList list, int index) {
+    private static ToolObject elementAtWithBackIndexes(ToolList list, int index) throws ToolNativeException {
         List<? extends ToolObject> toolObjects = list.getToolObjects();
         if (index >= 0) {
-            if (index >= toolObjects.size()) throw new IndexOutOfBoundsExceptionTool();
+            if (index >= toolObjects.size()) throw new IndexOutOfBoundsExceptionTool(index, toolObjects.size());
             return toolObjects.get(index);
         } else {
-            if (toolObjects.size() + index < 0) throw new IndexOutOfBoundsExceptionTool();
+            if (toolObjects.size() + index < 0) throw new IndexOutOfBoundsExceptionTool(index, toolObjects.size());
             return toolObjects.get(toolObjects.size() + index);
         }
     }
@@ -80,16 +85,6 @@ public class ToolList extends ToolObject {
             }
         }
         return true;
-    }
-
-    public static class InvalidIndexTypeException extends RuntimeException { //TODO: tool exception
-
-    }
-
-    public static class InvalidIndexListException extends RuntimeException {
-    } //TODO: tool exception
-
-    public static class IndexOutOfBoundsExceptionTool extends RuntimeException { //TODO: tool exception
     }
 
     //TODO add(index, obj)
