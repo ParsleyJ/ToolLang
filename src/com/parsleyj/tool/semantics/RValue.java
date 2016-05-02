@@ -2,11 +2,10 @@ package com.parsleyj.tool.semantics;
 
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.NativeClassWrapper;
 import com.parsleyj.tool.objects.ToolBoolean;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.exceptions.InvalidConditionalExpressionException;
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
 
 /**
@@ -14,7 +13,7 @@ import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
  * TODO: javadoc
  */
 public interface RValue extends SemanticObject{
-    public static boolean evaluateAsConditional(RValue r, Memory m) throws ToolInternalException {
+    public static boolean evaluateAsConditional(RValue r, Memory m) throws ToolNativeException {
         ToolObject to = r.evaluate(m);
         if(to.getBelongingClass().isOrExtends(BaseTypes.C_BOOLEAN)){
             return ((ToolBoolean) to).getBoolValue();
@@ -22,5 +21,5 @@ public interface RValue extends SemanticObject{
         else throw new InvalidConditionalExpressionException("The expression: ("+r+") did not return a Boolean value");
 
     }
-    ToolObject evaluate(Memory memory) throws ToolInternalException;
+    ToolObject evaluate(Memory memory) throws ToolNativeException;
 }

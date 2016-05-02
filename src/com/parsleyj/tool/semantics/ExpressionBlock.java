@@ -1,10 +1,8 @@
 package com.parsleyj.tool.semantics;
 
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.semantics.MethodCall;
-import com.parsleyj.tool.semantics.RValue;
 
 /**
  * Created by Giuseppe on 04/04/16.
@@ -19,7 +17,7 @@ public class ExpressionBlock implements RValue {
     }
 
     @Override
-    public ToolObject evaluate(Memory memory) throws ToolInternalException {
+    public ToolObject evaluate(Memory memory) throws ToolNativeException {
         return MethodCall.executeScopedBlockWithNoParameters(c, memory);
     }
 

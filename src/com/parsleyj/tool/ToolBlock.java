@@ -1,6 +1,6 @@
 package com.parsleyj.tool;
 
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
@@ -21,7 +21,7 @@ public class ToolBlock extends ToolObject {
     }
 
     @Override
-    public ToolObject evaluate(Memory memory) throws ToolInternalException {
+    public ToolObject evaluate(Memory memory) throws ToolNativeException {
         if (evaluateAsObject) return super.evaluate(memory);
         else {
             evaluateAsObject = false;
@@ -29,7 +29,7 @@ public class ToolBlock extends ToolObject {
         }
     }
 
-    public ToolObject execute(Memory memory) throws ToolInternalException {
+    public ToolObject execute(Memory memory) throws ToolNativeException {
         return MethodCall.executeScopedBlockWithNoParameters(x, memory);
     }
 

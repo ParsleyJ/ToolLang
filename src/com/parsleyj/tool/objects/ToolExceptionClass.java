@@ -1,6 +1,6 @@
 package com.parsleyj.tool.objects;
 
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 
 /**
  * Created by Giuseppe on 05/04/16.
@@ -11,8 +11,8 @@ public class ToolExceptionClass extends ToolClass{
         super(className, BaseTypes.C_EXCEPTION);
     }
 
-    public ToolInternalException newThrowableInstance(String message){
-        return new ToolInternalException(new ToolException(this, message));
+    public ToolNativeException newThrowableInstance(String message){
+        return new ToolNativeException(new ToolException(this, message));
     }
 
     public ToolException newExceptionInstance(String message){

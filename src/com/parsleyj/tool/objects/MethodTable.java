@@ -60,30 +60,6 @@ public class MethodTable {
                 throw new AmbiguousMethodCallException(sb.toString());
             }
         }
-
-        /* OLD METHOD FIND
-        for (ToolMethod method : methods) {
-            boolean found = true;
-            List<ToolClass> methodArgumentTypes = method.getArgumentTypes();
-            if (method.getName().equals(name) && (methodArgumentTypes.size() == argumentTypes.size())) {
-                for (int i = 0; i < argumentTypes.size(); i++) {
-                    ToolClass argumentType = argumentTypes.get(i);
-                    ToolClass methodArgumentType = methodArgumentTypes.get(i);
-
-                    Integer argumentTypeID1 = argumentType.getId();
-                    Integer argumentTypeID2 = methodArgumentType.getId();
-                    if (!Objects.equals(argumentTypeID1, argumentTypeID2) ){
-                        found = false;
-                        break;
-                    }
-                }
-            } else {
-                found = false;
-            }
-            if (found) return method;
-        }
-        return null;
-        */
     }
 
     private List<Pair<Integer,List<ToolMethod>>> getRankedMethods(List<ToolMethod> candidates, List<ToolClass> argumentTypes) {
@@ -131,7 +107,6 @@ public class MethodTable {
             boolean isViable = true;
             for (int i = 0; i < argumentTypes.size(); i++) {
                 ToolClass argumentType = argumentTypes.get(i);
-                Lol.d("ARGUMENTTYPE IS "+(argumentType == null?"NULL":"NOTNULL"));
                 if (!argumentType.canBeConvertedTo(candidate.getArgumentTypes().get(i))){
                     isViable = false;
                     break;

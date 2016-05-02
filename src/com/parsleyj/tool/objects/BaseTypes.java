@@ -31,7 +31,7 @@ public class BaseTypes {
     }; //todo: null class? not a null object but an "external value"?
     public static final ToolClass C_OBJECT = new ToolClass("Object", null);
     public static final ToolClass C_CLASS = new ToolClass("Class", C_OBJECT);
-    public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);
+    public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);//TODO this must be an object
     public static final ToolClass C_FIELD = new ToolClass("ToolField", C_OBJECT);
     public static final ToolClass C_BLOCK = new ToolClass("Block", C_OBJECT);
     public static final ToolClass C_METHOD = new ToolClass("Method", C_OBJECT);
@@ -92,6 +92,7 @@ public class BaseTypes {
     static {
         C_OBJECT.forceSetBelongingClass(C_CLASS);
         C_CLASS.forceSetBelongingClass(C_CLASS);
+
         C_TOOL.addClassMethod(new ToolMethod(
                 Visibility.Public,
                 "print",
@@ -106,35 +107,6 @@ public class BaseTypes {
         }
         ));
 
-
-        C_CLASS.getInstanceMethodTable().add(new ToolMethod(
-                Visibility.Public,
-                "_create_", new ParameterDefinition[]{}, memory -> {
-            ToolObject self = memory.getSelfObject();
-            ToolObject result = null;
-            if (self.getBelongingClass().isOrExtends(C_CLASS)) {
-                ToolClass selfClass = (ToolClass) self;
-                result = new ToolObject(selfClass);
-                for (ToolField toolField : selfClass.getFields().values()) {
-                    //all set to null
-                    result.addReferenceMember(new Reference(toolField.getIdentifier()));
-                }
-            } else throw new BadMethodCallException("Something went wrong while attempting to call <Class>._create_()");
-            return result;
-        }));
-
-
-        C_BLOCK.getInstanceMethodTable().add(new ToolMethod(
-                Visibility.Public,
-                "execute", new ParameterDefinition[]{}, memory -> {
-            ToolObject self = memory.getObjectByIdentifier("this");
-            ToolObject result = null;
-            if (self.getBelongingClass().equals(C_BLOCK)) {
-                result = ((ToolBlock) self).execute(memory);
-            } else
-                throw new BadMethodCallException("Something went wrong while attempting to call <Block>.execute()");//TODO: best constructor for this exception
-            return result;
-        }));
 
         NATIVE_CLASS_MAP.entrySet().forEach(e -> {
             try {

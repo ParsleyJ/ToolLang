@@ -6,10 +6,10 @@ import com.parsleyj.tool.objects.ToolException;
  * Created by Giuseppe on 04/04/16.
  * TODO: javadoc
  */
-public class ToolInternalException extends Exception{
+public class ToolNativeException extends Exception{
     private ToolException exceptionObject;
 
-    public ToolInternalException(ToolException exceptionObject){
+    public ToolNativeException(ToolException exceptionObject){
         this.exceptionObject = exceptionObject;
     }
 

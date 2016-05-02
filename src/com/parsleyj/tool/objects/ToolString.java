@@ -2,6 +2,9 @@ package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+import com.parsleyj.utils.PJ;
+
+import java.util.stream.Collectors;
 
 /**
  * Created by Giuseppe on 04/04/16.
@@ -47,6 +50,15 @@ public class ToolString extends ToolObject {
     @NativeInstanceMethod
     public static ToolString _plus_(@SelfParameter ToolString a, ToolObject b){
         return new ToolString(a.getStringValue() + b.getPrintString());
+    }
+
+    @NativeInstanceMethod
+    public static ToolList _slash_(@SelfParameter ToolString a, ToolString delimiter){
+        return new ToolList(PJ.list(a.getStringValue().split(delimiter.getStringValue()))
+                .stream()
+                .map(ToolString::new)
+                .collect(Collectors.toList())
+        );
     }
 
 }

@@ -2,7 +2,7 @@ package com.parsleyj.tool.semantics;
 
 import com.parsleyj.tool.exceptions.CallOnNullException;
 import com.parsleyj.tool.exceptions.MethodNotFoundException;
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolMethod;
@@ -53,7 +53,7 @@ public class MethodCall implements RValue {
         return argumentExpressions;
     }
 
-    public ToolObject evaluate(Memory memory) throws ToolInternalException {
+    public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolObject caller = callerExpression.evaluate(memory);
         if(caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
         boolean isStatic = false;
@@ -113,7 +113,7 @@ public class MethodCall implements RValue {
         return result;
     }
 
-    public static ToolObject executeScopedBlockWithNoParameters(RValue block, Memory memory) throws ToolInternalException {
+    public static ToolObject executeScopedBlockWithNoParameters(RValue block, Memory memory) throws ToolNativeException {
         memory.pushScope();
         ToolObject result = block.evaluate(memory);
         memory.createPhantomReference(result);

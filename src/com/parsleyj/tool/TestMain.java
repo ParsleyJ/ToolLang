@@ -1,6 +1,6 @@
 package com.parsleyj.tool;
 
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.*;
@@ -45,7 +45,7 @@ public class TestMain {
                 try {
                     ToolObject to = e.evaluate((Memory) configuration.getConfigurationElement(memName));
                     if (PRINT_RESULTS) System.out.println("RESULT = " + to);
-                } catch (ToolInternalException e1) {
+                } catch (ToolNativeException e1) {
                     e1.printStackTrace();
                     System.err.println("exception not handled of type " + e1.getExceptionObject().getBelongingClass() + ": " + e1.getExceptionObject().getExplain());
                 }
@@ -97,7 +97,7 @@ public class TestMain {
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
                         if (PRINT_RESULTS) System.out.println("RESULT = " + to);
-                    } catch (ToolInternalException e1) {
+                    } catch (ToolNativeException e1) {
                         if (PRINT_DEBUG) e1.printStackTrace();
                         System.err.println("Tool Exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
                     }
@@ -130,6 +130,7 @@ public class TestMain {
         TokenCategoryDefinition ifToken = new TokenCategoryDefinition("IF_KEYWORD", "\\Qif\\E");
         TokenCategoryDefinition thenToken = new TokenCategoryDefinition("THEN_KEYWORD", "\\Qthen\\E");
         TokenCategoryDefinition elseToken = new TokenCategoryDefinition("ELSE_KEYWORD", "\\Qelse\\E");
+        TokenCategoryDefinition toOperatorToken = new TokenCategoryDefinition("TO_OPERATOR", "\\Qto\\E");
         TokenCategoryDefinition andOperatorToken = new TokenCategoryDefinition("AND_OPERATOR", "\\Qand\\E");
         TokenCategoryDefinition orOperatorToken = new TokenCategoryDefinition("OR_OPERATOR", "\\Qor\\E");
         TokenCategoryDefinition notOperatorToken = new TokenCategoryDefinition("NOT_OPERATOR", "\\Qnot\\E");
@@ -166,7 +167,7 @@ public class TestMain {
         TokenCategoryDefinition[] lexicon = new TokenCategoryDefinition[]{
                 stringToken,
                 nullToken, trueToken, falseToken, whileToken, doToken, ifToken, thenToken, elseToken,
-                andOperatorToken, orOperatorToken, notOperatorToken,
+                toOperatorToken, andOperatorToken, orOperatorToken, notOperatorToken,
                 identifierToken, dotToken, exclamationPointToken, commaToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
                 getBlockDefinitionOperatorToken,
@@ -208,7 +209,7 @@ public class TestMain {
                 (n, s) -> new MethodCall(
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
-                        new RValue[]{s.convert(n.get(2))}),
+                        new RValue[]{}),
                 ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition functionCall1 = new SyntaxCaseDefinition(rExp, "functionCall1",
                 (n, s) -> new MethodCall(
@@ -228,9 +229,12 @@ public class TestMain {
                     return cselist.generateToolList(m);
                 },
                 openSquareBracketToken, csel, closedSquareBracketToken);
-        /*SyntaxCaseDefinition arraySubscription = new SyntaxCaseDefinition(rExp, "arraySubscription",
-                (),
-                rExp, openSquareBracketToken, csel, closedSquareBracketToken);*/
+        SyntaxCaseDefinition elementAccessOperation1 = new SyntaxCaseDefinition(rExp, "elementAccessOperation1",
+                (n,s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2)), true),
+                rExp, openSquareBracketToken, rExp, closedSquareBracketToken);
+        SyntaxCaseDefinition elementAccessOperation2 = new SyntaxCaseDefinition(rExp, "elementAccessOperation2",
+                (n,s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
+                rExp, openSquareBracketToken, csel, closedSquareBracketToken);
         SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
                 (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, dotToken, ident);
@@ -240,6 +244,10 @@ public class TestMain {
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
                 (n, s) -> new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
+                new CBOConverterMethod<RValue>((a, b) ->
+                        new BinaryOperationMethodCall(a, "_to_", b)),
+                rExp, toOperatorToken, rExp);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "_asterisk_", b)),
@@ -319,9 +327,13 @@ public class TestMain {
                 identifier,
                 expressionBetweenRoundBrackets,
                 functionCall0, functionCall1, functionCall2,
+                arrayLiteral,
+                elementAccessOperation1,
+                elementAccessOperation2,
                 dotNotationField,
                 newVarDeclaration,
                 logicalNotOperation,
+                intervalOperation,
                 asteriskOperation, slashOperation, percentSignOperation,
                 minusOperation, plusOperation,
                 greaterOperation, equalGreaterOperation,
@@ -329,7 +341,6 @@ public class TestMain {
                 equalsOperation, notEqualsOperation,
                 logicalAndOperation,
                 logicalOrOperation,
-                arrayLiteral,
                 ifThenElseStatement, ifThenStatement,
                 whileStatement,
                 assignment,

@@ -1,7 +1,7 @@
 package com.parsleyj.tool.semantics;
 
 import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.BaseTypes;
 
@@ -18,7 +18,7 @@ public class NewVarDeclaration implements LValue {
     }
 
     @Override
-    public void assign(ToolObject o, Memory m) throws ToolInternalException {
+    public void assign(ToolObject o, Memory m) throws ToolNativeException {
         m.newLocalReference(identifierString, o);
     }
 

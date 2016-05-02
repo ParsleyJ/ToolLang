@@ -1,7 +1,7 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.memory.Reference;
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.AddedReference;
 import com.parsleyj.tool.memory.CounterIsZeroRemoveObject;
 import com.parsleyj.tool.memory.Memory;
@@ -47,7 +47,7 @@ public class ToolObject implements RValue {
     }
 
     @Override
-    public ToolObject evaluate(Memory memory) throws ToolInternalException {
+    public ToolObject evaluate(Memory memory) throws ToolNativeException {
         return this;
     }
 

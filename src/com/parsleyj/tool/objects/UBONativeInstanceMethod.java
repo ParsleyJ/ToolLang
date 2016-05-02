@@ -1,7 +1,7 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.BadMethodCallException;
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 
 /**
@@ -35,6 +35,6 @@ public class UBONativeInstanceMethod<R extends ToolObject, T1 extends ToolObject
     }
 
     public interface Body<R extends ToolObject, T1 extends ToolObject, T2 extends ToolObject> {
-        public R exec(T1 a, T2 b, Memory memory) throws ToolInternalException;
+        public R exec(T1 a, T2 b, Memory memory) throws ToolNativeException;
     }
 }

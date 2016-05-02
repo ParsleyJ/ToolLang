@@ -1,7 +1,7 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.BadMethodCallException;
-import com.parsleyj.tool.exceptions.ToolInternalException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 
 /**
@@ -35,6 +35,6 @@ public class CBONativeInstanceMethod<T extends ToolObject> extends ToolMethod {
     }
 
     public interface Body<T extends ToolObject> {
-        public T exec(T a, T b, Memory memory) throws ToolInternalException;
+        public T exec(T a, T b, Memory memory) throws ToolNativeException;
     }
 }

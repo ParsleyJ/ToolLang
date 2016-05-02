@@ -4,6 +4,8 @@ import com.parsleyj.tool.exceptions.ToolArithmeticException;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -22,7 +24,7 @@ public class ToolInteger extends ToolObject {
 
     @Override
     public String toString() {
-        return "<Integer:" + String.valueOf(integer) + ">";
+        return ""+String.valueOf(integer);
     }
 
     public Integer getIntegerValue() {
@@ -87,10 +89,25 @@ public class ToolInteger extends ToolObject {
         return new ToolBoolean(!Objects.equals(a.getIntegerValue(), b.getIntegerValue()));
     }
 
+    @NativeInstanceMethod
+    public static ToolList _to_(@SelfParameter ToolInteger a, ToolInteger b){
+        List<ToolInteger> toolIntegerList = new ArrayList<>();
+        if(a.getIntegerValue() <= b.getIntegerValue()){
+            for(int i = a.getIntegerValue(); i < b.getIntegerValue(); ++i){
+                toolIntegerList.add(new ToolInteger(i));
+            }
+        }else /*if (a.getIntegerValue() > b.getIntegerValue())*/{
+            for(int i = a.getIntegerValue(); i > b.getIntegerValue(); --i){
+                toolIntegerList.add(new ToolInteger(i));
+            }
+        }
+        return new ToolList(toolIntegerList);
+    }
+
 
 
     @Override
     public String getPrintString() {
-        return ""+integer;
+        return ""+String.valueOf(integer);
     }
 }
