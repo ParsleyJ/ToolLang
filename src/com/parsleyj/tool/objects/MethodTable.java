@@ -1,6 +1,7 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
+import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.Pair;
 
 import java.util.*;
@@ -130,6 +131,7 @@ public class MethodTable {
             boolean isViable = true;
             for (int i = 0; i < argumentTypes.size(); i++) {
                 ToolClass argumentType = argumentTypes.get(i);
+                Lol.d("ARGUMENTTYPE IS "+(argumentType == null?"NULL":"NOTNULL"));
                 if (!argumentType.canBeConvertedTo(candidate.getArgumentTypes().get(i))){
                     isViable = false;
                     break;

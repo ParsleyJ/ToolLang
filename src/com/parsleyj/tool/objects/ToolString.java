@@ -1,5 +1,8 @@
 package com.parsleyj.tool.objects;
 
+import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+
 /**
  * Created by Giuseppe on 04/04/16.
  * TODO: javadoc
@@ -14,12 +17,16 @@ public class ToolString extends ToolObject {
     }
 
     public static String unescape(String s1) {
-        return s1;
+        return s1; //TODO: impl
     }
 
     public ToolString(String string) {
         super(BaseTypes.C_STRING);
         this.string = string;
+    }
+
+    public String getStringValue() {
+        return string;
     }
 
     @Override
@@ -31,4 +38,15 @@ public class ToolString extends ToolObject {
     public String toString() {
         return "\""+string+"\"";
     }
+
+    @NativeInstanceMethod
+    public static ToolString _plus_(@SelfParameter ToolString a, ToolString b){
+        return new ToolString(a.getStringValue() + b.getStringValue());
+    }
+
+    @NativeInstanceMethod
+    public static ToolString _plus_(@SelfParameter ToolString a, ToolObject b){
+        return new ToolString(a.getStringValue() + b.getPrintString());
+    }
+
 }

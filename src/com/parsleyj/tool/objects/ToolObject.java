@@ -16,10 +16,6 @@ public class ToolObject implements RValue {
     private int referenceCount = 0;
 
 
-    public boolean isNull() {
-        return false;
-    }
-
     private static class IDGenerator {
 
         private static int id = 0;
@@ -82,6 +78,14 @@ public class ToolObject implements RValue {
 
     public Scope getMembersScope() {
         return scope;
+    }
+
+    public boolean isNull() {
+        return false;
+    }
+
+    public void forceSetBelongingClass(ToolClass belongingClass) {
+        this.belongingClass = belongingClass;
     }
 
     @Override

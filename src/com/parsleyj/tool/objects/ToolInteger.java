@@ -4,9 +4,6 @@ import com.parsleyj.tool.exceptions.ToolArithmeticException;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,67 +25,69 @@ public class ToolInteger extends ToolObject {
         return "<Integer:" + String.valueOf(integer) + ">";
     }
 
-    public Integer getInteger() {
+    public Integer getIntegerValue() {
         return integer;
     }
 
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolInteger _plus_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolInteger(a.getInteger() + b.getInteger());
+        return new ToolInteger(a.getIntegerValue() + b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolInteger _minus_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolInteger(a.getInteger() - b.getInteger());
+        return new ToolInteger(a.getIntegerValue() - b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolInteger _asterisk_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolInteger(a.getInteger() * b.getInteger());
+        return new ToolInteger(a.getIntegerValue() * b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolInteger _slash_(@SelfParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
-        if((b.getInteger() == 0)) throw new ToolArithmeticException("Division by zero.");
-        return new ToolInteger(a.getInteger() / b.getInteger());
+        if((b.getIntegerValue() == 0)) throw new ToolArithmeticException("Division by zero.");
+        return new ToolInteger(a.getIntegerValue() / b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolInteger _percentSign_(@SelfParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
-        if((b.getInteger() == 0)) throw new ToolArithmeticException("Division by zero.");
-        return new ToolInteger(a.getInteger() % b.getInteger());
+        if((b.getIntegerValue() == 0)) throw new ToolArithmeticException("Division by zero.");
+        return new ToolInteger(a.getIntegerValue() % b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolBoolean _greater_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolBoolean(a.getInteger() > b.getInteger());
+        return new ToolBoolean(a.getIntegerValue() > b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolBoolean _less_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolBoolean(a.getInteger() < b.getInteger());
+        return new ToolBoolean(a.getIntegerValue() < b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolBoolean _equals_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolBoolean(Objects.equals(a.getInteger(), b.getInteger()));
+        return new ToolBoolean(Objects.equals(a.getIntegerValue(), b.getIntegerValue()));
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolBoolean _equalsOrGreater_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolBoolean(a.getInteger() >= b.getInteger());
+        return new ToolBoolean(a.getIntegerValue() >= b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolBoolean _equalsOrLess_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolBoolean(a.getInteger() <= b.getInteger());
+        return new ToolBoolean(a.getIntegerValue() <= b.getIntegerValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod
     public static ToolBoolean _notEquals_(@SelfParameter ToolInteger a, ToolInteger b){
-        return new ToolBoolean(!Objects.equals(a.getInteger(), b.getInteger()));
+        return new ToolBoolean(!Objects.equals(a.getIntegerValue(), b.getIntegerValue()));
     }
+
+
 
     @Override
     public String getPrintString() {

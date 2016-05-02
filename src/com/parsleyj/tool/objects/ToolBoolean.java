@@ -23,17 +23,17 @@ public class ToolBoolean extends ToolObject{
     }
 
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod()
     public static ToolBoolean _logicalNot_(@SelfParameter ToolBoolean a){
         return new ToolBoolean(!a.getBoolValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod()
     public static ToolBoolean _logicalAnd_(@SelfParameter ToolBoolean a, ToolBoolean b){
         return new ToolBoolean(a.getBoolValue() && b.getBoolValue());
     }
 
-    @NativeInstanceMethod(Visibility.Public)
+    @NativeInstanceMethod()
     public static ToolBoolean _logicalOr_(@SelfParameter ToolBoolean a, ToolBoolean b){
         return new ToolBoolean(a.getBoolValue() || b.getBoolValue());
     }

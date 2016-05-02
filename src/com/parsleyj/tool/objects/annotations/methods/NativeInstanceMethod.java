@@ -11,5 +11,5 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NativeInstanceMethod {
-    Visibility value();
+    Visibility value() default Visibility.Public;
 }

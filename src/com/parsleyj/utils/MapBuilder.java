@@ -10,7 +10,7 @@ import java.util.Map;
 public class MapBuilder<K, T> {
     private HashMap<K, T> hashMap = new HashMap<>();
 
-    public MapBuilder<K, T> append(K key, T val) {
+    public MapBuilder<K, T> put(K key, T val) {
         hashMap.put(key, val);
         return this;
     }

@@ -30,8 +30,8 @@ public class BaseTypes {
         }
     }; //todo: null class? not a null object but an "external value"?
     public static final ToolClass C_OBJECT = new ToolClass("Object", null);
-    public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);
     public static final ToolClass C_CLASS = new ToolClass("Class", C_OBJECT);
+    public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);
     public static final ToolClass C_FIELD = new ToolClass("ToolField", C_OBJECT);
     public static final ToolClass C_BLOCK = new ToolClass("Block", C_OBJECT);
     public static final ToolClass C_METHOD = new ToolClass("Method", C_OBJECT);
@@ -51,23 +51,23 @@ public class BaseTypes {
     public static final ToolExceptionClass C_ARITHMETIC_EXCEPTION = new ToolExceptionClass("ArithmeticException");
 
     public static final Map<Class<?>, ToolClass> NATIVE_CLASS_MAP = new MapBuilder<Class<?>, ToolClass>()
-            .append(ToolObject.class, C_OBJECT)
-            .append(ToolClass.class, C_CLASS)
-            .append(ToolField.class, C_FIELD)
-            .append(ToolBlock.class, C_BLOCK)
-            .append(ToolMethod.class, C_METHOD)
-            .append(ToolInteger.class, C_INTEGER)
-            .append(ToolString.class, C_STRING)
-            .append(ToolBoolean.class, C_BOOLEAN)
-            .append(ToolList.class, C_LIST)
-            .append(ToolException.class, C_EXCEPTION)
+            .put(ToolObject.class, C_OBJECT)
+            .put(ToolClass.class, C_CLASS)
+            .put(ToolField.class, C_FIELD)
+            .put(ToolBlock.class, C_BLOCK)
+            .put(ToolMethod.class, C_METHOD)
+            .put(ToolInteger.class, C_INTEGER)
+            .put(ToolString.class, C_STRING)
+            .put(ToolBoolean.class, C_BOOLEAN)
+            .put(ToolList.class, C_LIST)
+            .put(ToolException.class, C_EXCEPTION)
             .get();
 
     public static List<ToolClass> getAllBaseClasses() {
         return Arrays.asList(
                 C_OBJECT,
-                C_TOOL,
                 C_CLASS,
+                C_TOOL,
                 C_FIELD,
                 C_BLOCK,
                 C_METHOD,
@@ -77,15 +77,21 @@ public class BaseTypes {
                 C_BOOLEAN,
                 C_LIST,
                 C_EXCEPTION,
+
                 C_REFERENCE_ALREADY_EXISTS_EXCEPTION,
                 C_REFERENCE_NOT_FOUND_EXCEPTION,
                 C_INVALID_CONDITIONAL_EXPRESSION_EXCEPTION,
                 C_BAD_METHOD_CALL_EXCEPTION,
-                C_METHOD_NOT_FOUND_EXCEPTION
+                C_AMBIGUOUS_METHOD_CALL_EXCEPTION,
+                C_METHOD_NOT_FOUND_EXCEPTION,
+                C_CALL_ON_NULL_EXCEPTION,
+                C_ARITHMETIC_EXCEPTION
         );
     }
 
     static {
+        C_OBJECT.forceSetBelongingClass(C_CLASS);
+        C_CLASS.forceSetBelongingClass(C_CLASS);
         C_TOOL.addClassMethod(new ToolMethod(
                 Visibility.Public,
                 "print",
