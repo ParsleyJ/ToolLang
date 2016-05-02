@@ -112,8 +112,9 @@ public class TestMain {
 
     private static SyntaxClass rExp = new SyntaxClass("rExp");
 
-    private static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp
+    private static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp = lExp can be treated as rExp
     private static SyntaxClass ident = new SyntaxClass("ident", lExp);
+
     private static SyntaxClass csel = new SyntaxClass("csel");
 
     private static ProgramGenerator getDefaultInterpreter() {
@@ -202,9 +203,11 @@ public class TestMain {
         SyntaxCaseDefinition identifier = new SyntaxCaseDefinition(ident, "identifier",
                 new SimpleWrapConverterMethod(),
                 identifierToken);
+
         SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
+
         SyntaxCaseDefinition functionCall0 = new SyntaxCaseDefinition(rExp, "functionCall0",
                 (n, s) -> new MethodCall(
                         BaseTypes.C_TOOL,
@@ -223,6 +226,32 @@ public class TestMain {
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
                 ident, openRoundBracketToken, csel, closedRoundBracketToken);
+
+        SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
+                (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
+                rExp, dotToken, ident);
+        SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
+                (n, s) -> new MethodCall(
+                        s.convert(n.get(0)),
+                        s.convert(n.get(2)),
+                        new RValue[]{}),
+                rExp, dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
+                (n, s) -> new MethodCall(
+                        s.convert(n.get(0)),
+                        ((Identifier) s.convert(n.get(2))).getIdentifierString(),
+                        new RValue[]{s.convert(n.get(4))}),
+                rExp, dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
+                (n, s) -> new MethodCall(
+                        s.convert(n.get(0)),
+                        s.convert(n.get(2)),
+                        ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray()),
+                rExp, dotToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
+        SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
+                (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                dotToken, ident).parsingDirection(Associativity.RightToLeft);
+
         SyntaxCaseDefinition arrayLiteral = new SyntaxCaseDefinition(rExp, "arrayLiteral",
                 (n, s) -> (RValue) m -> {
                     CommaSeparatedExpressionList cselist = s.convert(n.get(1));
@@ -230,23 +259,19 @@ public class TestMain {
                 },
                 openSquareBracketToken, csel, closedSquareBracketToken);
         SyntaxCaseDefinition elementAccessOperation1 = new SyntaxCaseDefinition(rExp, "elementAccessOperation1",
-                (n,s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2)), true),
+                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2)), true),
                 rExp, openSquareBracketToken, rExp, closedSquareBracketToken);
         SyntaxCaseDefinition elementAccessOperation2 = new SyntaxCaseDefinition(rExp, "elementAccessOperation2",
-                (n,s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
+                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, openSquareBracketToken, csel, closedSquareBracketToken);
-        SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
-                (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
-                rExp, dotToken, ident);
-        SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
-                (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                dotToken, ident).parsingDirection(Associativity.RightToLeft);
+
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
                 (n, s) -> new PrefixUnaryOperationMethodCall("_unaryMinus_", s.convert(n.get(1))),
                 minusToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
                 (n, s) -> new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
+
         SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "_to_", b)),
@@ -303,9 +328,11 @@ public class TestMain {
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "_logicalOr_", b)),
                 rExp, orOperatorToken, rExp);
+
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
                 (n, s) -> new Assignment(s.convert(n.get(0)), s.convert(n.get(2))),
                 lExp, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+
         SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",
                 (n, s) -> new IfThenElseStatement(s.convert(n.get(1)), s.convert(n.get(3)), s.convert(n.get(5))),
                 ifToken, rExp, thenToken, rExp, elseToken, rExp).parsingDirection(Associativity.RightToLeft);
@@ -330,11 +357,12 @@ public class TestMain {
                 identifier,
                 expressionBetweenRoundBrackets,
                 functionCall0, functionCall1, functionCall2,
+                dotNotationField,
+                dotNotationMethodCall0, dotNotationMethodCall1, dotNotationMethodCall2,
+                newVarDeclaration,
                 arrayLiteral,
                 elementAccessOperation1,
                 elementAccessOperation2,
-                dotNotationField,
-                newVarDeclaration,
                 unaryMinusOperation,
                 logicalNotOperation,
                 intervalOperation,
