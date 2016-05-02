@@ -1,11 +1,16 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
+import com.parsleyj.tool.exceptions.BadMethodCallException;
+import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
+import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+import com.parsleyj.utils.Lol;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.*;
 
 /**
  * Created by Giuseppe on 01/04/16.
@@ -23,6 +28,8 @@ public class ToolClass extends ToolObject {
         this.className = className;
         this.parentClass = parentClass;
     }
+
+
 
 
     public ToolMethod findInstanceMethod(String name, List<ToolClass> argumentTypes) throws AmbiguousMethodCallException {
@@ -99,6 +106,7 @@ public class ToolClass extends ToolObject {
         return isOrExtends(type);
         //TODO: consider user-defined conversions
     }
+
 
     @Override
     public String toString() {

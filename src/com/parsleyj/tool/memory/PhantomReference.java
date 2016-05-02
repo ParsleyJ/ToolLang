@@ -1,4 +1,4 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.memory;
 
 import com.parsleyj.tool.objects.ToolObject;
 

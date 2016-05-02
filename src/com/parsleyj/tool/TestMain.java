@@ -2,6 +2,7 @@ package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.semantics.*;
 import com.parsleyj.toolparser.configuration.Configuration;
@@ -69,7 +70,7 @@ public class TestMain {
         ToolString testString = new ToolString("yay");
         m.addObjectToHeap(testString);
         BaseTypes.C_TOOL.addReferenceMember(new Reference("test", testString.getId()));
-        ProgramGenerator pg = getDefaultInterpreterMini();
+        ProgramGenerator pg = getDefaultInterpreter();
         pg.setPrintDebugMessages(PRINT_DEBUG);
         while (true) {
             StringBuilder sb = new StringBuilder();
@@ -115,7 +116,7 @@ public class TestMain {
     private static SyntaxClass ident = new SyntaxClass("ident", lExp);
     private static SyntaxClass csel = new SyntaxClass("csel");
 
-    private static ProgramGenerator getDefaultInterpreterMini() {
+    private static ProgramGenerator getDefaultInterpreter() {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
                 ToolString::newFromLiteral);
         TokenCategoryDefinition nullToken = new TokenCategoryDefinition("NULL_KEYWORD", "\\Qnull\\E",

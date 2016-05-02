@@ -1,4 +1,4 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.semantics;
 
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.tool.memory.Memory;

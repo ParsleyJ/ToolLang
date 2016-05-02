@@ -1,4 +1,4 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.objects.ToolClass;
 
@@ -38,5 +38,10 @@ public class ParameterDefinition {
 
     public Mode getMode() {
         return mode;
+    }
+
+    @Override
+    public String toString() {
+        return "<*Parameter: "+(parameterType == null? "$nulltype$" : parameterType.getClassName())+" "+parameterName+"*>";
     }
 }

@@ -2,9 +2,20 @@ package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.*;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
+import com.parsleyj.tool.memory.Reference;
+import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
+import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+import com.parsleyj.utils.Lol;
+import com.parsleyj.utils.MapBuilder;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Giuseppe on 04/04/16.
@@ -12,7 +23,7 @@ import java.util.List;
  */
 public class BaseTypes {
 
-    public static final ToolObject O_NULL = new ToolObject(null){//TODO: special Null class: is or extends returns always true
+    public static final ToolObject O_NULL = new ToolObject(null) {//TODO: special Null class: is or extends returns always true
         @Override
         public boolean isNull() {
             return true;
@@ -21,7 +32,6 @@ public class BaseTypes {
     public static final ToolClass C_OBJECT = new ToolClass("Object", null);
     public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);
     public static final ToolClass C_CLASS = new ToolClass("Class", C_OBJECT);
-    public static final ToolClass C_REFERENCE = new ToolClass("Reference", C_OBJECT);
     public static final ToolClass C_FIELD = new ToolClass("ToolField", C_OBJECT);
     public static final ToolClass C_BLOCK = new ToolClass("Block", C_OBJECT);
     public static final ToolClass C_METHOD = new ToolClass("Method", C_OBJECT);
@@ -40,62 +50,24 @@ public class BaseTypes {
     public static final ToolExceptionClass C_CALL_ON_NULL_EXCEPTION = new ToolExceptionClass("CallOnNullException");
     public static final ToolExceptionClass C_ARITHMETIC_EXCEPTION = new ToolExceptionClass("ArithmeticException");
 
-    static{
-        C_TOOL.addClassMethod(new ToolMethod(
-                Visibility.Public,
-                "print",
-                new ParameterDefinition[]{
-                        new ParameterDefinition("x", C_OBJECT)
-                }, memory -> {
-                    ToolObject x = memory.getObjectByIdentifier("x");
-                    if(x.getBelongingClass().isOrExtends(C_OBJECT)){
-                        System.out.println(x.getPrintString());
-                        return x;
-                    } else throw new BadMethodCallException("Something went wrong while attempting to call Tool.print(Object)");
-                }
-        ));
+    public static final Map<Class<?>, ToolClass> NATIVE_CLASS_MAP = new MapBuilder<Class<?>, ToolClass>()
+            .append(ToolObject.class, C_OBJECT)
+            .append(ToolClass.class, C_CLASS)
+            .append(ToolField.class, C_FIELD)
+            .append(ToolBlock.class, C_BLOCK)
+            .append(ToolMethod.class, C_METHOD)
+            .append(ToolInteger.class, C_INTEGER)
+            .append(ToolString.class, C_STRING)
+            .append(ToolBoolean.class, C_BOOLEAN)
+            .append(ToolList.class, C_LIST)
+            .append(ToolException.class, C_EXCEPTION)
+            .get();
 
-        C_INTEGER.addInstanceMethods(ToolInteger.getNativeInstanceMethods());
-        C_INTEGER.addClassMethods(ToolInteger.getNativeClassMethods());
-
-        C_BOOLEAN.addInstanceMethods(ToolBoolean.getNativeInstanceMethods());
-        C_BOOLEAN.addClassMethods(ToolBoolean.getNativeClassMethods());
-
-        C_CLASS.getInstanceMethodTable().add(new ToolMethod(
-                Visibility.Public,
-                "_create_", new ParameterDefinition[]{}, memory -> {
-            ToolObject self = memory.getSelfObject();
-            ToolObject result = null;
-            if(self.getBelongingClass().isOrExtends(C_CLASS)){
-                ToolClass selfClass = (ToolClass) self;
-                result = new ToolObject(selfClass);
-                for(ToolField toolField :selfClass.getFields().values()){
-                    //all set to null
-                    result.addReferenceMember(new Reference(toolField.getIdentifier()));
-                }
-            } else throw new BadMethodCallException("Something went wrong while attempting to call <Class>._create_()");
-            return result;
-        }));
-
-
-        C_BLOCK.getInstanceMethodTable().add(new ToolMethod(
-                Visibility.Public,
-                "execute", new ParameterDefinition[]{}, memory -> {
-            ToolObject self = memory.getObjectByIdentifier("this");
-            ToolObject result = null;
-            if(self.getBelongingClass().equals(C_BLOCK)){
-                result = ((ToolBlock) self).execute(memory);
-            } else throw new BadMethodCallException("Something went wrong while attempting to call <Block>.execute()");//TODO: best constructor for this exception
-            return result;
-        }));
-    }
-
-    public static List<ToolClass> getAllBaseClasses(){
+    public static List<ToolClass> getAllBaseClasses() {
         return Arrays.asList(
                 C_OBJECT,
                 C_TOOL,
                 C_CLASS,
-                C_REFERENCE,
                 C_FIELD,
                 C_BLOCK,
                 C_METHOD,
@@ -111,6 +83,144 @@ public class BaseTypes {
                 C_BAD_METHOD_CALL_EXCEPTION,
                 C_METHOD_NOT_FOUND_EXCEPTION
         );
+    }
+
+    static {
+        C_TOOL.addClassMethod(new ToolMethod(
+                Visibility.Public,
+                "print",
+                new ParameterDefinition[]{
+                        new ParameterDefinition("x", C_OBJECT)
+                }, memory -> {
+            ToolObject x = memory.getObjectByIdentifier("x");
+            if (x.getBelongingClass().isOrExtends(C_OBJECT)) {
+                System.out.println(x.getPrintString());
+                return x;
+            } else throw new BadMethodCallException("Something went wrong while attempting to call Tool.print(Object)");
+        }
+        ));
+
+
+        C_CLASS.getInstanceMethodTable().add(new ToolMethod(
+                Visibility.Public,
+                "_create_", new ParameterDefinition[]{}, memory -> {
+            ToolObject self = memory.getSelfObject();
+            ToolObject result = null;
+            if (self.getBelongingClass().isOrExtends(C_CLASS)) {
+                ToolClass selfClass = (ToolClass) self;
+                result = new ToolObject(selfClass);
+                for (ToolField toolField : selfClass.getFields().values()) {
+                    //all set to null
+                    result.addReferenceMember(new Reference(toolField.getIdentifier()));
+                }
+            } else throw new BadMethodCallException("Something went wrong while attempting to call <Class>._create_()");
+            return result;
+        }));
+
+
+        C_BLOCK.getInstanceMethodTable().add(new ToolMethod(
+                Visibility.Public,
+                "execute", new ParameterDefinition[]{}, memory -> {
+            ToolObject self = memory.getObjectByIdentifier("this");
+            ToolObject result = null;
+            if (self.getBelongingClass().equals(C_BLOCK)) {
+                result = ((ToolBlock) self).execute(memory);
+            } else
+                throw new BadMethodCallException("Something went wrong while attempting to call <Block>.execute()");//TODO: best constructor for this exception
+            return result;
+        }));
+
+        NATIVE_CLASS_MAP.entrySet().forEach(e -> {
+            try {
+                loadNativeMethods(e.getKey(), e.getValue());
+            } catch (NativeClassLoadFailedException e1) {
+                e1.printStackTrace();
+            }
+        });
+    }
+
+
+    public static void loadNativeMethods(Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException {
+        for (Method m : nativeClass.getMethods()) {
+            if (m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)) {
+                if (!ToolObject.class.isAssignableFrom(m.getReturnType())) //it must return a ToolObject or derivate
+                    throw new NativeClassLoadFailedException();
+
+
+                NativeClassMethod classAnn = m.getDeclaredAnnotation(NativeClassMethod.class);
+                NativeInstanceMethod instanceAnn = m.getDeclaredAnnotation(NativeInstanceMethod.class);
+                boolean isInstanceMethod = instanceAnn != null;
+                Parameter[] nativePars = m.getParameters();
+                List<ParameterDefinition> pars = new ArrayList<>();
+                boolean hasSelfParameter = false;
+                for (int i = 0; i < nativePars.length; i++) {
+                    Parameter nativePar = nativePars[i];
+                    if (ToolObject.class.isAssignableFrom(nativePar.getType())) {
+                        if (i != 0 && nativePar.isAnnotationPresent(SelfParameter.class)) {
+                            throw new NativeClassLoadFailedException();
+                        } else if (i == 0 && nativePar.isAnnotationPresent(SelfParameter.class)) {
+                            hasSelfParameter = true;
+                        } else {
+                            ToolClass baseType = NATIVE_CLASS_MAP.get(nativePar.getType());
+                            if (baseType == null) throw new NativeClassLoadFailedException();
+                            pars.add(new ParameterDefinition(nativePar.getName(), baseType));
+                        }
+                    } else {
+                        throw new NativeClassLoadFailedException();
+                    }
+                }
+                if (isInstanceMethod && !hasSelfParameter) throw new NativeClassLoadFailedException();
+
+                try {
+                    ToolMethod newMethod = new ToolMethod(
+                            isInstanceMethod ? instanceAnn.value() : classAnn.value(),
+                            m.getName(), pars.toArray(new ParameterDefinition[pars.size()]),
+                            memory -> {
+                                List<ToolObject> actualPars = new ArrayList<>();
+                                if (isInstanceMethod) {
+                                    ToolObject self = memory.getSelfObject();
+                                    if (self.getBelongingClass().isOrExtends(toolClass))
+                                        actualPars.add(memory.getSelfObject());
+                                }
+                                for (ParameterDefinition par : pars) {
+                                    ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
+                                    if (x.getBelongingClass().isOrExtends(par.getParameterType())) {
+                                        actualPars.add(x);
+                                    } else
+                                        throw new BadMethodCallException("Something went wrong while attempting to call a native method"); //TODO specify what method
+                                }
+                                try {
+                                    return (ToolObject) m.invoke(null, actualPars.toArray(new Object[actualPars.size()]));
+                                } catch (IllegalAccessException | InvocationTargetException e) {
+                                    throw new RuntimeException("InvokeFailed");
+                                }
+                            });
+                    if(!isInstanceMethod){
+                        toolClass.addClassMethod(newMethod);
+                    }else{
+                        toolClass.addInstanceMethod(newMethod);
+                    }
+                    Lol.v("Added native method: " + (isInstanceMethod ?
+                            newMethod.completeInstanceMethodName(toolClass) :
+                            newMethod.completeClassMethodName(toolClass)));
+
+                } catch (RuntimeException e) {
+                    if (e.getMessage() != null && e.getMessage().equals("InvokeFailed"))
+                        throw new NativeClassLoadFailedException();
+                    else
+                        throw e;
+                }
+            }
+        }
+    }
+
+    public static class NativeClassLoadFailedException extends Exception {
+        public NativeClassLoadFailedException() {
+        }
+
+        public NativeClassLoadFailedException(String msg) {
+            super(msg);
+        }
     }
 
     //todo visibility of fields

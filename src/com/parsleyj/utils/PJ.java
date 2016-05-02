@@ -20,8 +20,6 @@ public class PJ{
         return x2;
     }
 
-
-
     public static <T> List<T> tempConcat(List<T> x, List<T> y){
         List<T> x2 = new ArrayList<>(x);
         x2.addAll(y);

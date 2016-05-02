@@ -1,5 +1,8 @@
 package com.parsleyj.tool.objects;
 
+import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,20 +23,21 @@ public class ToolBoolean extends ToolObject{
     }
 
 
-    public static List<ToolMethod> getNativeClassMethods() {
-        return Collections.emptyList();
+    @NativeInstanceMethod(Visibility.Public)
+    public static ToolBoolean _logicalNot_(@SelfParameter ToolBoolean a){
+        return new ToolBoolean(!a.getBoolValue());
     }
 
-    public static List<ToolMethod> getNativeInstanceMethods() {
-        return Arrays.asList(
-                new PUONativeInstanceMethod<ToolBoolean>("_logicalNot_", BaseTypes.C_BOOLEAN,
-                        (a, mem) -> new ToolBoolean(!a.getBoolValue())),
-                new CBONativeInstanceMethod<ToolBoolean>("_logicalAnd_", BaseTypes.C_BOOLEAN, "x", //TODO: short-circuit
-                        (a, b, mem)-> new ToolBoolean(a.getBoolValue() && b.getBoolValue())),
-                new CBONativeInstanceMethod<ToolBoolean>("_logicalOr_", BaseTypes.C_BOOLEAN, "x", //TODO: short-circuit
-                        (a, b, mem)-> new ToolBoolean(a.getBoolValue() || b.getBoolValue()))
-        );
+    @NativeInstanceMethod(Visibility.Public)
+    public static ToolBoolean _logicalAnd_(@SelfParameter ToolBoolean a, ToolBoolean b){
+        return new ToolBoolean(a.getBoolValue() && b.getBoolValue());
     }
+
+    @NativeInstanceMethod(Visibility.Public)
+    public static ToolBoolean _logicalOr_(@SelfParameter ToolBoolean a, ToolBoolean b){
+        return new ToolBoolean(a.getBoolValue() || b.getBoolValue());
+    }
+
 
     @Override
     public String toString() {

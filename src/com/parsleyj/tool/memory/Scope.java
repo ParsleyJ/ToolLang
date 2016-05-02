@@ -1,7 +1,5 @@
 package com.parsleyj.tool.memory;
 
-import com.parsleyj.tool.PhantomReference;
-import com.parsleyj.tool.Reference;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
 import com.parsleyj.utils.Table;
@@ -19,6 +17,7 @@ public class Scope {
 
     private Table<String, Reference> referenceTable = new Table<>();
     private List<PhantomReference> phantomReferences = new ArrayList<>();
+    private Integer selfObjectID = null;
     private ScopeType scopeType;
 
     public Scope(ScopeType scopeType){
@@ -60,5 +59,13 @@ public class Scope {
 
     public ScopeType getScopeType() {
         return scopeType;
+    }
+
+    public Integer getSelfObjectID() {
+        return selfObjectID;
+    }
+
+    public void setSelfObjectID(Integer selfObjectID) {
+        this.selfObjectID = selfObjectID;
     }
 }

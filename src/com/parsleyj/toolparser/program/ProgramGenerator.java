@@ -76,7 +76,7 @@ public class ProgramGenerator {
         Tokenizer tokenizer = new Tokenizer(tokenCategories);
         List<Token> tokenList = tokenizer.tokenize(inputProgram);
 
-        if(printDebugMessages){
+        if(printDebugMessages){//TODO use lol class
             System.out.println("TOKENIZER RESULT:");
             System.out.println();
             tokenList.forEach((t) -> {

@@ -1,6 +1,6 @@
 package com.parsleyj.tool.objects;
 
-import com.parsleyj.tool.Reference;
+import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.tool.memory.AddedReference;
 import com.parsleyj.tool.memory.CounterIsZeroRemoveObject;

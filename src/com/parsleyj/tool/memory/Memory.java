@@ -1,6 +1,5 @@
 package com.parsleyj.tool.memory;
 
-import com.parsleyj.tool.*;
 import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
 import com.parsleyj.tool.exceptions.ReferenceNotFoundException;
 import com.parsleyj.tool.objects.BaseTypes;
@@ -195,7 +194,7 @@ public class Memory implements ConfigurationElement {
             try {
                 this.newLocalReference(c);
             } catch (ReferenceAlreadyExistsException e) {
-                e.printStackTrace(); //theoretically, these class are the first added when the memory is initialized
+                e.printStackTrace(); //in theory, these class are the first added when the memory is initialized
             }
         }
     }

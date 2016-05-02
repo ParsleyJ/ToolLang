@@ -1,6 +1,5 @@
 package com.parsleyj.tool.objects;
 
-import com.parsleyj.tool.ParameterDefinition;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.exceptions.ToolInternalException;
 import com.parsleyj.tool.memory.Memory;

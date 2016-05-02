@@ -1,4 +1,4 @@
-package com.parsleyj.tool;
+package com.parsleyj.tool.memory;
 
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
@@ -7,7 +7,7 @@ import com.parsleyj.tool.objects.ToolObject;
  * Created by Giuseppe on 01/04/16.
  * TODO: javadoc
  */
-public class Reference extends ToolObject {
+public class Reference {
 
     private String identifierString;
     private Integer id;
@@ -18,13 +18,11 @@ public class Reference extends ToolObject {
     }
 
     public Reference(String identifierString, Integer id) {
-        super(BaseTypes.C_REFERENCE);
         this.identifierString = identifierString;
         this.id = id;
     }
 
     public Reference(String identifierString, ToolObject obj) {
-        super(BaseTypes.C_REFERENCE);
         this.identifierString = identifierString;
         this.id = obj.getId();
     }
@@ -42,8 +40,4 @@ public class Reference extends ToolObject {
     }
 
 
-    @Override
-    public String toString() {
-        return "<REF:"+identifierString+":"+id+">";
-    }
 }
