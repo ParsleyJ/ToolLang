@@ -1,6 +1,6 @@
 package com.parsleyj.tool.objects.annotations.methods;
 
-import com.parsleyj.tool.objects.Visibility;
+import com.parsleyj.tool.objects.method.Visibility;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

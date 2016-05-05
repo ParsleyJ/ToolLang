@@ -4,8 +4,8 @@ import com.parsleyj.tool.exceptions.CallOnNullException;
 import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.ToolClass;
-import com.parsleyj.tool.objects.ToolMethod;
+import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.ToolObject;
 
 import java.util.ArrayList;

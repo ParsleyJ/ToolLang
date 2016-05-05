@@ -2,7 +2,7 @@ package com.parsleyj.tool.semantics;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.ToolList;
+import com.parsleyj.tool.objects.collection.ToolList;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
 

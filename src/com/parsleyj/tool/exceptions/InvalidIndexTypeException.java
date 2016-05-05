@@ -1,7 +1,6 @@
 package com.parsleyj.tool.exceptions;
 
 import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.ToolClass;
 
 /**
  * Created by Giuseppe on 02/05/16.

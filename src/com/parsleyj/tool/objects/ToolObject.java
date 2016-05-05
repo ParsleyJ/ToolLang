@@ -2,6 +2,7 @@ package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.*;
+import com.parsleyj.tool.objects.classes.ToolClass;
 import com.parsleyj.tool.semantics.RValue;
 
 /**

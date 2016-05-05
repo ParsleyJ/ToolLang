@@ -5,6 +5,17 @@ import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+import com.parsleyj.tool.objects.basetypes.ToolBoolean;
+import com.parsleyj.tool.objects.basetypes.ToolInteger;
+import com.parsleyj.tool.objects.basetypes.ToolString;
+import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.classes.ToolField;
+import com.parsleyj.tool.objects.collection.ToolList;
+import com.parsleyj.tool.objects.exception.ToolException;
+import com.parsleyj.tool.objects.exception.ToolExceptionClass;
+import com.parsleyj.tool.objects.method.ParameterDefinition;
+import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.MapBuilder;
 

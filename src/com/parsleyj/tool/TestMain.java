@@ -4,8 +4,10 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.*;
+import com.parsleyj.tool.objects.basetypes.ToolBoolean;
+import com.parsleyj.tool.objects.basetypes.ToolInteger;
+import com.parsleyj.tool.objects.basetypes.ToolString;
 import com.parsleyj.tool.semantics.*;
-import com.parsleyj.toolparser.configuration.Configuration;
 import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxClass;
 import com.parsleyj.toolparser.program.Program;
@@ -23,38 +25,6 @@ import java.util.Scanner;
  * TODO: javadoc
  */
 public class TestMain {
-
-
-
-
-
-
-    public static void test1() {
-        String memName = "DefaultMemory";
-        Memory m = new Memory(memName);
-        m.pushScope();
-
-        Program p = new Program("testNonParsed",
-                new IfThenElseStatement(new False(),
-                        new ToolInteger(1),
-                        new IfThenStatement(new True(),
-                                new ToolInteger(2)))) {
-            @Override
-            public boolean execute(Configuration configuration) {
-                RValue e = (RValue) this.getRootSemanticObject();
-                try {
-                    ToolObject to = e.evaluate((Memory) configuration.getConfigurationElement(memName));
-                    if (PRINT_RESULTS) System.out.println("RESULT = " + to);
-                } catch (ToolNativeException e1) {
-                    e1.printStackTrace();
-                    System.err.println("exception not handled of type " + e1.getExceptionObject().getBelongingClass() + ": " + e1.getExceptionObject().getExplain());
-                }
-                return true;
-            }
-        };
-
-        p.executeProgram(m);
-    }
 
     public static final boolean PRINT_DEBUG = false;
     public static final boolean MULTILINE = false;
@@ -123,9 +93,9 @@ public class TestMain {
         TokenCategoryDefinition nullToken = new TokenCategoryDefinition("NULL_KEYWORD", "\\Qnull\\E",
                 (g) -> BaseTypes.O_NULL);
         TokenCategoryDefinition trueToken = new TokenCategoryDefinition("TRUE_KEYWORD", "\\Qtrue\\E",
-                (g) -> new True());
+                (g) -> new ToolBoolean(true));
         TokenCategoryDefinition falseToken = new TokenCategoryDefinition("FALSE_KEYWORD", "\\Qfalse\\E",
-                (g) -> new False());
+                (g) -> new ToolBoolean(false));
         TokenCategoryDefinition whileToken = new TokenCategoryDefinition("WHILE_KEYWORD", "\\Qwhile\\E");
         TokenCategoryDefinition doToken = new TokenCategoryDefinition("DO_KEYWORD", "\\Qdo\\E");
         TokenCategoryDefinition ifToken = new TokenCategoryDefinition("IF_KEYWORD", "\\Qif\\E");
@@ -233,7 +203,7 @@ public class TestMain {
         SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
                 (n, s) -> new MethodCall(
                         s.convert(n.get(0)),
-                        s.convert(n.get(2)),
+                        ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                         new RValue[]{}),
                 rExp, dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
@@ -245,7 +215,7 @@ public class TestMain {
         SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
                 (n, s) -> new MethodCall(
                         s.convert(n.get(0)),
-                        s.convert(n.get(2)),
+                        ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray()),
                 rExp, dotToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
@@ -266,12 +236,13 @@ public class TestMain {
                 rExp, openSquareBracketToken, csel, closedSquareBracketToken);
 
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
-                (n, s) -> new PrefixUnaryOperationMethodCall("_unaryMinus_", s.convert(n.get(1))),
+                (n, s) ->
+                        new PrefixUnaryOperationMethodCall("_unaryMinus_", s.convert(n.get(1))),
                 minusToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
-                (n, s) -> new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))),
+                (n, s) ->
+                        new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
-
         SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
                         new BinaryOperationMethodCall(a, "_to_", b)),

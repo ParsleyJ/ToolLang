@@ -1,6 +1,6 @@
 package com.parsleyj.tool.exceptions;
 
-import com.parsleyj.tool.objects.ToolException;
+import com.parsleyj.tool.objects.exception.ToolException;
 
 /**
  * Created by Giuseppe on 04/04/16.

@@ -3,7 +3,7 @@ package com.parsleyj.tool.memory;
 import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
 import com.parsleyj.tool.exceptions.ReferenceNotFoundException;
 import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.ToolClass;
+import com.parsleyj.tool.objects.classes.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
 import com.parsleyj.utils.Table;
