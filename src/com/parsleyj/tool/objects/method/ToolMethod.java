@@ -36,6 +36,11 @@ public class ToolMethod extends ToolObject {
         this.body = body;
     }
 
+    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] parameters, RValue body){
+        this(visibility, name, parameters, body);
+        this.methodCategory = methodCategory;
+    }
+
     public String getMethodCategory() {
         return methodCategory;
     }
