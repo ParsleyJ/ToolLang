@@ -4,6 +4,7 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.collection.ToolList;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 
 /**
  * Created by Giuseppe on 02/05/16.
@@ -27,6 +28,6 @@ public class ElementAccessOperation implements RValue {
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolList toolList = indexes.generateToolList(memory);
-        return new MethodCall(left, "_elementAt_", new RValue[]{toolList}).evaluate(memory); //TODO add varargs function declaration
+        return new MethodCall(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, left, "_elementAt_", new RValue[]{toolList}).evaluate(memory); //TODO add varargs function declaration
     }
 }

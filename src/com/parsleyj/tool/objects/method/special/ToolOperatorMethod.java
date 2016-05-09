@@ -15,11 +15,19 @@ public class ToolOperatorMethod extends ToolMethod {
 
     public static final String METHOD_CATEGORY_OPERATOR = "METHOD_CATEGORY_OPERATOR";
 
-    protected ToolOperatorMethod(Visibility visibility, Mode mode, String operatorSym, ParameterDefinition[] parameterDefinitions, RValue body) {
+    public ToolOperatorMethod(Visibility visibility, Mode mode, String operatorSym, ParameterDefinition[] parameterDefinitions, RValue body) {
         super(METHOD_CATEGORY_OPERATOR,
                 visibility,
-                "#OP#"+mode.name()+" "+operatorSym,
-                parameterDefinitions
-                , body);
+                "#OP# "+operatorSym+" #"+mode.name(),
+                parameterDefinitions, body);
+    }
+
+    public ToolOperatorMethod(Visibility visibility, Mode mode, String operatorSym, ParameterDefinition[] parameterDefinitions, RValue condition, RValue body) {
+        super(METHOD_CATEGORY_OPERATOR,
+                visibility,
+                "operator "+operatorSym+" "+mode.name(),
+                parameterDefinitions,
+                condition,
+                body);
     }
 }

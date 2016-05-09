@@ -1,10 +1,11 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.ToolBlock;
+import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
-import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.basetypes.ToolString;
@@ -19,6 +20,7 @@ import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.MapBuilder;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -56,6 +58,7 @@ public class BaseTypes {
     public static final ToolExceptionClass C_INVALID_CONDITIONAL_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidConditionalExpressionException");
     public static final ToolExceptionClass C_BAD_METHOD_CALL_EXCEPTION = new ToolExceptionClass("BadMethodCallException");
     public static final ToolExceptionClass C_AMBIGUOUS_METHOD_CALL_EXCEPTION = new ToolExceptionClass("AmbiguousMethodCallException");
+    public static final ToolExceptionClass C_AMBIGUOUS_METHOD_DEFINITION_EXCEPTION = new ToolExceptionClass("AmbiguousMethodDefinitionException");
     public static final ToolExceptionClass C_METHOD_NOT_FOUND_EXCEPTION = new ToolExceptionClass("MethodNotFoundException");
     public static final ToolExceptionClass C_CALL_ON_NULL_EXCEPTION = new ToolExceptionClass("CallOnNullException");
     public static final ToolExceptionClass C_ARITHMETIC_EXCEPTION = new ToolExceptionClass("ArithmeticException");
@@ -109,32 +112,37 @@ public class BaseTypes {
         C_OBJECT.forceSetBelongingClass(C_CLASS);
         C_CLASS.forceSetBelongingClass(C_CLASS);
 
-        C_TOOL.addClassMethod(new ToolMethod(
-                Visibility.Public,
-                "print",
-                new ParameterDefinition[]{
-                        new ParameterDefinition("x", C_OBJECT)
-                }, memory -> {
-            ToolObject x = memory.getObjectByIdentifier("x");
-            if (x.getBelongingClass().isOrExtends(C_OBJECT)) {
-                System.out.println(x.getPrintString());
-                return x;
-            } else throw new BadMethodCallException("Something went wrong while attempting to call Tool.print(Object)");
-        }
-        ));
-
-
-        NATIVE_CLASS_MAP.entrySet().forEach(e -> {
-            try {
-                loadNativeMethods(e.getKey(), e.getValue());
-            } catch (NativeClassLoadFailedException e1) {
-                e1.printStackTrace();
+        try {
+            C_TOOL.addClassMethod(new ToolMethod(
+                    Visibility.Public,
+                    "print",
+                    new ParameterDefinition[]{
+                            new ParameterDefinition("x", C_OBJECT)
+                    }, memory -> {
+                ToolObject x = memory.getObjectByIdentifier("x");
+                if (x.getBelongingClass().isOrExtends(C_OBJECT)) {
+                    System.out.println(x.getPrintString());
+                    return x;
+                } else throw new BadMethodCallException("Something went wrong while attempting to call Tool.print(Object)");
             }
-        });
+            ));
+
+            for (Map.Entry<Class<?>, ToolClass> e : NATIVE_CLASS_MAP.entrySet()) {
+                loadNativeMembers(e.getKey(), e.getValue());
+            }
+        } catch (AmbiguousMethodDefinitionException | NativeClassLoadFailedException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 
-    public static void loadNativeMethods(Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException {
+    public static void loadNativeMembers(Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException, AmbiguousMethodDefinitionException {
+        for (Field f : nativeClass.getFields()) {
+
+        }
+
         for (Method m : nativeClass.getMethods()) {
             if (m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)) {
                 if (!ToolObject.class.isAssignableFrom(m.getReturnType())) //it must return a ToolObject or derivate
@@ -150,9 +158,9 @@ public class BaseTypes {
                 for (int i = 0; i < nativePars.length; i++) {
                     Parameter nativePar = nativePars[i];
                     if (ToolObject.class.isAssignableFrom(nativePar.getType())) {
-                        if (i != 0 && nativePar.isAnnotationPresent(SelfParameter.class)) {
+                        if (i != 0 && nativePar.isAnnotationPresent(ImplicitParameter.class)) {
                             throw new NativeClassLoadFailedException();
-                        } else if (i == 0 && nativePar.isAnnotationPresent(SelfParameter.class)) {
+                        } else if (i == 0 && nativePar.isAnnotationPresent(ImplicitParameter.class)) {
                             hasSelfParameter = true;
                         } else {
                             ToolClass baseType = NATIVE_CLASS_MAP.get(nativePar.getType());

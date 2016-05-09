@@ -1,6 +1,7 @@
 package com.parsleyj.tool.objects.method;
 
 import com.parsleyj.tool.objects.BaseTypes;
+import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.classes.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.RValue;
@@ -15,30 +16,56 @@ import java.util.List;
 
 public class ToolMethod extends ToolObject {
 
-    public static final String METHOD_CATEGORY_FUNCTION = "METHOD_CATEGORY_FUNCTION";
+    public static final String METHOD_CATEGORY_METHOD = "METHOD_CATEGORY_METHOD";
 
     private String methodCategory;
     private Visibility visibility;
     private String name;
     private List<ToolClass> argumentTypes = new ArrayList<>();
     private List<String> argumentNames = new ArrayList<>();
+    private RValue condition;
     private RValue body;
 
     public ToolMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue body) {
         super(BaseTypes.C_METHOD);
-        this.methodCategory = METHOD_CATEGORY_FUNCTION;
+        this.methodCategory = METHOD_CATEGORY_METHOD;
         this.visibility = visibility;
         this.name = name;
         for (ParameterDefinition parameter : parameters) {
             this.argumentTypes.add(parameter.getParameterType());
             this.argumentNames.add(parameter.getParameterName());
+
         }
+        this.condition = new ToolBoolean(true);
+        this.body = body;
+    }
+
+    public ToolMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue condition, RValue body) {
+        super(BaseTypes.C_METHOD);
+        this.methodCategory = METHOD_CATEGORY_METHOD;
+        this.visibility = visibility;
+        this.name = name;
+        for (ParameterDefinition parameter : parameters) {
+            this.argumentTypes.add(parameter.getParameterType());
+            this.argumentNames.add(parameter.getParameterName());
+
+        }
+        this.condition = condition;
         this.body = body;
     }
 
     protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] parameters, RValue body){
         this(visibility, name, parameters, body);
         this.methodCategory = methodCategory;
+    }
+
+    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] parameters, RValue condition, RValue body){
+        this(visibility, name, parameters, condition, body);
+        this.methodCategory = methodCategory;
+    }
+
+    public RValue getCondition() {
+        return condition;
     }
 
     public String getMethodCategory() {

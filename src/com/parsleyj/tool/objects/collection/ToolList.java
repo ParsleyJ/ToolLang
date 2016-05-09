@@ -8,7 +8,7 @@ import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
-import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class ToolList extends ToolObject {
     }
 
     @NativeInstanceMethod
-    public static ToolObject _elementAt_(@SelfParameter ToolList self, ToolList indexes) throws ToolNativeException {
+    public static ToolObject _elementAt_(@ImplicitParameter ToolList self, ToolList indexes) throws ToolNativeException {
         List<Integer> flattenIndexes = getFlattenIndexList(indexes);
 
         if (flattenIndexes.size() < 1) throw new InvalidIndexListException("At least one index is needed.");

@@ -37,11 +37,8 @@ public class Memory implements ConfigurationElement {
         scopes.add(new Scope(Scope.ScopeType.Regular));
     }
 
-    public void pushStaticMethodCallFrame(){
-        scopes.add(new Scope(Scope.ScopeType.MethodCall));
-    }
 
-    public void pushInstanceMethodCallFrame(ToolObject selfObject) throws ReferenceAlreadyExistsException {
+    public void pushMethodCallFrame(ToolObject selfObject) throws ReferenceAlreadyExistsException {
         Scope scope =new Scope(Scope.ScopeType.MethodCall);
         scopes.add(scope);
         newLocalReference(SELF_IDENTIFIER, selfObject);

@@ -4,7 +4,7 @@ import com.parsleyj.tool.exceptions.ToolArithmeticException;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
-import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
+import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.collection.ToolList;
 
 import java.util.ArrayList;
@@ -36,69 +36,69 @@ public class ToolInteger extends ToolObject {
 
 
     @NativeInstanceMethod
-    public static ToolInteger _plus_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolInteger _plus_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolInteger(a.getIntegerValue() + b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolInteger _minus_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolInteger _minus_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolInteger(a.getIntegerValue() - b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolInteger _asterisk_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolInteger _asterisk_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolInteger(a.getIntegerValue() * b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolInteger _slash_(@SelfParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
+    public static ToolInteger _slash_(@ImplicitParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
         if((b.getIntegerValue() == 0)) throw new ToolArithmeticException("Division by zero.");
         return new ToolInteger(a.getIntegerValue() / b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolInteger _percentSign_(@SelfParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
+    public static ToolInteger _percentSign_(@ImplicitParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
         if((b.getIntegerValue() == 0)) throw new ToolArithmeticException("Division by zero.");
         return new ToolInteger(a.getIntegerValue() % b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolInteger _unaryMinus_(@SelfParameter ToolInteger a){
+    public static ToolInteger _unaryMinus_(@ImplicitParameter ToolInteger a){
         return new ToolInteger(-a.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolBoolean _greater_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolBoolean _greater_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() > b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolBoolean _less_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolBoolean _less_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() < b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolBoolean _equals_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolBoolean _equals_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(Objects.equals(a.getIntegerValue(), b.getIntegerValue()));
     }
 
     @NativeInstanceMethod
-    public static ToolBoolean _equalsOrGreater_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolBoolean _equalsOrGreater_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() >= b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolBoolean _equalsOrLess_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolBoolean _equalsOrLess_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() <= b.getIntegerValue());
     }
 
     @NativeInstanceMethod
-    public static ToolBoolean _notEquals_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolBoolean _notEquals_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(!Objects.equals(a.getIntegerValue(), b.getIntegerValue()));
     }
 
     @NativeInstanceMethod
-    public static ToolList _to_(@SelfParameter ToolInteger a, ToolInteger b){
+    public static ToolList _to_(@ImplicitParameter ToolInteger a, ToolInteger b){
         List<ToolInteger> toolIntegerList = new ArrayList<>();
         if(a.getIntegerValue() <= b.getIntegerValue()){
             for(int i = a.getIntegerValue(); i < b.getIntegerValue(); ++i){

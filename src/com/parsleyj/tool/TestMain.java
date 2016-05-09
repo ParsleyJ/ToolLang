@@ -7,6 +7,7 @@ import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.basetypes.ToolString;
+import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.semantics.*;
 import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxClass;
@@ -180,18 +181,21 @@ public class TestMain {
 
         SyntaxCaseDefinition functionCall0 = new SyntaxCaseDefinition(rExp, "functionCall0",
                 (n, s) -> new MethodCall(
+                        ToolMethod.METHOD_CATEGORY_METHOD,
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         new RValue[]{}),
                 ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition functionCall1 = new SyntaxCaseDefinition(rExp, "functionCall1",
                 (n, s) -> new MethodCall(
+                        ToolMethod.METHOD_CATEGORY_METHOD,
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         new RValue[]{s.convert(n.get(2))}),
                 ident, openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition functionCall2 = new SyntaxCaseDefinition(rExp, "functionCall2",
                 (n, s) -> new MethodCall(
+                        ToolMethod.METHOD_CATEGORY_METHOD,
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
@@ -202,18 +206,21 @@ public class TestMain {
                 rExp, dotToken, ident);
         SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
                 (n, s) -> new MethodCall(
+                        ToolMethod.METHOD_CATEGORY_METHOD,
                         s.convert(n.get(0)),
                         ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                         new RValue[]{}),
                 rExp, dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
                 (n, s) -> new MethodCall(
+                        ToolMethod.METHOD_CATEGORY_METHOD,
                         s.convert(n.get(0)),
                         ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                         new RValue[]{s.convert(n.get(4))}),
                 rExp, dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
                 (n, s) -> new MethodCall(
+                        ToolMethod.METHOD_CATEGORY_METHOD,
                         s.convert(n.get(0)),
                         ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray()),

@@ -17,25 +17,29 @@ import java.util.stream.Collectors;
  * TODO: javadoc
  */
 public class MethodCall implements RValue {
+    private String category;
     private RValue callerExpression;
     private String name;
     private RValue[] argumentExpressions;
 
 
 
-    public MethodCall(RValue callerExpression, String name, RValue[] argumentExpressions) {
+    public MethodCall(String category, RValue callerExpression, String name, RValue[] argumentExpressions) {
+        this.category = category;
         this.callerExpression = callerExpression;
         this.name = name;
         this.argumentExpressions = argumentExpressions;
     }
 
-    public MethodCall(RValue callerExpression, MethodCall methodCall){
+    public MethodCall(String category, RValue callerExpression, MethodCall methodCall){
+        this.category = category;
         this.callerExpression = callerExpression;
         this.name = methodCall.getName();
         this.argumentExpressions = methodCall.getArgumentExpressions();
     }
 
-    public MethodCall(DotNotationField dotNotationField, RValue[] argumentExpressions){
+    public MethodCall(String category, DotNotationField dotNotationField, RValue[] argumentExpressions){
+        this.category = category;
         this.callerExpression = dotNotationField.getUnevaluatedExpression();
         this.name = dotNotationField.getIdentifier().getIdentifierString();
         this.argumentExpressions = argumentExpressions;
@@ -56,10 +60,7 @@ public class MethodCall implements RValue {
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolObject caller = callerExpression.evaluate(memory);
         if(caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
-        boolean isStatic = false;
-        if(caller instanceof ToolClass) {
-            isStatic = true;
-        }
+
         List<ToolObject> arguments = new ArrayList<>();
         for(RValue ae : argumentExpressions){
             arguments.add(ae.evaluate(memory));
@@ -67,41 +68,21 @@ public class MethodCall implements RValue {
 
         List<ToolClass> argumentsTypes = arguments.stream().map(ToolObject::getBelongingClass).collect(Collectors.toList());
 
-        ToolMethod tm;
-        if (isStatic) {
-            tm = ((ToolClass)caller).findClassMethod(name, argumentsTypes);
-            if (tm == null) {
-                StringBuilder sb = new StringBuilder("Method not found: "+ ((ToolClass)caller).getClassName()+"."+name+"(");
-                //noinspection Duplicates
-                for (int i = 0; i < argumentsTypes.size(); i++) {
-                    ToolClass argumentType = argumentsTypes.get(i);
-                    sb.append(argumentType.getClassName());
-                    if(i < argumentsTypes.size()-1) sb.append(", ");
-                }
-                sb.append(")");
-                throw new MethodNotFoundException(sb.toString());
+        ToolMethod tm = caller.generateCallableMethodTable().resolve(category, name, argumentsTypes);
+        if (tm == null) {
+            StringBuilder sb = new StringBuilder("Method not found: <"+ caller.getBelongingClass().getClassName()+">."+name+"(");
+            for (int i = 0; i < argumentsTypes.size(); i++) {
+                ToolClass argumentType = argumentsTypes.get(i);
+                sb.append(argumentType.getClassName());
+                if(i < argumentsTypes.size()-1) sb.append(", ");
             }
-        } else {
-            tm = caller.getBelongingClass().findInstanceMethod(name, argumentsTypes);
-            if (tm == null) {
-                StringBuilder sb = new StringBuilder("Method not found: <"+ caller.getBelongingClass().getClassName()+">."+name+"(");
-                //noinspection Duplicates
-                for (int i = 0; i < argumentsTypes.size(); i++) {
-                    ToolClass argumentType = argumentsTypes.get(i);
-                    sb.append(argumentType.getClassName());
-                    if(i < argumentsTypes.size()-1) sb.append(", ");
-                }
-                sb.append(")");
-                throw new MethodNotFoundException(sb.toString());
-            }
+            sb.append(")");
+            throw new MethodNotFoundException(sb.toString());
         }
 
+
         ToolObject result;
-        if (!isStatic) {
-            memory.pushInstanceMethodCallFrame(caller);
-        }else{
-            memory.pushStaticMethodCallFrame();
-        }
+        memory.pushMethodCallFrame(caller);
         for (int i = 0; i < tm.getArgumentNames().size(); ++i)
             memory.newLocalReference(tm.getArgumentNames().get(i), arguments.get(i));
 

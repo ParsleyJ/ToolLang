@@ -1,6 +1,7 @@
 package com.parsleyj.tool.objects.classes;
 
-import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
+import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
+import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.method.MethodTable;
@@ -18,8 +19,7 @@ import java.util.Objects;
 public class ToolClass extends ToolObject {
     private final String className;
     private final ToolClass parentClass;
-    private MethodTable instanceMethodTable = new MethodTable();
-    private MethodTable classMethodTable = new MethodTable();
+    private MethodTable instanceMethods = new MethodTable();
     private Map<String, ToolField> fieldMap = new HashMap<>();
 
     public ToolClass(String className, ToolClass parentClass) {
@@ -30,17 +30,6 @@ public class ToolClass extends ToolObject {
 
 
 
-
-    public ToolMethod findInstanceMethod(String name, List<ToolClass> argumentTypes) throws AmbiguousMethodCallException {
-        ToolMethod result = instanceMethodTable.resolve(name, argumentTypes);
-        if (result == null && parentClass != null) return parentClass.findInstanceMethod(name, argumentTypes);
-        return result;
-    }
-
-    public ToolMethod findClassMethod(String name, List<ToolClass> argumentTypes) throws AmbiguousMethodCallException {
-        return classMethodTable.resolve(name, argumentTypes);
-    }
-
     public String getClassName() {
         return className;
     }
@@ -49,32 +38,40 @@ public class ToolClass extends ToolObject {
         return parentClass;
     }
 
-    public void addInstanceMethod(ToolMethod tm) {
-        getInstanceMethodTable().add(tm);
+    public void addInstanceMethod(ToolMethod tm) throws AmbiguousMethodDefinitionException {
+        getInstanceMethods().add(tm);
     }
 
-    public void addClassMethod(ToolMethod tm) {
+    public void addClassMethod(ToolMethod tm) throws AmbiguousMethodDefinitionException {
         getClassMethodTable().add(tm);
     }
 
-    public void addInstanceMethods(List<ToolMethod> tms){
+    public void addInstanceMethods(List<ToolMethod> tms) throws AmbiguousMethodDefinitionException {
         for(ToolMethod tm:tms){
             addInstanceMethod(tm);
         }
     }
 
-    public void addClassMethods(List<ToolMethod> tms){
+    public void addClassMethods(List<ToolMethod> tms) throws AmbiguousMethodDefinitionException {
         for(ToolMethod tm:tms){
             addClassMethod(tm);
         }
     }
 
-    public MethodTable getInstanceMethodTable() {
-        return instanceMethodTable;
+    public void addInstanceField(ToolField field){
+        this.fieldMap.put(field.getIdentifier(), field);
+    }
+
+    public void addClassField(Reference reference){
+        this.addReferenceMember(reference);
+    }
+
+    public MethodTable getInstanceMethods() {
+        return instanceMethods;
     }
 
     public MethodTable getClassMethodTable() {
-        return classMethodTable;
+        return thisMethodTable;
     }
 
     public Map<String, ToolField> getFields() {

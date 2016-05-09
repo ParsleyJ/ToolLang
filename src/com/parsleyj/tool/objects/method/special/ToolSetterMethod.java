@@ -14,7 +14,7 @@ public class ToolSetterMethod extends ToolMethod {
 
     public static final String METHOD_CATEGORY_SETTER = "METHOD_CATEGORY_SETTER";
 
-    protected ToolSetterMethod(String name, RValue body) {
+    public ToolSetterMethod(String name, RValue body) {
         super(METHOD_CATEGORY_SETTER, Visibility.Public, name, new ParameterDefinition[]{
                 new ParameterDefinition("arg", BaseTypes.C_OBJECT)
         }, body);
