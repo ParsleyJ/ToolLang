@@ -9,7 +9,7 @@ import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 public class PrefixUnaryOperationMethodCall extends MethodCall {
 
     public PrefixUnaryOperationMethodCall(String methodName, RValue i1) {
-        super(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, i1, methodName, new RValue[]{});
+        super(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, i1, methodName, new RValue[]{i1}, new RValue[]{});
     }
 
 }

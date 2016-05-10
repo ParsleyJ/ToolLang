@@ -2,7 +2,7 @@ package com.parsleyj.tool.objects.exception;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
 
 /**
  * Created by Giuseppe on 05/04/16.

@@ -12,12 +12,7 @@ import com.parsleyj.tool.semantics.RValue;
 public class ToolCtorMethod extends ToolMethod{
     public static final String METHOD_CATEGORY_CONSTRUCTOR = "METHOD_CATEGORY_CONSTRUCTOR";
 
-
-    protected ToolCtorMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue body) {
-        super(METHOD_CATEGORY_CONSTRUCTOR, visibility, name, parameters, body);
-    }
-
-    protected ToolCtorMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue condition, RValue body) {
-        super(METHOD_CATEGORY_CONSTRUCTOR, visibility, name, parameters, condition, body);
+    protected ToolCtorMethod(Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body) {
+        super(METHOD_CATEGORY_CONSTRUCTOR, visibility, name, implicitParameters, parameters, condition, body);
     }
 }

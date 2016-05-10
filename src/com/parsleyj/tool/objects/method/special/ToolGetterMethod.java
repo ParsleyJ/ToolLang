@@ -1,5 +1,7 @@
 package com.parsleyj.tool.objects.method.special;
 
+import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.method.ParameterDefinition;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
@@ -13,7 +15,15 @@ public class ToolGetterMethod extends ToolMethod {
 
     public static final String METHOD_CATEGORY_GETTER = "METHOD_CATEGORY_GETTER";
 
-    public ToolGetterMethod(String name, RValue body) {
-        super(METHOD_CATEGORY_GETTER, Visibility.Public, name, new ParameterDefinition[]{}, body);
+    public ToolGetterMethod(String name, ToolClass selfType, RValue body) {
+        super(
+                METHOD_CATEGORY_GETTER,
+                Visibility.Public,
+                name,
+                new ParameterDefinition[]{
+                        new ParameterDefinition(Memory.SELF_IDENTIFIER, selfType)
+                },
+                new ParameterDefinition[]{},
+                body);
     }
 }

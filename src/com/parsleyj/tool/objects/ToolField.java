@@ -1,8 +1,4 @@
-package com.parsleyj.tool.objects.classes;
-
-import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.objects.classes.ToolClass;
+package com.parsleyj.tool.objects;
 
 /**
  * Created by Giuseppe on 01/04/16.

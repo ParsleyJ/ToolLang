@@ -1,6 +1,6 @@
 package com.parsleyj.tool.objects.method;
 
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
 
 /**
  * Created by Giuseppe on 01/04/16.

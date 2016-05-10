@@ -4,22 +4,24 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
+import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 
 /**
  * Created by Giuseppe on 05/04/16.
  * TODO: javadoc
  */
 public class DotNotationField implements LValue {
-    private RValue exp;
+    private RValue leftExp;
     private Identifier ident;
 
-    public DotNotationField(RValue exp, Identifier ident) {
-        this.exp = exp;
+    public DotNotationField(RValue leftExp, Identifier ident) {
+        this.leftExp = leftExp;
         this.ident = ident;
     }
 
     public RValue getUnevaluatedExpression() {
-        return exp;
+        return leftExp;
     }
 
     public Identifier getIdentifier() {
@@ -28,20 +30,33 @@ public class DotNotationField implements LValue {
 
     @Override
     public void assign(ToolObject o, Memory m) throws ToolNativeException {
-        ToolObject object = exp.evaluate(m);
-        Reference r = object.getReferenceMember(ident.getIdentifierString());
-        m.updateReference(r, o);
+        ToolObject leftExpObject = leftExp.evaluate(m);
+        MethodCall setterCall = new MethodCall(
+                ToolSetterMethod.METHOD_CATEGORY_SETTER,
+                leftExpObject,
+                ident.getIdentifierString(),
+                new RValue[]{
+                        memory -> leftExpObject,
+                        memory -> o
+                }, new RValue[]{});
+        setterCall.evaluate(m);
     }
 
     @Override
-    public ToolObject evaluate(Memory memory) throws ToolNativeException {
-        ToolObject object = exp.evaluate(memory);
-        Reference r = object.getReferenceMember(ident.getIdentifierString());
-        return memory.getObjectById(r.getPointedId());
+    public ToolObject evaluate(Memory m) throws ToolNativeException {
+        ToolObject leftExpObject = leftExp.evaluate(m);
+        MethodCall setterCall = new MethodCall(
+                ToolGetterMethod.METHOD_CATEGORY_GETTER,
+                leftExpObject,
+                ident.getIdentifierString(),
+                new RValue[]{
+                        memory -> leftExpObject,
+                }, new RValue[]{});
+        return setterCall.evaluate(m);
     }
 
     @Override
     public String toString() {
-        return exp + "." + ident;
+        return leftExp + "." + ident;
     }
 }

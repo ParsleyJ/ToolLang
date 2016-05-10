@@ -14,6 +14,19 @@ public class PJ{
     }
 
     @SafeVarargs
+    public static <T> List<? extends T> tempConcatFlex(List<? extends T> x, T... y){
+        List<T> x2 = new ArrayList<>(x);
+        x2.addAll(Arrays.asList(y));
+        return x2;
+    }
+
+    public static <T> List<? extends T> tempConcatFlex(List<? extends T> x, List<? extends T> y){
+        List<T> x2 = new ArrayList<>(x);
+        x2.addAll(y);
+        return x2;
+    }
+
+    @SafeVarargs
     public static <T> List<T> tempConcat(List<T> x, T... y){
         List<T> x2 = new ArrayList<>(x);
         x2.addAll(Arrays.asList(y));

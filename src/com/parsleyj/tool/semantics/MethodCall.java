@@ -4,7 +4,8 @@ import com.parsleyj.tool.exceptions.CallOnNullException;
 import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
+import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.ToolObject;
 
@@ -20,28 +21,16 @@ public class MethodCall implements RValue {
     private String category;
     private RValue callerExpression;
     private String name;
+    private RValue[] implicitArgumentExpressions;
     private RValue[] argumentExpressions;
 
 
 
-    public MethodCall(String category, RValue callerExpression, String name, RValue[] argumentExpressions) {
+    public MethodCall(String category, RValue callerExpression, String name, RValue[] implicitArgumentExpressions, RValue[] argumentExpressions) {
         this.category = category;
         this.callerExpression = callerExpression;
         this.name = name;
-        this.argumentExpressions = argumentExpressions;
-    }
-
-    public MethodCall(String category, RValue callerExpression, MethodCall methodCall){
-        this.category = category;
-        this.callerExpression = callerExpression;
-        this.name = methodCall.getName();
-        this.argumentExpressions = methodCall.getArgumentExpressions();
-    }
-
-    public MethodCall(String category, DotNotationField dotNotationField, RValue[] argumentExpressions){
-        this.category = category;
-        this.callerExpression = dotNotationField.getUnevaluatedExpression();
-        this.name = dotNotationField.getIdentifier().getIdentifierString();
+        this.implicitArgumentExpressions = implicitArgumentExpressions;
         this.argumentExpressions = argumentExpressions;
     }
 
@@ -61,6 +50,11 @@ public class MethodCall implements RValue {
         ToolObject caller = callerExpression.evaluate(memory);
         if(caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
 
+        List<ToolObject> implicitArguments = new ArrayList<>();
+        for (RValue iae : implicitArgumentExpressions) {
+            implicitArguments.add(iae.evaluate(memory));
+        }
+
         List<ToolObject> arguments = new ArrayList<>();
         for(RValue ae : argumentExpressions){
             arguments.add(ae.evaluate(memory));
@@ -68,7 +62,8 @@ public class MethodCall implements RValue {
 
         List<ToolClass> argumentsTypes = arguments.stream().map(ToolObject::getBelongingClass).collect(Collectors.toList());
 
-        ToolMethod tm = caller.generateCallableMethodTable().resolve(category, name, argumentsTypes);
+        MethodTable callableMethodTable = caller.generateCallableMethodTable();
+        ToolMethod tm = callableMethodTable.resolve(memory, category, name, argumentsTypes);
         if (tm == null) {
             StringBuilder sb = new StringBuilder("Method not found: <"+ caller.getBelongingClass().getClassName()+">."+name+"(");
             for (int i = 0; i < argumentsTypes.size(); i++) {
@@ -82,14 +77,17 @@ public class MethodCall implements RValue {
 
 
         ToolObject result;
-        memory.pushMethodCallFrame(caller);
+        memory.pushMethodCallFrame();
+
+        for (int i = 0; i < tm.getImplicitArgumentNames().size(); ++i)
+            memory.newLocalReference(tm.getImplicitArgumentNames().get(i), implicitArguments.get(i));
+
         for (int i = 0; i < tm.getArgumentNames().size(); ++i)
             memory.newLocalReference(tm.getArgumentNames().get(i), arguments.get(i));
 
         result = tm.getBody().evaluate(memory);
         memory.createPhantomReference(result);
         memory.popScopeAndGC();
-
 
         return result;
     }

@@ -12,11 +12,8 @@ import com.parsleyj.tool.semantics.RValue;
 public class ToolSemanticMethod extends ToolMethod {
     public static final String METHOD_CATEGORY_SPECIAL = "METHOD_CATEGORY_SPECIAL";
 
-    public ToolSemanticMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue body) {
-        super(METHOD_CATEGORY_SPECIAL, visibility, name, parameters, body);
-    }
 
-    public ToolSemanticMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue condition, RValue body) {
-        super(METHOD_CATEGORY_SPECIAL, visibility, name, parameters, condition, body);
+    public ToolSemanticMethod(Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body) {
+        super(METHOD_CATEGORY_SPECIAL, visibility, name, implicitParameters, parameters, condition, body);
     }
 }

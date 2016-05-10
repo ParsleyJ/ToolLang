@@ -2,7 +2,7 @@ package com.parsleyj.tool.memory;
 
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
 
 /**
  * Created by Giuseppe on 01/04/16.

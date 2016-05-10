@@ -1,11 +1,10 @@
-package com.parsleyj.tool.objects.collection;
+package com.parsleyj.tool.objects.basetypes;
 
 import com.parsleyj.tool.exceptions.IndexOutOfBoundsExceptionTool;
 import com.parsleyj.tool.exceptions.InvalidIndexListException;
 import com.parsleyj.tool.exceptions.InvalidIndexTypeException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;

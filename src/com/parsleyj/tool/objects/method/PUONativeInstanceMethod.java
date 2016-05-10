@@ -3,7 +3,7 @@ package com.parsleyj.tool.objects.method;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 
 /**
@@ -16,8 +16,11 @@ public class PUONativeInstanceMethod<T extends ToolObject> extends ToolMethod {
     public PUONativeInstanceMethod(String name, ToolClass expressionType, Body<T> body) {
         super(Visibility.Public,
                 name,
+                new ParameterDefinition[]{
+                        new ParameterDefinition(Memory.SELF_IDENTIFIER, expressionType)
+                },
                 new ParameterDefinition[]{}, (memory) -> {
-                    ToolObject self = memory.getObjectByIdentifier("this");
+                    ToolObject self = memory.getObjectByIdentifier(Memory.SELF_IDENTIFIER);
                     ToolObject result = null;
                     try {
                         if (self.getBelongingClass().isOrExtends(expressionType)) {

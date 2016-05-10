@@ -4,7 +4,6 @@ import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
-import com.parsleyj.tool.objects.collection.ToolList;
 import com.parsleyj.utils.PJ;
 
 import java.util.stream.Collectors;

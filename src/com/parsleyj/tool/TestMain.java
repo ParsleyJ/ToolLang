@@ -28,8 +28,10 @@ import java.util.Scanner;
 public class TestMain {
 
     public static final boolean PRINT_DEBUG = false;
+    public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = true;
     public static final boolean MULTILINE = false;
     public static final boolean PRINT_RESULTS = true;
+
     public static void test2() {
         Program.VERBOSE = PRINT_DEBUG;
         Scanner sc = new Scanner(System.in);
@@ -40,12 +42,12 @@ public class TestMain {
         m.loadClasses(BaseTypes.getAllBaseClasses());
         ToolString testString = new ToolString("yay");
         m.addObjectToHeap(testString);
-        BaseTypes.C_TOOL.addReferenceMember(new Reference("test", testString.getId()));
+        BaseTypes.C_TOOL.addClassField(new Reference("test", BaseTypes.C_STRING, testString.getId()));
         ProgramGenerator pg = getDefaultInterpreter();
         pg.setPrintDebugMessages(PRINT_DEBUG);
         while (true) {
             StringBuilder sb = new StringBuilder();
-            if(MULTILINE) {
+            if (MULTILINE) {
                 while (true) {
                     String l = sc.nextLine();
                     if (l.endsWith("#")) {
@@ -54,7 +56,7 @@ public class TestMain {
                     }
                     sb.append(l);
                 }
-            }else{
+            } else {
                 sb.append(sc.nextLine());
             }
             String programString = sb.toString();
@@ -69,13 +71,13 @@ public class TestMain {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
                         if (PRINT_RESULTS) System.out.println("RESULT = " + to);
                     } catch (ToolNativeException e1) {
-                        if (PRINT_DEBUG) e1.printStackTrace();
+                        if (PRINT_TOOL_EXCEPTION_STACK_TRACE) e1.printStackTrace();
                         System.err.println("Tool Exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
                     }
                     return true;
                 });
                 prog.executeProgram(m);
-            } catch (Throwable t){
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -155,7 +157,6 @@ public class TestMain {
         };
 
 
-
         SyntaxCaseDefinition nullLiteral = new SyntaxCaseDefinition(rExp, "nullLiteral",
                 new SimpleWrapConverterMethod(),
                 nullToken);
@@ -184,6 +185,7 @@ public class TestMain {
                         ToolMethod.METHOD_CATEGORY_METHOD,
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        new RValue[]{BaseTypes.C_TOOL},
                         new RValue[]{}),
                 ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition functionCall1 = new SyntaxCaseDefinition(rExp, "functionCall1",
@@ -191,6 +193,7 @@ public class TestMain {
                         ToolMethod.METHOD_CATEGORY_METHOD,
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        new RValue[]{BaseTypes.C_TOOL},
                         new RValue[]{s.convert(n.get(2))}),
                 ident, openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition functionCall2 = new SyntaxCaseDefinition(rExp, "functionCall2",
@@ -198,6 +201,7 @@ public class TestMain {
                         ToolMethod.METHOD_CATEGORY_METHOD,
                         BaseTypes.C_TOOL,
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
+                        new RValue[]{BaseTypes.C_TOOL},
                         ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
                 ident, openRoundBracketToken, csel, closedRoundBracketToken);
 
@@ -205,25 +209,37 @@ public class TestMain {
                 (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, dotToken, ident);
         SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
-                (n, s) -> new MethodCall(
-                        ToolMethod.METHOD_CATEGORY_METHOD,
-                        s.convert(n.get(0)),
-                        ((Identifier) s.convert(n.get(2))).getIdentifierString(),
-                        new RValue[]{}),
+                (n, s) -> {
+                    RValue r = s.convert(n.get(0));
+                    return new MethodCall(
+                            ToolMethod.METHOD_CATEGORY_METHOD,
+                            r,
+                            ((Identifier) s.convert(n.get(2))).getIdentifierString(),
+                            new RValue[]{r},
+                            new RValue[]{});
+                },
                 rExp, dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
-                (n, s) -> new MethodCall(
-                        ToolMethod.METHOD_CATEGORY_METHOD,
-                        s.convert(n.get(0)),
-                        ((Identifier) s.convert(n.get(2))).getIdentifierString(),
-                        new RValue[]{s.convert(n.get(4))}),
+                (n, s) -> {
+                    RValue r = s.convert(n.get(0));
+                    return new MethodCall(
+                            ToolMethod.METHOD_CATEGORY_METHOD,
+                            r,
+                            ((Identifier) s.convert(n.get(2))).getIdentifierString(),
+                            new RValue[]{r},
+                            new RValue[]{s.convert(n.get(4))});
+                },
                 rExp, dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
-                (n, s) -> new MethodCall(
-                        ToolMethod.METHOD_CATEGORY_METHOD,
-                        s.convert(n.get(0)),
-                        ((Identifier) s.convert(n.get(2))).getIdentifierString(),
-                        ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray()),
+                (n, s) -> {
+                    RValue r = s.convert(n.get(0));
+                    return new MethodCall(
+                            ToolMethod.METHOD_CATEGORY_METHOD,
+                            r,
+                            ((Identifier) s.convert(n.get(2))).getIdentifierString(),
+                            new RValue[]{r},
+                            ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray());
+                },
                 rExp, dotToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
         SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),

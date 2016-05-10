@@ -4,7 +4,6 @@ import com.parsleyj.tool.exceptions.InvalidConditionalExpressionException;
 import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.*;
-import com.parsleyj.tool.objects.classes.ToolClass;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.special.ToolSemanticMethod;
 import com.parsleyj.tool.semantics.MethodCall;
@@ -55,7 +54,10 @@ public class ToolObject implements RValue {
 
     public boolean evaluateAsConditional(Memory memory) throws ToolNativeException {
         try {
-            MethodCall mc = new MethodCall(ToolSemanticMethod.METHOD_CATEGORY_SPECIAL, this, "asCondition", new RValue[]{});
+            MethodCall mc = new MethodCall(
+                    ToolSemanticMethod.METHOD_CATEGORY_SPECIAL,
+                    this,
+                    "asCondition", new RValue[]{memory1 -> this},new RValue[]{});
             ToolObject returnedVal = mc.evaluate(memory);
             if(returnedVal.getBelongingClass().isOrExtends(BaseTypes.C_BOOLEAN)){
                 return returnedVal.evaluateAsConditional(memory);
@@ -119,8 +121,9 @@ public class ToolObject implements RValue {
     }
 
     public MethodTable generateCallableMethodTable(){
-        if(this.getBelongingClass()!= null){
-            return this.getBelongingClass().generateCallableMethodTable().extend(this.thisMethodTable);
+        if(this.getBelongingClass()!= null && this != this.getBelongingClass()){
+            MethodTable result = this.getBelongingClass().generateInstanceCallableMethodTable().extend(this.thisMethodTable);
+            return result;
         }else{
             return thisMethodTable;
         }

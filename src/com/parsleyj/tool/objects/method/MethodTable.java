@@ -2,7 +2,9 @@ package com.parsleyj.tool.objects.method;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.exceptions.ToolNativeException;
+import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.utils.Pair;
 
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ public class MethodTable {
         return false;
     }
 
-    public ToolMethod resolve(String category, String name, List<ToolClass> argumentTypes) throws AmbiguousMethodCallException {
+    public ToolMethod resolve(Memory memory, String category, String name, List<ToolClass> argumentTypes) throws ToolNativeException {
         //step1: get all candidates (correct names, visible from call point(?))
         List<ToolMethod> candidates = getCandidates(category, name);
 
@@ -61,15 +63,22 @@ public class MethodTable {
         //      Compatible means it can be converted (following some specific rules) in the other type
         List<ToolMethod> viables = getViableMethods(candidates, argumentTypes);
 
+        List<ToolMethod> conditionalFilteredViables = new ArrayList<>();
+        for (ToolMethod viable : viables) {
+            if(viable.getCondition().evaluate(memory).evaluateAsConditional(memory)){
+                conditionalFilteredViables.add(viable);
+            }
+        }
+
         //step3: choose the best function among the viable ones. cases:
-        if (viables.isEmpty()) //1) there are no viable functions: throw MethodNotFoundException
+        if (conditionalFilteredViables.isEmpty()) //1) there are no viable functions: throw MethodNotFoundException
             return null; //todo: throw exception directly from here?
 
-        else if (viables.size() == 1) //2) there is 1 viable function: that's the one!
-            return viables.get(0);
+        else if (conditionalFilteredViables.size() == 1) //2) there is 1 viable function: that's the one!
+            return conditionalFilteredViables.get(0);
 
         else { //3) there are more than 1 functions: a rank system must be used and:
-            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(candidates, argumentTypes);
+            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(conditionalFilteredViables, argumentTypes);
             //                  3.1) there is one method at first place: that's the one!
             if (rankedMethods.get(0).getSecond().size() == 1) {
                 return rankedMethods.get(0).getSecond().get(0);
@@ -154,5 +163,9 @@ public class MethodTable {
         }
         result.addAllAsExtension(other.methods);
         return result;
+    }
+
+    public int count() {
+        return methods.size();
     }
 }

@@ -2,7 +2,7 @@ package com.parsleyj.tool.objects.method;
 
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.RValue;
 
@@ -21,12 +21,14 @@ public class ToolMethod extends ToolObject {
     private String methodCategory;
     private Visibility visibility;
     private String name;
+    private List<ToolClass> implicitArgumentTypes = new ArrayList<>();
+    private List<String> implicitArgumentNames = new ArrayList<>();
     private List<ToolClass> argumentTypes = new ArrayList<>();
     private List<String> argumentNames = new ArrayList<>();
     private RValue condition;
     private RValue body;
 
-    public ToolMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue body) {
+    public ToolMethod(Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue body) {
         super(BaseTypes.C_METHOD);
         this.methodCategory = METHOD_CATEGORY_METHOD;
         this.visibility = visibility;
@@ -34,13 +36,17 @@ public class ToolMethod extends ToolObject {
         for (ParameterDefinition parameter : parameters) {
             this.argumentTypes.add(parameter.getParameterType());
             this.argumentNames.add(parameter.getParameterName());
+        }
 
+        for (ParameterDefinition implicitParameter : implicitParameters) {
+            this.implicitArgumentTypes.add(implicitParameter.getParameterType());
+            this.implicitArgumentNames.add(implicitParameter.getParameterName());
         }
         this.condition = new ToolBoolean(true);
         this.body = body;
     }
 
-    public ToolMethod(Visibility visibility, String name, ParameterDefinition[] parameters, RValue condition, RValue body) {
+    public ToolMethod(Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body) {
         super(BaseTypes.C_METHOD);
         this.methodCategory = METHOD_CATEGORY_METHOD;
         this.visibility = visibility;
@@ -50,17 +56,21 @@ public class ToolMethod extends ToolObject {
             this.argumentNames.add(parameter.getParameterName());
 
         }
+        for (ParameterDefinition implicitParameter : implicitParameters) {
+            this.implicitArgumentTypes.add(implicitParameter.getParameterType());
+            this.implicitArgumentNames.add(implicitParameter.getParameterName());
+        }
         this.condition = condition;
         this.body = body;
     }
 
-    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] parameters, RValue body){
-        this(visibility, name, parameters, body);
+    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue body){
+        this(visibility, name, implicitParameters, parameters, body);
         this.methodCategory = methodCategory;
     }
 
-    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] parameters, RValue condition, RValue body){
-        this(visibility, name, parameters, condition, body);
+    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body){
+        this(visibility, name, implicitParameters, parameters, condition, body);
         this.methodCategory = methodCategory;
     }
 
@@ -70,10 +80,6 @@ public class ToolMethod extends ToolObject {
 
     public String getMethodCategory() {
         return methodCategory;
-    }
-
-    public boolean isCategory(String category){
-        return methodCategory.equals(category);
     }
 
     public RValue getBody() {
@@ -92,18 +98,26 @@ public class ToolMethod extends ToolObject {
         return argumentNames;
     }
 
+    public List<ToolClass> getImplicitArgumentTypes() {
+        return implicitArgumentTypes;
+    }
+
+    public List<String> getImplicitArgumentNames() {
+        return implicitArgumentNames;
+    }
+
     public Visibility getVisibility() {
         return visibility;
     }
 
-    public String completeInstanceMethodName(ToolClass self){
+    public String completeInstanceMethodName(ToolClass self){//TODO: change for categories
         StringBuilder sb = new StringBuilder("<"+self.getClassName()+">."+name+"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");
         return sb.toString();
     }
 
-    public String completeClassMethodName(ToolClass self){
+    public String completeClassMethodName(ToolClass self){//TODO: change for categories
         StringBuilder sb = new StringBuilder(self.getClassName()+"."+name+"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");

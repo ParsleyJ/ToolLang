@@ -3,7 +3,7 @@ package com.parsleyj.tool.memory;
 import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
 import com.parsleyj.tool.exceptions.ReferenceNotFoundException;
 import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
 import com.parsleyj.utils.Table;
@@ -19,6 +19,7 @@ import java.util.List;
 public class Memory implements ConfigurationElement {
 
     public static final String SELF_IDENTIFIER = "this";
+    public static final String ARG_IDENTIFIER = "arg";
 
     private final String name;
     private ArrayDeque<Scope> scopes = new ArrayDeque<>();
@@ -38,10 +39,9 @@ public class Memory implements ConfigurationElement {
     }
 
 
-    public void pushMethodCallFrame(ToolObject selfObject) throws ReferenceAlreadyExistsException {
-        Scope scope =new Scope(Scope.ScopeType.MethodCall);
-        scopes.add(scope);
-        newLocalReference(SELF_IDENTIFIER, selfObject);
+    public void pushMethodCallFrame() throws ReferenceAlreadyExistsException {
+        scopes.add(new Scope(Scope.ScopeType.MethodCall));
+        //newLocalReference(SELF_IDENTIFIER, selfObject);
     }
 
 
@@ -75,17 +75,7 @@ public class Memory implements ConfigurationElement {
         throw new ReferenceNotFoundException("Reference with name: "+identifierString+" not found.");
     }
 
-    public ToolObject getSelfObject() {
-        ToolObject result = null;
-        try {
-            result = getObjectByIdentifier(SELF_IDENTIFIER);
-        } catch (ReferenceNotFoundException e) {
-            e.printStackTrace(); //Throw internal error ToolException
-        }
-        if (result == null){
-            return BaseTypes.O_NULL;
-        }else return result;
-    }
+
 
     public Reference newLocalReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
         Reference r = this.getTopScope().newReference(identifier, o);
@@ -93,14 +83,14 @@ public class Memory implements ConfigurationElement {
         return r;
     }
 
-
     public Reference newLocalReference(ToolClass c) throws ReferenceAlreadyExistsException{
         return newLocalReference(c.getClassName(), c);
     }
 
     public Reference updateReference(String identifier, ToolObject o) throws ReferenceNotFoundException{
         Reference r = getReferenceByIdentifier(identifier);
-        return updateReference(r, o);
+        updateReference(r, o);
+        return r;
     }
 
     public Integer addObjectToHeap(ToolObject o){
@@ -108,17 +98,16 @@ public class Memory implements ConfigurationElement {
         return o.getId();
     }
 
-    public Reference updateReference(Reference r, ToolObject o) throws ReferenceNotFoundException{
+    public void updateReference(Reference r, ToolObject o) throws ReferenceNotFoundException{
         ToolObject oldO = getObjectById(r.getPointedId());
         try {
             oldO.decreaseReferenceCount();
-        } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
+        } catch (CounterIsZeroRemoveObject c) {
             removeObject(oldO.getId());
         }
         objectTable.put(o.getId(),o);
         r.setPointedId(o.getId());
         o.increaseReferenceCount();
-        return r;
     }
 
     //adds a phantom reference in the scope below the current one (useful to return values from a scope)

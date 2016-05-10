@@ -1,9 +1,7 @@
-package com.parsleyj.tool.objects.classes;
+package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.memory.Reference;
-import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 
@@ -107,5 +105,17 @@ public class ToolClass extends ToolObject {
     @Override
     public String toString() {
         return "<CLASS:"+className+">";
+    }
+
+    public ToolObject newInstance() {
+        return new ToolObject(this);
+    }
+
+    public MethodTable generateInstanceCallableMethodTable() {
+        if(this.getParentClass() == null || this == this.getParentClass()){
+            return getInstanceMethods();
+        }else{
+            return getParentClass().generateInstanceCallableMethodTable().extend(getInstanceMethods());
+        }
     }
 }

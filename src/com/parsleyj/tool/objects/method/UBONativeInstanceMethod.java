@@ -3,7 +3,7 @@ package com.parsleyj.tool.objects.method;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.classes.ToolClass;
+import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 
 /**
@@ -13,14 +13,18 @@ import com.parsleyj.tool.objects.ToolObject;
 public class UBONativeInstanceMethod<R extends ToolObject, T1 extends ToolObject, T2 extends ToolObject> extends ToolMethod {
 
     @SuppressWarnings("unchecked") //there is a try/catch for that
-    public UBONativeInstanceMethod(String name, ToolClass expressionType1, ToolClass expressionType2, String parameterName, Body<R, T1, T2> body) {
-        super(Visibility.Public,
+    public UBONativeInstanceMethod(String methodCategory, String name, ToolClass expressionType1, ToolClass expressionType2, Body<R, T1, T2> body) {
+        super(methodCategory,
+                Visibility.Public,
                 name,
                 new ParameterDefinition[]{
-                        new ParameterDefinition(parameterName, expressionType2)
-                }, (memory) -> {
-                    ToolObject self = memory.getObjectByIdentifier("this");
-                    ToolObject x = memory.getObjectByIdentifier("x");
+                        new ParameterDefinition(Memory.SELF_IDENTIFIER, expressionType1),
+                        new ParameterDefinition(Memory.ARG_IDENTIFIER, expressionType2)
+                },
+                new ParameterDefinition[]{},
+                (memory) -> {
+                    ToolObject self = memory.getObjectByIdentifier(Memory.SELF_IDENTIFIER);
+                    ToolObject x = memory.getObjectByIdentifier(Memory.ARG_IDENTIFIER);
                     ToolObject result = null;
                     try {
                         if (self.getBelongingClass().isOrExtends(expressionType1) && x.getBelongingClass().isOrExtends(expressionType2)) {
