@@ -2,6 +2,8 @@ package com.parsleyj.tool.objects.annotations.methods;
 
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -11,6 +13,8 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NativeClassMethod {
-    Visibility value() default Visibility.Public;
+    String value();
+    Visibility visibility() default Visibility.Public;
     String category() default ToolMethod.METHOD_CATEGORY_METHOD;
+    ToolOperatorMethod.Mode mode() default ToolOperatorMethod.Mode.Binary;
 }

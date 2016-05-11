@@ -14,8 +14,9 @@ import java.util.List;
  */
 public class Scope {
 
-    public enum ScopeType{Regular, MethodCall, Object}
 
+
+    public enum ScopeType{Regular, MethodCall, Object}
     private Table<String, Reference> referenceTable = new Table<>();
     private List<PhantomReference> phantomReferences = new ArrayList<>();
     private ScopeType scopeType;

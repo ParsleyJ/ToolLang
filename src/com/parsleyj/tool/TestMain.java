@@ -260,67 +260,67 @@ public class TestMain {
 
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
                 (n, s) ->
-                        new PrefixUnaryOperationMethodCall("_unaryMinus_", s.convert(n.get(1))),
+                        MethodCall.prefixOperator("-", s.convert(n.get(0))),
                 minusToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
                 (n, s) ->
-                        new PrefixUnaryOperationMethodCall("_logicalNot_", s.convert(n.get(1))),
+                        MethodCall.prefixOperator("!", s.convert(n.get(0))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_to_", b)),
+                        MethodCall.binaryOperator(a, "to", b)),
                 rExp, toOperatorToken, rExp);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_asterisk_", b)),
+                        MethodCall.binaryOperator(a, "*", b)),
                 rExp, asteriskToken, rExp);
         SyntaxCaseDefinition slashOperation = new SyntaxCaseDefinition(rExp, "slashOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_slash_", b)),
+                        MethodCall.binaryOperator(a, "/", b)),
                 rExp, slashToken, rExp);
         SyntaxCaseDefinition percentSignOperation = new SyntaxCaseDefinition(rExp, "percentSignOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_percentSign_", b)),
+                        MethodCall.binaryOperator(a, "%", b)),
                 rExp, percentSignToken, rExp);
         SyntaxCaseDefinition minusOperation = new SyntaxCaseDefinition(rExp, "minusOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_minus_", b)),
+                        MethodCall.binaryOperator(a, "-", b)),
                 rExp, minusToken, rExp);
         SyntaxCaseDefinition plusOperation = new SyntaxCaseDefinition(rExp, "plusOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_plus_", b)),
+                        MethodCall.binaryOperator(a, "+", b)),
                 rExp, plusToken, rExp);
         SyntaxCaseDefinition greaterOperation = new SyntaxCaseDefinition(rExp, "greaterOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_greater_", b)),
+                        MethodCall.binaryOperator(a, ">", b)),
                 rExp, greaterOperatorToken, rExp);
         SyntaxCaseDefinition equalGreaterOperation = new SyntaxCaseDefinition(rExp, "equalGreaterOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_equalsOrGreater_", b)),
+                        MethodCall.binaryOperator(a, ">=", b)),
                 rExp, equalGreaterOperatorToken, rExp);
         SyntaxCaseDefinition lessOperation = new SyntaxCaseDefinition(rExp, "lessOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_less_", b)),
+                        MethodCall.binaryOperator(a, "<", b)),
                 rExp, lessOperatorToken, rExp);
         SyntaxCaseDefinition equalLessOperation = new SyntaxCaseDefinition(rExp, "equalLessOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_equalsOrLess_", b)),
+                        MethodCall.binaryOperator(a, "<=", b)),
                 rExp, equalLessOperatorToken, rExp);
         SyntaxCaseDefinition equalsOperation = new SyntaxCaseDefinition(rExp, "equalsOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_equals_", b)),
+                        MethodCall.binaryOperator(a, "==", b)),
                 rExp, equalsOperatorToken, rExp);
         SyntaxCaseDefinition notEqualsOperation = new SyntaxCaseDefinition(rExp, "notEqualsOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_notEquals_", b)),
+                        MethodCall.binaryOperator(a, "!=", b)),
                 rExp, notEqualsOperatorToken, rExp);
         SyntaxCaseDefinition logicalAndOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_logicalAnd_", b)),
+                        MethodCall.binaryOperator(a, "and", b)),
                 rExp, andOperatorToken, rExp);
         SyntaxCaseDefinition logicalOrOperation = new SyntaxCaseDefinition(rExp, "logicalOrOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
-                        new BinaryOperationMethodCall(a, "_logicalOr_", b)),
+                        MethodCall.binaryOperator(a, "or", b)),
                 rExp, orOperatorToken, rExp);
 
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",

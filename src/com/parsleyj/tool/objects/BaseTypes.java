@@ -22,6 +22,7 @@ import com.parsleyj.tool.objects.method.ParameterDefinition;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.MapBuilder;
@@ -268,8 +269,13 @@ public class BaseTypes {
 
                 try {
                     ToolMethod newMethod = new ToolMethod(
-                            isInstanceMethod ? instanceAnn.value() : classAnn.value(),
-                            m.getName(),
+                            isInstanceMethod ? instanceAnn.category() : classAnn.category(),
+                            isInstanceMethod ? instanceAnn.visibility() : classAnn.visibility(),
+                            (isInstanceMethod?instanceAnn.category():classAnn.category()).equals(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR)?
+                                    (ToolOperatorMethod.getOperatorMethodName(
+                                            isInstanceMethod ? instanceAnn.mode() : classAnn.mode(),
+                                            isInstanceMethod ? instanceAnn.value() : classAnn.value())
+                                    ):(isInstanceMethod ? instanceAnn.value() : classAnn.value()),
                             implicitParameters.toArray(new ParameterDefinition[implicitParameters.size()]),
                             parameters.toArray(new ParameterDefinition[parameters.size()]),
                             memory -> {

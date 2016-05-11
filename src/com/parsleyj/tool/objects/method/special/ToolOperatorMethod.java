@@ -38,6 +38,6 @@ public class ToolOperatorMethod extends ToolMethod {
     }
 
     public static String getOperatorMethodName(Mode mode, String operatorSym){
-        return "operator "+operatorSym+" "+mode.name();
+        return mode.name()+"Operator < "+operatorSym+" >";
     }
 }

@@ -22,8 +22,9 @@ public class Memory implements ConfigurationElement {
     public static final String ARG_IDENTIFIER = "arg";
 
     private final String name;
-    private ArrayDeque<Scope> scopes = new ArrayDeque<>();
-    private Table<Integer, ToolObject> objectTable = new Table<>();
+    private ArrayDeque<Scope> stack = new ArrayDeque<>(); //TODO: multiple stacks for multithreading
+    private Table<Integer, ToolObject> heap = new Table<>();
+
 
     public Memory(String memoryName){
         this.name = memoryName;
@@ -35,19 +36,17 @@ public class Memory implements ConfigurationElement {
     }
 
     public void pushScope(){
-        scopes.add(new Scope(Scope.ScopeType.Regular));
+        stack.add(new Scope(Scope.ScopeType.Regular));
     }
 
-
     public void pushMethodCallFrame() throws ReferenceAlreadyExistsException {
-        scopes.add(new Scope(Scope.ScopeType.MethodCall));
-        //newLocalReference(SELF_IDENTIFIER, selfObject);
+        stack.add(new Scope(Scope.ScopeType.MethodCall));
     }
 
 
 
     public Scope getTopScope(){
-        return scopes.getLast();
+        return stack.getLast();
     }
 
     public ToolObject getObjectByIdentifier(String identifierString) throws ReferenceNotFoundException {
@@ -56,7 +55,7 @@ public class Memory implements ConfigurationElement {
     }
 
     public ToolObject getObjectById(Integer id){
-        ToolObject to = objectTable.get(id);
+        ToolObject to = heap.get(id);
         if (to == null) {
             return BaseTypes.O_NULL;
         }
@@ -64,22 +63,23 @@ public class Memory implements ConfigurationElement {
     }
 
     public Reference getReferenceByIdentifier(String identifierString) throws ReferenceNotFoundException{
-        Iterator<Scope> i = scopes.descendingIterator();
+        Iterator<Scope> i = stack.descendingIterator();
         while(i.hasNext()){
             Scope p = i.next();
             Table<String, Reference> t = p.getReferenceTable();
             if(t.contains(identifierString)){
                 return t.get(identifierString);
             }
+            if(p.getScopeType() == Scope.ScopeType.MethodCall)
+                break;
         }
         throw new ReferenceNotFoundException("Reference with name: "+identifierString+" not found.");
     }
 
 
-
     public Reference newLocalReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
         Reference r = this.getTopScope().newReference(identifier, o);
-        this.objectTable.put(o.getId(), o);
+        this.heap.put(o.getId(), o);
         return r;
     }
 
@@ -94,7 +94,7 @@ public class Memory implements ConfigurationElement {
     }
 
     public Integer addObjectToHeap(ToolObject o){
-        objectTable.put(o.getId(), o);
+        heap.put(o.getId(), o);
         return o.getId();
     }
 
@@ -105,14 +105,14 @@ public class Memory implements ConfigurationElement {
         } catch (CounterIsZeroRemoveObject c) {
             removeObject(oldO.getId());
         }
-        objectTable.put(o.getId(),o);
+        heap.put(o.getId(),o);
         r.setPointedId(o.getId());
         o.increaseReferenceCount();
     }
 
     //adds a phantom reference in the scope below the current one (useful to return values from a scope)
     public void createPhantomReference(ToolObject o){
-        Iterator<Scope> i = scopes.descendingIterator();
+        Iterator<Scope> i = stack.descendingIterator();
         i.next();
         Scope p = i.next();
         p.getPhantomReferences().add(new PhantomReference(o));
@@ -127,8 +127,8 @@ public class Memory implements ConfigurationElement {
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder("{\n");
-        result.append("\tObjects:").append(objectTable).append("\n");
-        Iterator<Scope> i = scopes.descendingIterator();
+        result.append("\tObjects:").append(heap).append("\n");
+        Iterator<Scope> i = stack.descendingIterator();
         result.append("\tScopes:\n");
         while(i.hasNext()){
             Scope p = i.next();
@@ -141,13 +141,13 @@ public class Memory implements ConfigurationElement {
 
     public void popScopeAndGC() {
         gcScopeBeforeDisposal(getTopScope());
-        this.scopes.removeLast();
+        this.stack.removeLast();
     }
 
     public void removeObject(int id){
-        ToolObject o = objectTable.get(id);
+        ToolObject o = heap.get(id);
         gcScopeBeforeDisposal(o.getMembersScope());
-        objectTable.remove(id);
+        heap.remove(id);
     }
 
     private void gcScopeBeforeDisposal(Scope scope){
@@ -155,7 +155,7 @@ public class Memory implements ConfigurationElement {
         List<PhantomReference> lpr = scope.getPhantomReferences();
         for (PhantomReference pr : lpr){
             Integer id = pr.getPointedId();
-            ToolObject to = objectTable.get(id);
+            ToolObject to = heap.get(id);
             if(to == null) continue;
             try {
                 to.decreaseReferenceCount();
@@ -167,7 +167,7 @@ public class Memory implements ConfigurationElement {
         for (String s: t.keySet()) {
             Reference r = t.get(s);
             Integer id = r.getPointedId();
-            ToolObject to = objectTable.get(id);
+            ToolObject to = heap.get(id);
             if(to == null) continue;
             try {
                 to.decreaseReferenceCount();

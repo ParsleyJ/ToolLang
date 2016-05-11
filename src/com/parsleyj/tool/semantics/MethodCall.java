@@ -8,6 +8,7 @@ import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,45 @@ public class MethodCall implements RValue {
         this.name = name;
         this.implicitArgumentExpressions = implicitArgumentExpressions;
         this.argumentExpressions = argumentExpressions;
+    }
+
+    public static MethodCall method(RValue callerExpression, String name, RValue[] parameters) {
+        return new MethodCall(
+                ToolMethod.METHOD_CATEGORY_METHOD,
+                callerExpression,
+                name,
+                new RValue[]{callerExpression},
+                parameters
+        );
+    }
+
+    public static MethodCall binaryOperator(RValue selfExpression, String operatorSym, RValue argExpression){
+        return new MethodCall(
+                ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                selfExpression,
+                ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, operatorSym),
+                new RValue[]{selfExpression, argExpression},
+                new RValue[]{});
+    }
+
+    public static MethodCall prefixOperator(String operatorSym, RValue selfExpression){
+        return new MethodCall(
+                ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                selfExpression,
+                ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Prefix, operatorSym),
+                new RValue[]{selfExpression},
+                new RValue[]{});
+
+    }
+
+    public static MethodCall suffixOperator(RValue selfExpression, String operatorSym){
+        return new MethodCall(
+                ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                selfExpression,
+                ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Suffix, operatorSym),
+                new RValue[]{selfExpression},
+                new RValue[]{});
+
     }
 
     public RValue getCallerExpression() {

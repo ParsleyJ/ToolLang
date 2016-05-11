@@ -64,12 +64,12 @@ public class ToolMethod extends ToolObject {
         this.body = body;
     }
 
-    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue body){
+    public ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue body){
         this(visibility, name, implicitParameters, parameters, body);
         this.methodCategory = methodCategory;
     }
 
-    protected ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body){
+    public ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body){
         this(visibility, name, implicitParameters, parameters, condition, body);
         this.methodCategory = methodCategory;
     }
