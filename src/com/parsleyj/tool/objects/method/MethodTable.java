@@ -2,10 +2,12 @@ package com.parsleyj.tool.objects.method;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
+import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
-import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
+import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.utils.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +55,7 @@ public class MethodTable {
         return false;
     }
 
-    public ToolMethod resolve(Memory memory, String category, String name, List<ToolClass> argumentTypes) throws ToolNativeException {
+    public List<ToolMethod> getResolvedMethods(String category, String name, List<ToolClass> argumentsTypes) {
         //step1: get all candidates (correct names, visible from call point(?))
         List<ToolMethod> candidates = getCandidates(category, name);
 
@@ -61,42 +63,58 @@ public class MethodTable {
                 a viable function is a function that has types and number of arguments
                 compatible with the the call. */
         //      Compatible means it can be converted (following some specific rules) in the other type
-        List<ToolMethod> viables = getViableMethods(candidates, argumentTypes);
+        List<ToolMethod> viables = getViableMethods(candidates, argumentsTypes);
 
-        List<ToolMethod> conditionalFilteredViables = new ArrayList<>();
-        for (ToolMethod viable : viables) {
-            if(viable.getCondition().evaluate(memory).evaluateAsConditional(memory)){
-                conditionalFilteredViables.add(viable);
-            }
-        }
 
         //step3: choose the best function among the viable ones. cases:
-        if (conditionalFilteredViables.isEmpty()) //1) there are no viable functions: throw MethodNotFoundException
-            return null; //todo: throw exception directly from here?
+        if (viables.size() <= 1) //2) there are 0 or 1 viable functions: return them
+            return viables;
 
-        else if (conditionalFilteredViables.size() == 1) //2) there is 1 viable function: that's the one!
-            return conditionalFilteredViables.get(0);
-
-        else { //3) there are more than 1 functions: a rank system must be used and:
-            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(conditionalFilteredViables, argumentTypes);
-            //                  3.1) there is one method at first place: that's the one!
-            if (rankedMethods.get(0).getSecond().size() == 1) {
-                return rankedMethods.get(0).getSecond().get(0);
-
-            } else { //3.2) there are more than one method at first place: throw AmbiguousMethodCallException
-                StringBuilder sb = new StringBuilder("Multiple method candidates found for call: " + name + "(");
-                for (int i = 0; i < argumentTypes.size(); i++) {
-                    ToolClass tc = argumentTypes.get(i);
-                    sb.append(tc.getClassName());
-                    if (i != argumentTypes.size() - 1) sb.append(",");
-                }
-                sb.append("):\n");
-                for (ToolMethod tm : rankedMethods.get(0).getSecond()) {
-                    sb.append(tm).append("\n");
-                }
-                throw new AmbiguousMethodCallException(sb.toString());
-            }
+        else { //3) there is more than one function: a rank system must be used and the first places are returned:
+            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables, argumentsTypes);
+            return rankedMethods.get(0).getSecond();
         }
+    }
+
+
+    @NotNull
+    public ToolMethod resolve(
+            ToolObject caller,
+            String category,
+            String name,
+            List<ToolClass> argumentsTypes) throws ToolNativeException {
+
+        List<ToolMethod> rankedMethods = getResolvedMethods(category, name, argumentsTypes);
+        //3.1) there is one method at first place: that's the one!
+
+        if(rankedMethods.isEmpty()) { //1) there are no viable functions: throw MethodNotFoundException
+            StringBuilder sb = new StringBuilder("Method not found: " + caller + "." + name + "(");
+            for (int i = 0; i < argumentsTypes.size(); i++) {
+                ToolClass argumentType = argumentsTypes.get(i);
+                sb.append(argumentType.getClassName());
+                if (i < argumentsTypes.size() - 1) sb.append(", ");
+            }
+            sb.append(")");
+            throw new MethodNotFoundException(sb.toString());
+        }
+
+        if (rankedMethods.size() == 1) {
+            return rankedMethods.get(0);
+
+        } else { //3.2) there are more than one method at first place: throw AmbiguousMethodCallException
+            StringBuilder sb = new StringBuilder("Multiple method candidates found for call: " + name + "(");
+            for (int i = 0; i < argumentsTypes.size(); i++) {
+                ToolClass tc = argumentsTypes.get(i);
+                sb.append(tc.getClassName());
+                if (i != argumentsTypes.size() - 1) sb.append(",");
+            }
+            sb.append("):\n");
+            for (ToolMethod tm : rankedMethods) {
+                sb.append(tm).append("\n");
+            }
+            throw new AmbiguousMethodCallException(sb.toString());
+        }
+
     }
 
     private List<Pair<Integer, List<ToolMethod>>> getRankedMethods(List<ToolMethod> candidates, List<ToolClass> argumentTypes) {
@@ -167,5 +185,9 @@ public class MethodTable {
 
     public int count() {
         return methods.size();
+    }
+
+    public boolean contains(String category, String name, List<ToolClass> argumentsTypes) {
+        return !getResolvedMethods(category, name, argumentsTypes).isEmpty();
     }
 }

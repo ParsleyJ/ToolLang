@@ -52,6 +52,7 @@ public class BaseTypes {
     }; //todo: null class? not a null object but an "external value"?
     public static final ToolClass C_OBJECT = new ToolClass("Object", null);
     public static final ToolClass C_CLASS = new ToolClass("Class", C_OBJECT);
+    public static final ToolClass C_INTERFACE = new ToolClass("Interface", C_OBJECT);
     public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);//TODO this must be an object
     public static final ToolClass C_FIELD = new ToolClass("ToolField", C_OBJECT);
     public static final ToolClass C_BLOCK = new ToolClass("Block", C_OBJECT);
@@ -73,11 +74,12 @@ public class BaseTypes {
     public static final ToolExceptionClass C_ARITHMETIC_EXCEPTION = new ToolExceptionClass("ArithmeticException");
     public static final ToolExceptionClass C_INVALID_INDEX_TYPE_EXCEPTION = new ToolExceptionClass("InvalidIndexTypeException");
     public static final ToolExceptionClass C_INVALID_INDEX_LIST_EXCEPTION = new ToolExceptionClass("InvalidIndexListException");
-    public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
 
+    public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
     public static final Map<Class<?>, ToolClass> NATIVE_CLASS_MAP = new MapBuilder<Class<?>, ToolClass>()
             .put(ToolObject.class, C_OBJECT)
             .put(ToolClass.class, C_CLASS)
+            .put(ToolInterface.class, C_INTERFACE)
             .put(ToolField.class, C_FIELD)
             .put(ToolBlock.class, C_BLOCK)
             .put(ToolMethod.class, C_METHOD)
@@ -92,6 +94,7 @@ public class BaseTypes {
         return Arrays.asList(
                 C_OBJECT,
                 C_CLASS,
+                C_INTERFACE,
                 C_TOOL,
                 C_FIELD,
                 C_BLOCK,

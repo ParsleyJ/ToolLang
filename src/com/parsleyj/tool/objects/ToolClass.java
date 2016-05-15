@@ -4,11 +4,9 @@ import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by Giuseppe on 01/04/16.
@@ -19,13 +17,18 @@ public class ToolClass extends ToolObject {
     private final ToolClass parentClass;
     private MethodTable instanceMethods = new MethodTable();
     private Map<String, ToolField> fieldMap = new HashMap<>();
+    private List<ToolInterface> explicitInterfaces;
 
     public ToolClass(String className, ToolClass parentClass) {
+        this(className, parentClass, new ArrayList<>());
+    }
+
+    public ToolClass(String className, ToolClass parentClass, List<ToolInterface> explicitInterfaces) {
         super(BaseTypes.C_CLASS);
         this.className = className;
         this.parentClass = parentClass;
+        this.explicitInterfaces = explicitInterfaces;
     }
-
 
 
     public String getClassName() {
@@ -117,5 +120,24 @@ public class ToolClass extends ToolObject {
         }else{
             return getParentClass().generateInstanceCallableMethodTable().extend(getInstanceMethods());
         }
+    }
+
+    public boolean implementsInterface(ToolInterface toolInterface) {
+        return explicitImplements(toolInterface) || implicitImplements(toolInterface);
+    }
+
+    public boolean explicitImplements(ToolInterface toolInterface) {
+        for (ToolInterface explicitInterface : explicitInterfaces) {
+            if (Objects.equals(explicitInterface.getId(), toolInterface.getId())) return true;
+        }
+        return this.getParentClass() != null && this.getParentClass() != this && this.getParentClass().explicitImplements(toolInterface);
+    }
+
+    public boolean implicitImplements(ToolInterface toolInterface){
+        MethodTable callables = generateInstanceCallableMethodTable();
+        for(ToolMethod m: toolInterface.getInstanceMethods()){
+            if(!callables.contains(m.getMethodCategory(), m.getName(), m.getArgumentTypes())) return false;
+        }
+        return true;
     }
 }

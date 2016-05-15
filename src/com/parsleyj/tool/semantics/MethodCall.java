@@ -8,9 +8,12 @@ import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
+import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,7 +74,24 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Suffix, operatorSym),
                 new RValue[]{selfExpression},
                 new RValue[]{});
+    }
 
+    public static MethodCall getter(RValue selfExpression, String name){
+        return new MethodCall(
+                ToolGetterMethod.METHOD_CATEGORY_GETTER,
+                selfExpression,
+                name,
+                new RValue[]{selfExpression},
+                new RValue[]{});
+    }
+
+    public static MethodCall setter(RValue selfExpression, String name, RValue argExpression){
+        return new MethodCall(
+                ToolSetterMethod.METHOD_CATEGORY_SETTER,
+                selfExpression,
+                name,
+                new RValue[]{selfExpression, argExpression},
+                new RValue[]{});
     }
 
     public RValue getCallerExpression() {
@@ -87,6 +107,10 @@ public class MethodCall implements RValue {
     }
 
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
+        return callMethod(memory, category, callerExpression, name, implicitArgumentExpressions, argumentExpressions);
+    }
+
+    private static ToolObject callMethod(Memory memory, String category, RValue callerExpression, String name, RValue[] implicitArgumentExpressions, RValue[] argumentExpressions) throws ToolNativeException {
         ToolObject caller = callerExpression.evaluate(memory);
         if(caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
 
@@ -103,18 +127,7 @@ public class MethodCall implements RValue {
         List<ToolClass> argumentsTypes = arguments.stream().map(ToolObject::getBelongingClass).collect(Collectors.toList());
 
         MethodTable callableMethodTable = caller.generateCallableMethodTable();
-        ToolMethod tm = callableMethodTable.resolve(memory, category, name, argumentsTypes);
-        if (tm == null) {
-            StringBuilder sb = new StringBuilder("Method not found: <"+ caller.getBelongingClass().getClassName()+">."+name+"(");
-            for (int i = 0; i < argumentsTypes.size(); i++) {
-                ToolClass argumentType = argumentsTypes.get(i);
-                sb.append(argumentType.getClassName());
-                if(i < argumentsTypes.size()-1) sb.append(", ");
-            }
-            sb.append(")");
-            throw new MethodNotFoundException(sb.toString());
-        }
-
+        ToolMethod tm = callableMethodTable.resolve(caller, category, name, argumentsTypes);
 
         ToolObject result;
         memory.pushMethodCallFrame();

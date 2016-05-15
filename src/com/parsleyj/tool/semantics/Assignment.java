@@ -9,23 +9,23 @@ import com.parsleyj.tool.objects.ToolObject;
  * TODO: javadoc
  */
 public class Assignment implements RValue {
-    private final LValue lval;
+    private final LValue lVal;
     private final RValue exp;
 
-    public Assignment(LValue lval, RValue exp) {
-        this.lval = lval;
+    public Assignment(LValue lVal, RValue exp) {
+        this.lVal = lVal;
         this.exp = exp;
     }
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolObject o = exp.evaluate(memory);
-        lval.assign(o, memory);
+        lVal.assign(o, memory);
         return o;
     }
 
     @Override
     public String toString() {
-        return lval + " = " + exp;
+        return lVal + " = " + exp;
     }
 }
