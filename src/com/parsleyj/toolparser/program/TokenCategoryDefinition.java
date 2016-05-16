@@ -4,11 +4,14 @@ import com.parsleyj.toolparser.semanticsconverter.TokenConverter;
 import com.parsleyj.toolparser.semanticsconverter.TokenConverterMethod;
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Helper class used to define a {@link TokenCategory} and a {@link TokenConverter}, using
  * the given {@link TokenConverterMethod}.
  */
-public class TokenCategoryDefinition extends TokenCategory {
+public class TokenCategoryDefinition extends TokenCategory implements LexicalPatternDefinition{
     private TokenConverter converter;
 
     public TokenCategoryDefinition(String tokenClassName, String pattern, TokenConverterMethod method) {
@@ -29,5 +32,10 @@ public class TokenCategoryDefinition extends TokenCategory {
 
     public TokenConverter getConverter() {
         return converter;
+    }
+
+    @Override
+    public List<TokenConverter> getDeclaredTokenConverters() {
+        return converter==null? Collections.emptyList() : Collections.singletonList(converter);
     }
 }

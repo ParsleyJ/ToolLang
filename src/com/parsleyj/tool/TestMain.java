@@ -11,14 +11,17 @@ import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.semantics.*;
 import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxClass;
-import com.parsleyj.toolparser.program.Program;
-import com.parsleyj.toolparser.program.ProgramGenerator;
-import com.parsleyj.toolparser.program.SyntaxCaseDefinition;
-import com.parsleyj.toolparser.program.TokenCategoryDefinition;
+import com.parsleyj.toolparser.program.*;
 import com.parsleyj.toolparser.semanticsconverter.CBOConverterMethod;
+import com.parsleyj.toolparser.semanticsconverter.TokenConverter;
 import com.parsleyj.toolparser.semanticsconverter.UBOConverterMethod;
+import com.parsleyj.toolparser.tokenizer.TokenCategory;
+import com.parsleyj.utils.PJ;
 import com.parsleyj.utils.SimpleWrapConverterMethod;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -110,6 +113,38 @@ public class TestMain {
         TokenCategoryDefinition notOperatorToken = new TokenCategoryDefinition("NOT_OPERATOR", "\\Qnot\\E");
         TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
                 Identifier::new);
+        MultiPatternDefinition identifierMultiPattern = new MultiPatternDefinition("[_a-zA-Z][_a-zA-Z0-9]*") {
+            @Override
+            public List<TokenConverter> getDeclaredTokenConverters() {
+                return getConverters(nullToken, trueToken, falseToken, doToken, ifToken, thenToken, elseToken,
+                        toOperatorToken, andOperatorToken, orOperatorToken, notOperatorToken, identifierToken);
+            }
+
+            @Override
+            public TokenCategory generateTokenCategory(String matchedString) {
+                switch (matchedString){
+                    case "null": return nullToken;
+                    case "true": return trueToken;
+                    case "false": return falseToken;
+                    case "while": return whileToken;
+                    case "do": return doToken;
+                    case "if": return ifToken;
+                    case "then": return thenToken;
+                    case "else": return elseToken;
+                    case "to": return toOperatorToken;
+                    case "and": return andOperatorToken;
+                    case "or": return orOperatorToken;
+                    case "not": return notOperatorToken;
+                    default: return identifierToken;
+                }
+            }
+
+            @Override
+            public List<TokenCategory> declaredTokenCategories() {
+                return Arrays.asList(nullToken, trueToken, falseToken, doToken, ifToken, thenToken, elseToken,
+                        toOperatorToken, andOperatorToken, orOperatorToken, notOperatorToken, identifierToken);
+            }
+        };
         TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
         TokenCategoryDefinition exclamationPointToken = new TokenCategoryDefinition("EXCLAMATION_POINT", "\\Q!\\E");
         TokenCategoryDefinition commaToken = new TokenCategoryDefinition("COMMA", "\\Q,\\E");
@@ -138,11 +173,10 @@ public class TestMain {
         TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", " ", true);
         TokenCategoryDefinition newLineToken = new TokenCategoryDefinition("NEWLINE", "\\Q\n\\E", true);
 
-        TokenCategoryDefinition[] lexicon = new TokenCategoryDefinition[]{
+        LexicalPatternDefinition[] lexicon = new LexicalPatternDefinition[]{
                 stringToken,
-                nullToken, trueToken, falseToken, whileToken, doToken, ifToken, thenToken, elseToken,
-                toOperatorToken, andOperatorToken, orOperatorToken, notOperatorToken,
-                identifierToken, dotToken, exclamationPointToken, commaToken,
+                identifierMultiPattern,
+                dotToken, exclamationPointToken, commaToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
                 getBlockDefinitionOperatorToken,
                 equalsOperatorToken, notEqualsOperatorToken,
@@ -375,6 +409,14 @@ public class TestMain {
                 sequentialComposition
         };
         return new ProgramGenerator(lexicon, grammar);
+    }
+
+    private static List<TokenConverter> getConverters(TokenCategoryDefinition... tcds) {
+        List<TokenConverter> result = new ArrayList<>();
+        for (TokenCategoryDefinition tcd : tcds) {
+            if(tcd.getConverter()!=null)result.add(tcd.getConverter());
+        }
+        return result;
     }
 
     public static void main(String[] args) {

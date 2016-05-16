@@ -76,6 +76,10 @@ public class Memory implements ConfigurationElement {
         throw new ReferenceNotFoundException("Reference with name: "+identifierString+" not found.");
     }
 
+    public ToolObject getSelfObject() throws ReferenceNotFoundException {
+        return getObjectByIdentifier(SELF_IDENTIFIER);
+    }
+
 
     public Reference newLocalReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
         Reference r = this.getTopScope().newReference(identifier, o);

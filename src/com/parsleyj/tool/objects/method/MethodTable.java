@@ -46,7 +46,7 @@ public class MethodTable {
 
     public List<ToolMethod> getCandidates(String category, String name) {
         return methods.stream()
-                .filter(m -> m.getName().equals(name) && m.getMethodCategory().equals(category))
+                .filter(m -> m.getMethodName().equals(name) && m.getMethodCategory().equals(category))
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

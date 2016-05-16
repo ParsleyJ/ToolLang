@@ -7,8 +7,10 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 
 import java.util.ArrayList;
@@ -54,8 +56,32 @@ public class ToolList extends ToolObject {
             resultListContents.add(elementAtWithBackIndexes(self, index));
         }
         return new ToolList(resultListContents);
-
     }
+
+
+    @NativeInstanceMethod(value = "iterator", category = ToolGetterMethod.METHOD_CATEGORY_GETTER) //TODO: change name after tokenizer upgrade
+    public static ToolObject iterator(@MemoryParameter Memory memory0, @ImplicitParameter ToolList selfList) throws ToolNativeException {
+        ToolObject result = new ToolObject();
+
+        result.writeObjectMember("index", memory0, new ToolInteger(0));
+
+        result.addMethod(new ToolGetterMethod("hasNext", result.getBelongingClass(), memory -> {
+            ToolObject selfIterator = memory.getSelfObject();
+            ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
+            return new ToolBoolean(index.getIntegerValue()<selfList.toolObjects.size());
+        }));
+
+        result.addMethod(new ToolGetterMethod("next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
+            ToolObject selfIterator = memory.getSelfObject();
+            ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
+            Integer oldIndex = index.getIntegerValue();
+            index.setIntegerValue(index.getIntegerValue()+1);
+            return selfList.toolObjects.get(oldIndex);
+        }));
+
+        return result;
+    }
+
 
     private static List<Integer> getFlattenIndexList(ToolList indexes) throws ToolNativeException {
         if (!allIndexesAreIntegersOrLists(indexes)) throw new InvalidIndexTypeException("All index elements have to be Integers (or derivates) or Lists of Integers (or derivates).");

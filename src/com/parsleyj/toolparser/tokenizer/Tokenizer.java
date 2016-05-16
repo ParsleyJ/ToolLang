@@ -6,36 +6,41 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * TODO: doc
  * A {@link Tokenizer}'s job is to return a list of {@link Token}, generated
  * from the given {@link String} input, with the given list of {@link TokenCategory}es.
  */
 public class Tokenizer {
-    private List<TokenCategory> tokenCategories;
+    private List<? extends LexicalPattern> patterns;
 
-    public Tokenizer(List<TokenCategory> tokenCategories){
+    public Tokenizer(List<? extends LexicalPattern> patterns){
 
-        this.tokenCategories = tokenCategories;
+        this.patterns = patterns;
     }
+
 
     public List<Token> tokenize(String input){
         return tokenize(input, 0);
     }
 
     private List<Token> tokenize(String input, int tcIndex){
-        if(tcIndex >= tokenCategories.size()) throw new UnscannableSubstringException(input);
+        if(tcIndex >= patterns.size()) throw new UnscannableSubstringException(input);
 
         ArrayList<Token> tempResult = new ArrayList<>();
-        TokenCategory tokenCategory = tokenCategories.get(tcIndex);
-        Matcher matcher = Pattern.compile(tokenCategory.getPattern()).matcher(input);
+        LexicalPattern pattern = patterns.get(tcIndex);
+        Matcher matcher = Pattern.compile(pattern.getPattern()).matcher(input);
         int lastEnd = 0;
         while(matcher.find()){
             if(lastEnd<matcher.start()){
                 tempResult.add(new UnscannedTempToken(input.substring(lastEnd, matcher.start())));
             }
             lastEnd = matcher.end();
-            Token found = new Token(input.substring(matcher.start(), matcher.end()), tokenCategory.getTokenClassName());
-            if(!tokenCategory.isIgnorable())
+            String foundString =input.substring(matcher.start(), matcher.end());
+            TokenCategory tokenCategory = pattern.generateTokenCategory(foundString);
+            Token found = new Token(foundString, tokenCategory.getTokenClassName());
+            if(!tokenCategory.isIgnorable()) {
                 tempResult.add(found);
+            }
         }
         if(lastEnd < input.length()){
             tempResult.add(new UnscannedTempToken(input.substring(lastEnd)));

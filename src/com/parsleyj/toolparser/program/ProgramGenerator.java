@@ -6,6 +6,7 @@ import com.parsleyj.toolparser.semanticsconverter.CaseConverter;
 import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
 import com.parsleyj.toolparser.semanticsconverter.SemanticsConverter;
 import com.parsleyj.toolparser.semanticsconverter.TokenConverter;
+import com.parsleyj.toolparser.tokenizer.LexicalPattern;
 import com.parsleyj.toolparser.tokenizer.Token;
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
 import com.parsleyj.toolparser.tokenizer.Tokenizer;
@@ -21,12 +22,14 @@ import java.util.List;
  */
 public class ProgramGenerator {
 
+    private final List<LexicalPattern> patterns;
     private Grammar grammar;
     private List<TokenCategory> tokenCategories;
     private SemanticsConverter semanticsConverter;
     private boolean printDebugMessages = false;
 
     /**
+     * TODO: doc
      * Creates a program generator with the given {@link TokenCategoryDefinition}s and the
      * {@link SyntaxCaseDefinition}s.
      * The {@code Definition}s objects are used to create the {@link ProgramGenerator}'s
@@ -38,15 +41,17 @@ public class ProgramGenerator {
      * @param definitions an ordered array of the syntax cases with method converters. The parser
      *                    searches the cases in the input token list following the order of this array.
      */
-    public ProgramGenerator(TokenCategoryDefinition[] tokenCategories, SyntaxCaseDefinition[] definitions){
+    public ProgramGenerator(LexicalPatternDefinition[] patterns, SyntaxCaseDefinition[] definitions){
         this.tokenCategories = new ArrayList<>();
+        this.patterns = new ArrayList<>();
         List<TokenConverter> tokenConverters = new ArrayList<>();
-        for(TokenCategoryDefinition tokenClassDefinition: tokenCategories){
-            this.tokenCategories.add(tokenClassDefinition);
-            if (tokenClassDefinition.getConverter() != null) {
-                tokenConverters.add(tokenClassDefinition.getConverter());
-            }
+
+        for(LexicalPatternDefinition pattern:patterns){
+            this.patterns.add(pattern);
+            this.tokenCategories.addAll(pattern.declaredTokenCategories());
+            tokenConverters.addAll(pattern.getDeclaredTokenConverters());
         }
+
         this.grammar = new Grammar(definitions);
         List<CaseConverter> caseConverters = new ArrayList<>();
         for(SyntaxCaseDefinition syntaxCaseDefinition: definitions){
@@ -73,7 +78,7 @@ public class ProgramGenerator {
      * @return the Program object.
      */
     public Program generate(String name, String inputProgram, SyntaxClass rootClass, final ProgramExecutionMethod executionMethod){
-        Tokenizer tokenizer = new Tokenizer(tokenCategories);
+        Tokenizer tokenizer = new Tokenizer(patterns);
         List<Token> tokenList = tokenizer.tokenize(inputProgram);
 
         if(printDebugMessages){//TODO use lol class

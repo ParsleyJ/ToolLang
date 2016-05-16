@@ -1,11 +1,12 @@
 package com.parsleyj.tool.objects;
 
+import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.InvalidConditionalExpressionException;
 import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.*;
 import com.parsleyj.tool.objects.method.MethodTable;
-import com.parsleyj.tool.objects.method.special.ToolSemanticMethod;
+import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.semantics.MethodCall;
 import com.parsleyj.tool.semantics.RValue;
 
@@ -19,33 +20,47 @@ public class ToolObject implements RValue {
     private static class IDGenerator {
 
         private static int id = 0;
+
         public static int generate() {
             return id++;
         }
 
     }
-
     private ToolClass belongingClass;
+
     private Integer id = IDGenerator.generate();
+
     private Scope scope = new Scope(Scope.ScopeType.Object);
     protected MethodTable thisMethodTable = new MethodTable();
     public ToolObject() {
         this.belongingClass = BaseTypes.C_OBJECT;
     }
-
     public ToolObject(ToolClass belongingClass) {
         this.belongingClass = belongingClass;
     }
-
-
     public void addReferenceMember(Reference reference) {
         try {
-
             this.scope.putReference(reference);
         } catch (AddedReference addedReference) {
             //
         }
     }
+
+    public void writeObjectMember(String name, Memory memory, ToolObject object) {
+        Reference oldR = getReferenceMember(name);
+        if(oldR!=null){
+            ToolObject old = memory.getObjectById(oldR.getPointedId());
+            try {
+                old.decreaseReferenceCount();
+            } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
+                memory.removeObject(old.id);
+            }
+        }
+        memory.addObjectToHeap(object);
+        Reference r = new Reference(name, object);
+        addReferenceMember(r);
+    }
+
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
@@ -54,10 +69,7 @@ public class ToolObject implements RValue {
 
     public boolean evaluateAsConditional(Memory memory) throws ToolNativeException {
         try {
-            MethodCall mc = new MethodCall(
-                    ToolSemanticMethod.METHOD_CATEGORY_SPECIAL,
-                    this,
-                    "asCondition", new RValue[]{memory1 -> this},new RValue[]{});
+            MethodCall mc = MethodCall.getter(this, "asCondition");
             ToolObject returnedVal = mc.evaluate(memory);
             if(returnedVal.getBelongingClass().isOrExtends(BaseTypes.C_BOOLEAN)){
                 return returnedVal.evaluateAsConditional(memory);
@@ -75,6 +87,10 @@ public class ToolObject implements RValue {
 
     public void increaseReferenceCount() {
         ++this.referenceCount;
+    }
+
+    public void addMethod(ToolMethod method) throws AmbiguousMethodDefinitionException {
+        thisMethodTable.add(method);
     }
 
     public void decreaseReferenceCount() throws CounterIsZeroRemoveObject {

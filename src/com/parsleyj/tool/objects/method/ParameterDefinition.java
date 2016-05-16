@@ -9,8 +9,7 @@ import com.parsleyj.tool.objects.ToolClass;
 public class ParameterDefinition {
     public enum Mode{
         ByValue,
-        ByReference,
-        ByName
+        ByReference
     }
 
     private String parameterName;

@@ -14,7 +14,7 @@ import java.util.List;
  * TODO: javadoc
  */
 
-public class ToolMethod extends ToolObject {
+public class ToolMethod extends ToolObject{
 
     public static final String METHOD_CATEGORY_METHOD = "METHOD_CATEGORY_METHOD";
 
@@ -78,6 +78,7 @@ public class ToolMethod extends ToolObject {
         return condition;
     }
 
+
     public String getMethodCategory() {
         return methodCategory;
     }
@@ -86,13 +87,16 @@ public class ToolMethod extends ToolObject {
         return body;
     }
 
-    public String getName() {
+
+    public String getMethodName() {
         return name;
     }
+
 
     public List<ToolClass> getArgumentTypes() {
         return argumentTypes;
     }
+
 
     public List<String> getArgumentNames() {
         return argumentNames;
@@ -105,6 +109,7 @@ public class ToolMethod extends ToolObject {
     public List<String> getImplicitArgumentNames() {
         return implicitArgumentNames;
     }
+
 
     public Visibility getVisibility() {
         return visibility;

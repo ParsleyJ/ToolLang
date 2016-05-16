@@ -117,4 +117,8 @@ public class ToolInteger extends ToolObject {
     public String getPrintString() {
         return ""+String.valueOf(integer);
     }
+
+    public void setIntegerValue(Integer integerValue) {
+        this.integer = integerValue;
+    }
 }

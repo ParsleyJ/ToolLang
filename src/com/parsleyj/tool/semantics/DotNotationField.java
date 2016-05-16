@@ -45,14 +45,14 @@ public class DotNotationField implements LValue {
     @Override
     public ToolObject evaluate(Memory m) throws ToolNativeException {
         ToolObject leftExpObject = leftExp.evaluate(m);
-        MethodCall setterCall = new MethodCall(
+        MethodCall getterCall = new MethodCall(
                 ToolGetterMethod.METHOD_CATEGORY_GETTER,
                 leftExpObject,
                 ident.getIdentifierString(),
                 new RValue[]{
                         memory -> leftExpObject,
                 }, new RValue[]{});
-        return setterCall.evaluate(m);
+        return getterCall.evaluate(m);
     }
 
     @Override

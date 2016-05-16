@@ -2,11 +2,14 @@ package com.parsleyj.toolparser.tokenizer;
 
 import com.parsleyj.toolparser.parser.SyntaxCaseComponent;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Class representing a category of the lexicon. For example, the numerals
  * can be seen as a {@link TokenCategory}.
  */
-public class TokenCategory implements SyntaxCaseComponent {
+public class TokenCategory implements SyntaxCaseComponent, LexicalPattern {
     private String tokenClassName;
     private String pattern;
     private boolean ignoreToken = false;
@@ -23,7 +26,7 @@ public class TokenCategory implements SyntaxCaseComponent {
     /**
      * @param tokenClassName the unique name of this {@link TokenCategory}
      * @param pattern the regex pattern
-     * @param ignoreToken true if the found token must be discarted, false otherwise
+     * @param ignoreToken true if the found token must be rejected, false otherwise
      */
     public TokenCategory(String tokenClassName, String pattern, boolean ignoreToken) {
         this.tokenClassName = tokenClassName;
@@ -50,10 +53,22 @@ public class TokenCategory implements SyntaxCaseComponent {
     /**
      * @return the regex pattern used by the {@link Tokenizer} to find instances of this {@link TokenCategory}.
      */
+    @Override
     public String getPattern() {
         return pattern;
     }
 
+    //TODO: doc
+    @Override
+    public TokenCategory generateTokenCategory(String matchedString) {
+        return this;
+    }
+
+    //TODO: doc
+    @Override
+    public List<TokenCategory> declaredTokenCategories() {
+        return Collections.singletonList(this);
+    }
 
     @Override
     public String getSyntaxComponentName() {

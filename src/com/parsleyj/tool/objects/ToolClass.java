@@ -4,7 +4,6 @@ import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -136,7 +135,7 @@ public class ToolClass extends ToolObject {
     public boolean implicitImplements(ToolInterface toolInterface){
         MethodTable callables = generateInstanceCallableMethodTable();
         for(ToolMethod m: toolInterface.getInstanceMethods()){
-            if(!callables.contains(m.getMethodCategory(), m.getName(), m.getArgumentTypes())) return false;
+            if(!callables.contains(m.getMethodCategory(), m.getMethodName(), m.getArgumentTypes())) return false;
         }
         return true;
     }
