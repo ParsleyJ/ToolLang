@@ -18,15 +18,11 @@ public class ToolClass extends ToolObject {
     private Map<String, ToolField> fieldMap = new HashMap<>();
     private List<ToolInterface> explicitInterfaces;
 
-    public ToolClass(String className, ToolClass parentClass) {
-        this(className, parentClass, new ArrayList<>());
-    }
-
-    public ToolClass(String className, ToolClass parentClass, List<ToolInterface> explicitInterfaces) {
+    public ToolClass(String className, ToolClass parentClass, ToolInterface... explicitInterfaces) {
         super(BaseTypes.C_CLASS);
         this.className = className;
         this.parentClass = parentClass;
-        this.explicitInterfaces = explicitInterfaces;
+        this.explicitInterfaces = Arrays.asList(explicitInterfaces);
     }
 
 
@@ -119,6 +115,14 @@ public class ToolClass extends ToolObject {
         }else{
             return getParentClass().generateInstanceCallableMethodTable().extend(getInstanceMethods());
         }
+    }
+
+    public List<ToolInterface> getExplicitDeclaredInterfaces() {
+        return explicitInterfaces;
+    }
+
+    public void setExplicitInterfaces(ToolInterface... explicitInterfaces) {
+        this.explicitInterfaces = Arrays.asList(explicitInterfaces);
     }
 
     public boolean implementsInterface(ToolInterface toolInterface) {

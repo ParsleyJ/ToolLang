@@ -13,10 +13,7 @@ import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
-import com.parsleyj.tool.objects.basetypes.ToolBoolean;
-import com.parsleyj.tool.objects.basetypes.ToolInteger;
-import com.parsleyj.tool.objects.basetypes.ToolList;
-import com.parsleyj.tool.objects.basetypes.ToolString;
+import com.parsleyj.tool.objects.basetypes.*;
 import com.parsleyj.tool.objects.exception.ToolException;
 import com.parsleyj.tool.objects.exception.ToolExceptionClass;
 import com.parsleyj.tool.objects.method.ParameterDefinition;
@@ -61,6 +58,7 @@ public class BaseTypes {
     public static final ToolClass C_STRING = new ToolClass("String", C_OBJECT);
     public static final ToolClass C_BOOLEAN = new ToolClass("Boolean", C_OBJECT);
     public static final ToolClass C_LIST = new ToolClass("List", C_OBJECT);
+    public static final ToolClass C_INTEGER_RANGE = new ToolClass("IntegerRange", C_OBJECT);
     public static final ToolClass C_EXCEPTION = new ToolClass("Exception", C_OBJECT);
 
     // --- EXCEPTIONS ---
@@ -75,6 +73,7 @@ public class BaseTypes {
     public static final ToolExceptionClass C_ARITHMETIC_EXCEPTION = new ToolExceptionClass("ArithmeticException");
     public static final ToolExceptionClass C_INVALID_INDEX_TYPE_EXCEPTION = new ToolExceptionClass("InvalidIndexTypeException");
     public static final ToolExceptionClass C_INVALID_INDEX_LIST_EXCEPTION = new ToolExceptionClass("InvalidIndexListException");
+    public static final ToolExceptionClass C_INVALID_ITERABLE_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidIterableExpressionException");
 
     // --- INTERFACES ---
     public static final ToolInterface I_ITERABLE = new ToolInterface("Iterable", Collections.emptyList())
@@ -105,6 +104,7 @@ public class BaseTypes {
             .put(ToolString.class, C_STRING)
             .put(ToolBoolean.class, C_BOOLEAN)
             .put(ToolList.class, C_LIST)
+            .put(ToolIntegerRange.class, C_INTEGER_RANGE)
             .put(ToolException.class, C_EXCEPTION)
             .get();
 
@@ -122,6 +122,7 @@ public class BaseTypes {
                 C_STRING,
                 C_BOOLEAN,
                 C_LIST,
+                C_INTEGER_RANGE,
                 C_EXCEPTION,
 
                 C_REFERENCE_ALREADY_EXISTS_EXCEPTION,
@@ -134,7 +135,8 @@ public class BaseTypes {
                 C_ARITHMETIC_EXCEPTION,
                 C_INVALID_INDEX_TYPE_EXCEPTION,
                 C_INVALID_INDEX_LIST_EXCEPTION,
-                C_INDEX_OUT_OF_BOUNDS_EXCEPTION
+                C_INDEX_OUT_OF_BOUNDS_EXCEPTION,
+                C_INVALID_ITERABLE_EXPRESSION_EXCEPTION
         );
     }
 
@@ -148,6 +150,9 @@ public class BaseTypes {
     static {
         C_OBJECT.forceSetBelongingClass(C_CLASS);
         C_CLASS.forceSetBelongingClass(C_CLASS);
+
+        C_LIST.implementsInterface(I_ITERABLE);
+        C_INTEGER_RANGE.implementsInterface(I_ITERABLE);
 
         try {
             C_TOOL.addClassMethod(new ToolMethod(

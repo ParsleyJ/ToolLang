@@ -103,6 +103,8 @@ public class TestMain {
         TokenCategoryDefinition falseToken = new TokenCategoryDefinition("FALSE_KEYWORD", "\\Qfalse\\E",
                 (g) -> new ToolBoolean(false));
         TokenCategoryDefinition whileToken = new TokenCategoryDefinition("WHILE_KEYWORD", "\\Qwhile\\E");
+        TokenCategoryDefinition forToken = new TokenCategoryDefinition("FOR_KEYWORD", "\\Qfor\\E");
+        TokenCategoryDefinition inToken = new TokenCategoryDefinition("IN_KEYWORD", "\\Qin\\E");
         TokenCategoryDefinition doToken = new TokenCategoryDefinition("DO_KEYWORD", "\\Qdo\\E");
         TokenCategoryDefinition ifToken = new TokenCategoryDefinition("IF_KEYWORD", "\\Qif\\E");
         TokenCategoryDefinition thenToken = new TokenCategoryDefinition("THEN_KEYWORD", "\\Qthen\\E");
@@ -116,8 +118,9 @@ public class TestMain {
         MultiPatternDefinition identifierMultiPattern = new MultiPatternDefinition("[_a-zA-Z][_a-zA-Z0-9]*") {
             @Override
             public List<TokenConverter> getDeclaredTokenConverters() {
-                return getConverters(nullToken, trueToken, falseToken, doToken, ifToken, thenToken, elseToken,
-                        toOperatorToken, andOperatorToken, orOperatorToken, notOperatorToken, identifierToken);
+                return getConverters(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
+                        doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
+                        orOperatorToken, notOperatorToken, identifierToken);
             }
 
             @Override
@@ -127,6 +130,8 @@ public class TestMain {
                     case "true": return trueToken;
                     case "false": return falseToken;
                     case "while": return whileToken;
+                    case "for": return  forToken;
+                    case "in": return inToken;
                     case "do": return doToken;
                     case "if": return ifToken;
                     case "then": return thenToken;
@@ -141,8 +146,9 @@ public class TestMain {
 
             @Override
             public List<TokenCategory> declaredTokenCategories() {
-                return Arrays.asList(nullToken, trueToken, falseToken, doToken, ifToken, thenToken, elseToken,
-                        toOperatorToken, andOperatorToken, orOperatorToken, notOperatorToken, identifierToken);
+                return Arrays.asList(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
+                        doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
+                        orOperatorToken, notOperatorToken, identifierToken);
             }
         };
         TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
@@ -294,11 +300,11 @@ public class TestMain {
 
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
                 (n, s) ->
-                        MethodCall.prefixOperator("-", s.convert(n.get(0))),
+                        MethodCall.prefixOperator("-", s.convert(n.get(1))),
                 minusToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
                 (n, s) ->
-                        MethodCall.prefixOperator("!", s.convert(n.get(0))),
+                        MethodCall.prefixOperator("!", s.convert(n.get(1))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
                 new CBOConverterMethod<RValue>((a, b) ->
@@ -370,6 +376,13 @@ public class TestMain {
         SyntaxCaseDefinition whileStatement = new SyntaxCaseDefinition(rExp, "whileStatement",
                 (n, s) -> new WhileStatement(s.convert(n.get(1)), s.convert(n.get(3))),
                 whileToken, rExp, doToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition forInStatement = new SyntaxCaseDefinition(rExp, "forInStatement",
+                (n, s) -> new ForInStatement(
+                        ((Identifier) s.convert(n.get(1))),
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))
+                ),
+                forToken, ident, inToken, rExp, doToken, rExp);
         SyntaxCaseDefinition commaSeparatedExpressionListBase = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListBase",
                 new UBOConverterMethod<CommaSeparatedExpressionList, RValue, RValue>(CommaSeparatedExpressionList::new),
                 rExp, commaToken, rExp);
@@ -403,6 +416,7 @@ public class TestMain {
                 logicalOrOperation,
                 ifThenElseStatement, ifThenStatement,
                 whileStatement,
+                forInStatement,
                 assignment,
                 commaSeparatedExpressionListBase,
                 commaSeparatedExpressionListStep,

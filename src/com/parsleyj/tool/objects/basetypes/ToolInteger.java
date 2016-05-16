@@ -97,18 +97,8 @@ public class ToolInteger extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "to", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolList _to_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
-        List<ToolInteger> toolIntegerList = new ArrayList<>();
-        if(a.getIntegerValue() <= b.getIntegerValue()){
-            for(int i = a.getIntegerValue(); i < b.getIntegerValue(); ++i){
-                toolIntegerList.add(new ToolInteger(i));
-            }
-        }else /*if (a.getIntegerValue() > b.getIntegerValue())*/{
-            for(int i = a.getIntegerValue(); i > b.getIntegerValue(); --i){
-                toolIntegerList.add(new ToolInteger(i));
-            }
-        }
-        return new ToolList(toolIntegerList);
+    public static ToolIntegerRange _to_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+        return new ToolIntegerRange(a.getIntegerValue(), b.getIntegerValue());
     }
 
 

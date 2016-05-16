@@ -45,17 +45,31 @@ public class ToolList extends ToolObject {
 
     @NativeInstanceMethod(value = "[]", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.MultiEnclosedSuffix)
     public static ToolObject _elementAt_(@ImplicitParameter ToolList self, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolList indexes) throws ToolNativeException {
-        List<Integer> flattenIndexes = getFlattenIndexList(indexes);
-
-        if (flattenIndexes.size() < 1) throw new InvalidIndexListException("At least one index is needed.");
-
-        if (flattenIndexes.size() == 1) return elementAtWithBackIndexes(self, flattenIndexes.get(0));
-
-        List<ToolObject> resultListContents = new ArrayList<>();
-        for (Integer index : flattenIndexes) {
-            resultListContents.add(elementAtWithBackIndexes(self, index));
+        if (!allIndexesAreIntegersOrRanges(indexes)) throw new InvalidIndexTypeException("All index elements have to be instances of Integer or IntegerRange.");
+        if(indexes.toolObjects.isEmpty()) throw new InvalidIndexListException("At least one index is needed.");
+        List<ToolObject> resultList = new ArrayList<>();
+        for(ToolObject ind: indexes.toolObjects){
+            if(ind.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER))
+                resultList.add(elementAtWithBackIndexes(self, ((ToolInteger) ind).getIntegerValue()));
+            else{
+                for(Integer i : (ToolIntegerRange) ind){
+                    resultList.add(elementAtWithBackIndexes(self, i));
+                }
+            }
         }
-        return new ToolList(resultListContents);
+
+        if(resultList.size() == 1) return resultList.get(0);
+        else return new ToolList(resultList);
+    }
+
+    @NativeInstanceMethod(value = "indexes", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
+    public static ToolIntegerRange indexes(@ImplicitParameter ToolList selfList)throws ToolNativeException{
+        return new ToolIntegerRange(0, selfList.getToolObjects().size()-1);
+    }
+
+    @NativeInstanceMethod(value = "size", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
+    public static ToolInteger size(@ImplicitParameter ToolList selfList) throws ToolNativeException{
+        return new ToolInteger(selfList.getToolObjects().size());
     }
 
 
@@ -83,14 +97,14 @@ public class ToolList extends ToolObject {
     }
 
 
-    private static List<Integer> getFlattenIndexList(ToolList indexes) throws ToolNativeException {
+    private static List<Integer> getFlattenIndexList2(ToolList indexes) throws ToolNativeException {
         if (!allIndexesAreIntegersOrLists(indexes)) throw new InvalidIndexTypeException("All index elements have to be Integers (or derivates) or Lists of Integers (or derivates).");
         List<Integer> result = new ArrayList<>();
         for (ToolObject to : indexes.getToolObjects()) {
             if(to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER)){
                 result.add(((ToolInteger) to).getIntegerValue());
             }else if(to.getBelongingClass().isOrExtends(BaseTypes.C_LIST)){
-                result.addAll(getFlattenIndexList((ToolList) to));
+                result.addAll(getFlattenIndexList2((ToolList) to));
             }
         }
         return result;
@@ -115,6 +129,17 @@ public class ToolList extends ToolObject {
         }
         return true;
     }
+
+    private static boolean allIndexesAreIntegersOrRanges(ToolList indexes){
+        for(ToolObject to : indexes.getToolObjects()){
+            if(!to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER_RANGE) && !to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
 
     //TODO add(index, obj)
     //TODO addLast(obj)
