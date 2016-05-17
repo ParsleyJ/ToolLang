@@ -6,6 +6,7 @@ import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
+import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.basetypes.ToolString;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.semantics.*;
@@ -291,7 +292,13 @@ public class TestMain {
                 (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 dotToken, ident).parsingDirection(Associativity.RightToLeft);
 
-        SyntaxCaseDefinition arrayLiteral = new SyntaxCaseDefinition(rExp, "arrayLiteral",
+        SyntaxCaseDefinition arrayLiteral0 = new SyntaxCaseDefinition(rExp, "arrayLiteral0",
+                (n, s) -> (RValue) m -> new ToolList(new ArrayList<>()),
+                openSquareBracketToken, closedSquareBracketToken);
+        SyntaxCaseDefinition arrayLiteral1 = new SyntaxCaseDefinition(rExp, "arrayLiteral1",
+                (n, s) -> (RValue) m -> new ToolList(new ArrayList<>(Collections.singletonList(((RValue)s.convert(n.get(1))).evaluate(m)))),
+                openSquareBracketToken, rExp, closedSquareBracketToken);
+        SyntaxCaseDefinition arrayLiteral2 = new SyntaxCaseDefinition(rExp, "arrayLiteral2",
                 (n, s) -> (RValue) m -> {
                     CommaSeparatedExpressionList cselist = s.convert(n.get(1));
                     return cselist.generateToolList(m);
@@ -412,7 +419,7 @@ public class TestMain {
                 dotNotationField,
                 dotNotationMethodCall0, dotNotationMethodCall1, dotNotationMethodCall2,
                 newVarDeclaration,
-                arrayLiteral,
+                arrayLiteral0, arrayLiteral1, arrayLiteral2,
                 elementAccessOperation1,
                 elementAccessOperation2,
                 unaryMinusOperation,

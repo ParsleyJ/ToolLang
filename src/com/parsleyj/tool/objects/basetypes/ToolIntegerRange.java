@@ -81,7 +81,7 @@ public class ToolIntegerRange extends ToolObject implements Iterable<Integer>{
 
     @NativeInstanceMethod(value = "toList", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
     public static ToolList toList(@ImplicitParameter ToolIntegerRange self) throws ToolNativeException {
-        List<ToolInteger> integers = new ArrayList<>();
+        List<ToolObject> integers = new ArrayList<>();
         int i = self.start;
         while(self.descending?(i>=self.end):(i<=self.end)){
             integers.add(new ToolInteger(i));

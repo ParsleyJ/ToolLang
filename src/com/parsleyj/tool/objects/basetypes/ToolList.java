@@ -23,9 +23,9 @@ import java.util.List;
  * TODO: javadoc
  */
 public class ToolList extends ToolObject {
-    public List<? extends ToolObject> toolObjects;
+    public List<ToolObject> toolObjects;
 
-    public ToolList(List<? extends ToolObject> list) {
+    public ToolList(List<ToolObject> list) {
         super(BaseTypes.C_LIST);
         toolObjects = list;
     }
@@ -41,7 +41,7 @@ public class ToolList extends ToolObject {
         return sb.toString();
     }
 
-    public List<? extends ToolObject> getToolObjects() {
+    public List<ToolObject> getToolObjects() {
         return toolObjects;
     }
 
@@ -103,6 +103,71 @@ public class ToolList extends ToolObject {
         return new ToolList(PJ.reverse(self.toolObjects));
     }
 
+    //TODO addAll(collection)
+    //TODO removeAt(index)
+    //TODO remove(obj)
+    //TODO getLast()
+    //TODO getFirst()
+    //TODO get(index)
+
+    @NativeInstanceMethod(value = "add")
+    public static ToolList add(@ImplicitParameter ToolList self, ToolObject argument){
+        self.getToolObjects().add(argument);
+        return self;
+    }
+
+    /*@NativeInstanceMethod(value = "add")
+    public static ToolList add(@ImplicitParameter ToolList self, ToolInteger index, ToolObject argument){
+        self.getToolObjects().add(index.getIntegerValue(), argument);
+        return self;
+    }*/
+
+    @NativeInstanceMethod(value = "addLast")
+    public static ToolList addLast(@ImplicitParameter ToolList self, ToolObject argument){
+        self.getToolObjects().add(argument);
+        return self;
+    }
+
+    @NativeInstanceMethod(value = "addFirst")
+    public static ToolList addFirst(@ImplicitParameter ToolList self, ToolObject argument){
+        self.getToolObjects().add(0, argument);
+        return self;
+    }
+
+    @NativeInstanceMethod(value = "remove")
+    public static ToolList remove(@ImplicitParameter ToolList self, ToolInteger index){
+        self.getToolObjects().remove(index.getIntegerValue().intValue());
+        return self;
+    }
+
+    @NativeInstanceMethod(value = "removeLast")
+    public static ToolList removeLast(@ImplicitParameter ToolList self){
+        self.getToolObjects().remove(self.getToolObjects().size()-1);
+        return self;
+    }
+
+    @NativeInstanceMethod(value = "removeFirst")
+    public static ToolList removeFirst(@ImplicitParameter ToolList self){
+        self.getToolObjects().remove(0);
+        return self;
+    }
+
+    @NativeInstanceMethod(value = "removeAll")
+    public static ToolList removeAll(@ImplicitParameter ToolList self){
+        self.getToolObjects().clear();
+        return self;
+    }
+
+    @NativeInstanceMethod(value = "last", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
+    public static ToolObject last(@ImplicitParameter ToolList self){
+        return self.getToolObjects().get(self.getToolObjects().size()-1);
+    }
+
+    @NativeInstanceMethod(value = "first", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
+    public static ToolObject first(@ImplicitParameter ToolList self){
+        return self.getToolObjects().get(0);
+    }
+
     private static ToolObject elementAtWithBackIndexes(ToolList list, int index) throws ToolNativeException {
         List<? extends ToolObject> toolObjects = list.getToolObjects();
         if (index >= 0) {
@@ -125,16 +190,7 @@ public class ToolList extends ToolObject {
 
 
 
-    //TODO add(index, obj)
-    //TODO addLast(obj)
-    //TODO addFirst(obj)
-    //TODO addAll(list)
-    //TODO remove(index)
-    //TODO removeLast()
-    //TODO removeFirst()
-    //TODO removeAll()
-    //TODO getLast()
-    //TODO getFirst()
-    //TODO get(index)
+
+
 
 }
