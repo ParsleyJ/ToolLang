@@ -2,7 +2,7 @@ package com.parsleyj.tool.objects.method.special;
 
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
-import com.parsleyj.tool.objects.method.ParameterDefinition;
+import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.semantics.RValue;
@@ -20,10 +20,10 @@ public class ToolGetterMethod extends ToolMethod {
                 METHOD_CATEGORY_GETTER,
                 Visibility.Public,
                 name,
-                new ParameterDefinition[]{
-                        new ParameterDefinition(Memory.SELF_IDENTIFIER, selfType)
+                new FormalParameter[]{
+                        new FormalParameter(Memory.SELF_IDENTIFIER, selfType)
                 },
-                new ParameterDefinition[]{},
+                new FormalParameter[]{},
                 body);
     }
 }

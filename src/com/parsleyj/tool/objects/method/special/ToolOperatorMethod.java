@@ -2,7 +2,7 @@ package com.parsleyj.tool.objects.method.special;
 
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
-import com.parsleyj.tool.objects.method.ParameterDefinition;
+import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.semantics.RValue;
@@ -24,15 +24,15 @@ public class ToolOperatorMethod extends ToolMethod {
                 getOperatorMethodName(mode, operatorSym),
                 (mode == Mode.Prefix || mode == Mode.Suffix)
                         ?
-                        new ParameterDefinition[]{
-                                new ParameterDefinition(Memory.SELF_IDENTIFIER, selfType),
+                        new FormalParameter[]{
+                                new FormalParameter(Memory.SELF_IDENTIFIER, selfType),
                         }
                         :
-                        new ParameterDefinition[]{
-                                new ParameterDefinition(Memory.SELF_IDENTIFIER, selfType),
-                                new ParameterDefinition(Memory.ARG_IDENTIFIER, argType),
+                        new FormalParameter[]{
+                                new FormalParameter(Memory.SELF_IDENTIFIER, selfType),
+                                new FormalParameter(Memory.ARG_IDENTIFIER, argType),
                         },
-                new ParameterDefinition[]{},
+                new FormalParameter[]{},
                 condition,
                 body);
     }

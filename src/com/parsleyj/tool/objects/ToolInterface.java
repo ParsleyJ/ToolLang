@@ -1,11 +1,8 @@
 package com.parsleyj.tool.objects;
 
-import com.parsleyj.tool.exceptions.ToolNativeException;
-import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.method.ParameterDefinition;
+import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
-import com.parsleyj.tool.semantics.RValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,13 +40,13 @@ public class ToolInterface extends ToolObject {
         parentInterfaces.add(toolInterface);
     }
 
-    public ToolInterface addMethodDeclaration(String methodCategory, String name, ParameterDefinition[] parameterDefinitions){
+    public ToolInterface addMethodDeclaration(String methodCategory, String name, FormalParameter[] formalParameters){
         this.instanceMethods.add(new ToolMethod(
                 methodCategory,
                 Visibility.Public,
                 name,
-                new ParameterDefinition[]{},
-                parameterDefinitions,
+                new FormalParameter[]{},
+                formalParameters,
                 memory -> BaseTypes.O_NULL
         ));
         return this;

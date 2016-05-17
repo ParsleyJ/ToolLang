@@ -16,11 +16,11 @@ public class CBONativeInstanceMethod<T extends ToolObject> extends ToolMethod {
     public CBONativeInstanceMethod(String name, ToolClass expressionType, String parameterName, Body<T> body) {
         super(Visibility.Public,
                 name,
-                new ParameterDefinition[]{
-                        new ParameterDefinition(Memory.SELF_IDENTIFIER, expressionType)
+                new FormalParameter[]{
+                        new FormalParameter(Memory.SELF_IDENTIFIER, expressionType)
                 },
-                new ParameterDefinition[]{
-                        new ParameterDefinition(parameterName, expressionType)
+                new FormalParameter[]{
+                        new FormalParameter(parameterName, expressionType)
                 }, (memory) -> {
                     ToolObject self = memory.getObjectByIdentifier(Memory.SELF_IDENTIFIER);
                     ToolObject x = memory.getObjectByIdentifier(parameterName);

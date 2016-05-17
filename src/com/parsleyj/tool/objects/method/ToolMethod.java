@@ -28,17 +28,17 @@ public class ToolMethod extends ToolObject{
     private RValue condition;
     private RValue body;
 
-    public ToolMethod(Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue body) {
+    public ToolMethod(Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue body) {
         super(BaseTypes.C_METHOD);
         this.methodCategory = METHOD_CATEGORY_METHOD;
         this.visibility = visibility;
         this.name = name;
-        for (ParameterDefinition parameter : parameters) {
+        for (FormalParameter parameter : parameters) {
             this.argumentTypes.add(parameter.getParameterType());
             this.argumentNames.add(parameter.getParameterName());
         }
 
-        for (ParameterDefinition implicitParameter : implicitParameters) {
+        for (FormalParameter implicitParameter : implicitParameters) {
             this.implicitArgumentTypes.add(implicitParameter.getParameterType());
             this.implicitArgumentNames.add(implicitParameter.getParameterName());
         }
@@ -46,17 +46,17 @@ public class ToolMethod extends ToolObject{
         this.body = body;
     }
 
-    public ToolMethod(Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body) {
+    public ToolMethod(Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue condition, RValue body) {
         super(BaseTypes.C_METHOD);
         this.methodCategory = METHOD_CATEGORY_METHOD;
         this.visibility = visibility;
         this.name = name;
-        for (ParameterDefinition parameter : parameters) {
+        for (FormalParameter parameter : parameters) {
             this.argumentTypes.add(parameter.getParameterType());
             this.argumentNames.add(parameter.getParameterName());
 
         }
-        for (ParameterDefinition implicitParameter : implicitParameters) {
+        for (FormalParameter implicitParameter : implicitParameters) {
             this.implicitArgumentTypes.add(implicitParameter.getParameterType());
             this.implicitArgumentNames.add(implicitParameter.getParameterName());
         }
@@ -64,12 +64,12 @@ public class ToolMethod extends ToolObject{
         this.body = body;
     }
 
-    public ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue body){
+    public ToolMethod(String methodCategory, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue body){
         this(visibility, name, implicitParameters, parameters, body);
         this.methodCategory = methodCategory;
     }
 
-    public ToolMethod(String methodCategory, Visibility visibility, String name, ParameterDefinition[] implicitParameters, ParameterDefinition[] parameters, RValue condition, RValue body){
+    public ToolMethod(String methodCategory, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue condition, RValue body){
         this(visibility, name, implicitParameters, parameters, condition, body);
         this.methodCategory = methodCategory;
     }

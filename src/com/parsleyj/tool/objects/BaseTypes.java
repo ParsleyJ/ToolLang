@@ -16,7 +16,7 @@ import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.basetypes.*;
 import com.parsleyj.tool.objects.exception.ToolException;
 import com.parsleyj.tool.objects.exception.ToolExceptionClass;
-import com.parsleyj.tool.objects.method.ParameterDefinition;
+import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
@@ -74,22 +74,23 @@ public class BaseTypes {
     public static final ToolExceptionClass C_INVALID_INDEX_TYPE_EXCEPTION = new ToolExceptionClass("InvalidIndexTypeException");
     public static final ToolExceptionClass C_INVALID_INDEX_LIST_EXCEPTION = new ToolExceptionClass("InvalidIndexListException");
     public static final ToolExceptionClass C_INVALID_ITERABLE_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidIterableExpressionException");
+    public static final ToolExceptionClass C_INVALID_PARAMETER_TYPE_EXCEPTION = new ToolExceptionClass("InvalidParameterTypeException");
 
     // --- INTERFACES ---
     public static final ToolInterface I_ITERABLE = new ToolInterface("Iterable", Collections.emptyList())
             .addMethodDeclaration(
                     ToolGetterMethod.METHOD_CATEGORY_GETTER,
                     "iterator",
-                    new ParameterDefinition[]{});
+                    new FormalParameter[]{});
     public static final ToolInterface I_ITERATOR = new ToolInterface("Iterator", Collections.emptyList())
             .addMethodDeclaration(
                     ToolGetterMethod.METHOD_CATEGORY_GETTER,
                     "hasNext",
-                    new ParameterDefinition[]{})
+                    new FormalParameter[]{})
             .addMethodDeclaration(
                     ToolGetterMethod.METHOD_CATEGORY_GETTER,
                     "next",
-                    new ParameterDefinition[]{});
+                    new FormalParameter[]{});
 
 
     public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
@@ -136,7 +137,8 @@ public class BaseTypes {
                 C_INVALID_INDEX_TYPE_EXCEPTION,
                 C_INVALID_INDEX_LIST_EXCEPTION,
                 C_INDEX_OUT_OF_BOUNDS_EXCEPTION,
-                C_INVALID_ITERABLE_EXPRESSION_EXCEPTION
+                C_INVALID_ITERABLE_EXPRESSION_EXCEPTION,
+                C_INVALID_PARAMETER_TYPE_EXCEPTION
         );
     }
 
@@ -158,11 +160,11 @@ public class BaseTypes {
             C_TOOL.addClassMethod(new ToolMethod(
                     Visibility.Public,
                     "print",
-                    new ParameterDefinition[]{
-                            new ParameterDefinition("this", C_CLASS)
+                    new FormalParameter[]{
+                            new FormalParameter("this", C_CLASS)
                     },
-                    new ParameterDefinition[]{
-                            new ParameterDefinition("x", C_OBJECT)
+                    new FormalParameter[]{
+                            new FormalParameter("x", C_OBJECT)
                     }, memory -> {
                 ToolObject x = memory.getObjectByIdentifier("x");
                 if (x.getBelongingClass().isOrExtends(C_OBJECT)) {
@@ -277,8 +279,8 @@ public class BaseTypes {
                 NativeInstanceMethod instanceAnn = m.getDeclaredAnnotation(NativeInstanceMethod.class);
                 boolean isInstanceMethod = instanceAnn != null;
                 Parameter[] nativePars = m.getParameters();
-                List<ParameterDefinition> parameters = new ArrayList<>();
-                List<ParameterDefinition> implicitParameters = new ArrayList<>();
+                List<FormalParameter> parameters = new ArrayList<>();
+                List<FormalParameter> implicitParameters = new ArrayList<>();
                 boolean hasSelfParameter = false;
                 boolean hasMemoryParameter = false;
                 for (Parameter nativePar : nativePars) {
@@ -291,9 +293,9 @@ public class BaseTypes {
                                 ImplicitParameter implicitParAnn = nativePar.getDeclaredAnnotation(ImplicitParameter.class);
                                 if (implicitParAnn.value().equals(Memory.SELF_IDENTIFIER))
                                     hasSelfParameter = true;
-                                implicitParameters.add(new ParameterDefinition(implicitParAnn.value(), baseType));
+                                implicitParameters.add(new FormalParameter(implicitParAnn.value(), baseType));
                             } else {
-                                parameters.add(new ParameterDefinition(nativePar.getName(), baseType));
+                                parameters.add(new FormalParameter(nativePar.getName(), baseType));
                             }
                         } else {
                             throw new NativeClassLoadFailedException();
@@ -314,19 +316,19 @@ public class BaseTypes {
                                             isInstanceMethod ? instanceAnn.mode() : classAnn.mode(),
                                             isInstanceMethod ? instanceAnn.value() : classAnn.value())
                                     ) : (isInstanceMethod ? instanceAnn.value() : classAnn.value()),
-                            implicitParameters.toArray(new ParameterDefinition[implicitParameters.size()]),
-                            parameters.toArray(new ParameterDefinition[parameters.size()]),
+                            implicitParameters.toArray(new FormalParameter[implicitParameters.size()]),
+                            parameters.toArray(new FormalParameter[parameters.size()]),
                             memory -> {
                                 List<ToolObject> actualPars = new ArrayList<>();
                                 List<ToolObject> implicitPars = new ArrayList<>();
-                                for (ParameterDefinition par : implicitParameters) {
+                                for (FormalParameter par : implicitParameters) {
                                     ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
                                     if (x.getBelongingClass().isOrExtends(par.getParameterType())) {
                                         implicitPars.add(x);
                                     } else
                                         throw new BadMethodCallException("Something went wrong while attempting to call a native method"); //TODO specify what method
                                 }
-                                for (ParameterDefinition par : parameters) {
+                                for (FormalParameter par : parameters) {
                                     ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
                                     if (x.getBelongingClass().isOrExtends(par.getParameterType())) {
                                         actualPars.add(x);

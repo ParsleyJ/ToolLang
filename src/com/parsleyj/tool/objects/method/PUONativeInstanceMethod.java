@@ -16,10 +16,10 @@ public class PUONativeInstanceMethod<T extends ToolObject> extends ToolMethod {
     public PUONativeInstanceMethod(String name, ToolClass expressionType, Body<T> body) {
         super(Visibility.Public,
                 name,
-                new ParameterDefinition[]{
-                        new ParameterDefinition(Memory.SELF_IDENTIFIER, expressionType)
+                new FormalParameter[]{
+                        new FormalParameter(Memory.SELF_IDENTIFIER, expressionType)
                 },
-                new ParameterDefinition[]{}, (memory) -> {
+                new FormalParameter[]{}, (memory) -> {
                     ToolObject self = memory.getObjectByIdentifier(Memory.SELF_IDENTIFIER);
                     ToolObject result = null;
                     try {

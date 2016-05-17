@@ -17,11 +17,11 @@ public class UBONativeInstanceMethod<R extends ToolObject, T1 extends ToolObject
         super(methodCategory,
                 Visibility.Public,
                 name,
-                new ParameterDefinition[]{
-                        new ParameterDefinition(Memory.SELF_IDENTIFIER, expressionType1),
-                        new ParameterDefinition(Memory.ARG_IDENTIFIER, expressionType2)
+                new FormalParameter[]{
+                        new FormalParameter(Memory.SELF_IDENTIFIER, expressionType1),
+                        new FormalParameter(Memory.ARG_IDENTIFIER, expressionType2)
                 },
-                new ParameterDefinition[]{},
+                new FormalParameter[]{},
                 (memory) -> {
                     ToolObject self = memory.getObjectByIdentifier(Memory.SELF_IDENTIFIER);
                     ToolObject x = memory.getObjectByIdentifier(Memory.ARG_IDENTIFIER);

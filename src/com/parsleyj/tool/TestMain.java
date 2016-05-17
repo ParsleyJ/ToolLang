@@ -16,13 +16,9 @@ import com.parsleyj.toolparser.semanticsconverter.CBOConverterMethod;
 import com.parsleyj.toolparser.semanticsconverter.TokenConverter;
 import com.parsleyj.toolparser.semanticsconverter.UBOConverterMethod;
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
-import com.parsleyj.utils.PJ;
 import com.parsleyj.utils.SimpleWrapConverterMethod;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Created by Giuseppe on 04/04/16.
@@ -93,6 +89,9 @@ public class TestMain {
 
     private static SyntaxClass csel = new SyntaxClass("csel");
 
+    private static SyntaxClass param = new SyntaxClass("param");
+    private static SyntaxClass paramlist = new SyntaxClass("paramlist");
+
     private static ProgramGenerator getDefaultInterpreter() {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
                 ToolString::newFromLiteral);
@@ -113,6 +112,7 @@ public class TestMain {
         TokenCategoryDefinition andOperatorToken = new TokenCategoryDefinition("AND_OPERATOR", "\\Qand\\E");
         TokenCategoryDefinition orOperatorToken = new TokenCategoryDefinition("OR_OPERATOR", "\\Qor\\E");
         TokenCategoryDefinition notOperatorToken = new TokenCategoryDefinition("NOT_OPERATOR", "\\Qnot\\E");
+        TokenCategoryDefinition defToken = new TokenCategoryDefinition("DEF_KEYWORD", "\\Qdef\\E");
         TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
                 Identifier::new);
         MultiPatternDefinition identifierMultiPattern = new MultiPatternDefinition("[_a-zA-Z][_a-zA-Z0-9]*") {
@@ -120,7 +120,7 @@ public class TestMain {
             public List<TokenConverter> getDeclaredTokenConverters() {
                 return getConverters(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
-                        orOperatorToken, notOperatorToken, identifierToken);
+                        orOperatorToken, notOperatorToken, defToken, identifierToken);
             }
 
             @Override
@@ -140,6 +140,7 @@ public class TestMain {
                     case "and": return andOperatorToken;
                     case "or": return orOperatorToken;
                     case "not": return notOperatorToken;
+                    case "def": return defToken;
                     default: return identifierToken;
                 }
             }
@@ -148,10 +149,11 @@ public class TestMain {
             public List<TokenCategory> declaredTokenCategories() {
                 return Arrays.asList(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
-                        orOperatorToken, notOperatorToken, identifierToken);
+                        orOperatorToken, notOperatorToken, defToken, identifierToken);
             }
         };
         TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
+        TokenCategoryDefinition colonToken = new TokenCategoryDefinition("COLON", "\\Q:\\E");
         TokenCategoryDefinition exclamationPointToken = new TokenCategoryDefinition("EXCLAMATION_POINT", "\\Q!\\E");
         TokenCategoryDefinition commaToken = new TokenCategoryDefinition("COMMA", "\\Q,\\E");
         TokenCategoryDefinition plusToken = new TokenCategoryDefinition("PLUS", "\\Q+\\E");
@@ -182,7 +184,7 @@ public class TestMain {
         LexicalPatternDefinition[] lexicon = new LexicalPatternDefinition[]{
                 stringToken,
                 identifierMultiPattern,
-                dotToken, exclamationPointToken, commaToken,
+                dotToken, colonToken, exclamationPointToken, commaToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
                 getBlockDefinitionOperatorToken,
                 equalsOperatorToken, notEqualsOperatorToken,
@@ -219,6 +221,10 @@ public class TestMain {
         SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
+
+        SyntaxCaseDefinition parameterDeclaration = new SyntaxCaseDefinition(param, "parameterDeclaration",
+                (n, s) -> new ParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
+                ident, colonToken, ident);
 
         SyntaxCaseDefinition functionCall0 = new SyntaxCaseDefinition(rExp, "functionCall0",
                 (n, s) -> new MethodCall(
@@ -299,68 +305,52 @@ public class TestMain {
                 rExp, openSquareBracketToken, csel, closedSquareBracketToken);
 
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
-                (n, s) ->
-                        MethodCall.prefixOperator("-", s.convert(n.get(1))),
+                (n, s) -> MethodCall.prefixOperator("-", s.convert(n.get(1))),
                 minusToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
-                (n, s) ->
-                        MethodCall.prefixOperator("!", s.convert(n.get(1))),
+                (n, s) -> MethodCall.prefixOperator("!", s.convert(n.get(1))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "to", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "to", b)),
                 rExp, toOperatorToken, rExp);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "*", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "*", b)),
                 rExp, asteriskToken, rExp);
         SyntaxCaseDefinition slashOperation = new SyntaxCaseDefinition(rExp, "slashOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "/", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "/", b)),
                 rExp, slashToken, rExp);
         SyntaxCaseDefinition percentSignOperation = new SyntaxCaseDefinition(rExp, "percentSignOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "%", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "%", b)),
                 rExp, percentSignToken, rExp);
         SyntaxCaseDefinition minusOperation = new SyntaxCaseDefinition(rExp, "minusOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "-", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "-", b)),
                 rExp, minusToken, rExp);
         SyntaxCaseDefinition plusOperation = new SyntaxCaseDefinition(rExp, "plusOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "+", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "+", b)),
                 rExp, plusToken, rExp);
         SyntaxCaseDefinition greaterOperation = new SyntaxCaseDefinition(rExp, "greaterOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, ">", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, ">", b)),
                 rExp, greaterOperatorToken, rExp);
         SyntaxCaseDefinition equalGreaterOperation = new SyntaxCaseDefinition(rExp, "equalGreaterOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, ">=", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, ">=", b)),
                 rExp, equalGreaterOperatorToken, rExp);
         SyntaxCaseDefinition lessOperation = new SyntaxCaseDefinition(rExp, "lessOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "<", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "<", b)),
                 rExp, lessOperatorToken, rExp);
         SyntaxCaseDefinition equalLessOperation = new SyntaxCaseDefinition(rExp, "equalLessOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "<=", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "<=", b)),
                 rExp, equalLessOperatorToken, rExp);
         SyntaxCaseDefinition equalsOperation = new SyntaxCaseDefinition(rExp, "equalsOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "==", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "==", b)),
                 rExp, equalsOperatorToken, rExp);
         SyntaxCaseDefinition notEqualsOperation = new SyntaxCaseDefinition(rExp, "notEqualsOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "!=", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "!=", b)),
                 rExp, notEqualsOperatorToken, rExp);
         SyntaxCaseDefinition logicalAndOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "and", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "and", b)),
                 rExp, andOperatorToken, rExp);
         SyntaxCaseDefinition logicalOrOperation = new SyntaxCaseDefinition(rExp, "logicalOrOperation",
-                new CBOConverterMethod<RValue>((a, b) ->
-                        MethodCall.binaryOperator(a, "or", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "or", b)),
                 rExp, orOperatorToken, rExp);
 
         SyntaxCaseDefinition assignment = new SyntaxCaseDefinition(rExp, "assignment",
@@ -380,9 +370,14 @@ public class TestMain {
                 (n, s) -> new ForInStatement(
                         ((Identifier) s.convert(n.get(1))),
                         s.convert(n.get(3)),
-                        s.convert(n.get(5))
-                ),
+                        s.convert(n.get(5))),
                 forToken, ident, inToken, rExp, doToken, rExp);
+        SyntaxCaseDefinition parameterDefinitionListBase = new SyntaxCaseDefinition(paramlist, "parameterDefinitionListBase",
+                new UBOConverterMethod<ParameterDefinitionList, ParameterDefinition, ParameterDefinition>(ParameterDefinitionList::new),
+                param, commaToken, param);
+        SyntaxCaseDefinition parameterDefinitionListStep = new SyntaxCaseDefinition(paramlist, "parameterDefinitionListStep",
+                new UBOConverterMethod<ParameterDefinitionList, ParameterDefinitionList, ParameterDefinition>(ParameterDefinitionList::new),
+                paramlist, commaToken, param);
         SyntaxCaseDefinition commaSeparatedExpressionListBase = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListBase",
                 new UBOConverterMethod<CommaSeparatedExpressionList, RValue, RValue>(CommaSeparatedExpressionList::new),
                 rExp, commaToken, rExp);
@@ -392,11 +387,27 @@ public class TestMain {
         SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
                 rExp, semicolonToken, rExp);
+        SyntaxCaseDefinition methodDefinition0 = new SyntaxCaseDefinition(rExp, "methodDefinition0",
+                (n, s) -> new ToolMethodDefinition(s.convert(n.get(1)), s.convert(n.get(5))),
+                defToken, ident, openRoundBracketToken, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition methodDefinition1 = new SyntaxCaseDefinition(rExp, "methodDefinition1",
+                (n, s) -> new ToolMethodDefinition(
+                        s.convert(n.get(1)),
+                        Collections.singletonList(s.convert(n.get(3))),
+                        s.convert(n.get(6))),
+                defToken, ident, openRoundBracketToken, param, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition methodDefinition2 = new SyntaxCaseDefinition(rExp, "methodDefinition2",
+                (n, s) -> new ToolMethodDefinition(
+                        s.convert(n.get(1)),
+                        ((ParameterDefinitionList)s.convert(n.get(3))).getParameterDefinitions(),
+                        s.convert(n.get(6))),
+                defToken, ident, openRoundBracketToken, paramlist, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
 
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
                 identifier,
                 expressionBetweenRoundBrackets,
+                parameterDeclaration,
                 functionCall0, functionCall1, functionCall2,
                 dotNotationField,
                 dotNotationMethodCall0, dotNotationMethodCall1, dotNotationMethodCall2,
@@ -418,9 +429,12 @@ public class TestMain {
                 whileStatement,
                 forInStatement,
                 assignment,
+                parameterDefinitionListBase,
+                parameterDefinitionListStep,
                 commaSeparatedExpressionListBase,
                 commaSeparatedExpressionListStep,
-                sequentialComposition
+                sequentialComposition,
+                methodDefinition0, methodDefinition1, methodDefinition2,
         };
         return new ProgramGenerator(lexicon, grammar);
     }
