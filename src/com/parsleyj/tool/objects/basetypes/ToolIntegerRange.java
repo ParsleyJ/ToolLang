@@ -80,14 +80,19 @@ public class ToolIntegerRange extends ToolObject implements Iterable<Integer>{
     }
 
     @NativeInstanceMethod(value = "toList", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolList toList(@ImplicitParameter ToolIntegerRange selfRange) throws ToolNativeException {
+    public static ToolList toList(@ImplicitParameter ToolIntegerRange self) throws ToolNativeException {
         List<ToolInteger> integers = new ArrayList<>();
-        int i = selfRange.start;
-        while(selfRange.descending?(i>=selfRange.end):(i<=selfRange.end)){
+        int i = self.start;
+        while(self.descending?(i>=self.end):(i<=self.end)){
             integers.add(new ToolInteger(i));
-            if(selfRange.descending) i--; else i++;
+            if(self.descending) i--; else i++;
         }
         return new ToolList(integers);
+    }
+
+    @NativeInstanceMethod(value = "reverse", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
+    public static ToolIntegerRange reverse(@ImplicitParameter ToolIntegerRange self) throws ToolNativeException{
+        return new ToolIntegerRange(self.end, self.start);
     }
 
     @Override

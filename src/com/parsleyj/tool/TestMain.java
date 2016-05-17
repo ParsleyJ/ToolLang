@@ -31,7 +31,7 @@ public class TestMain {
     public static final boolean MULTILINE = false;
     public static final boolean PRINT_RESULTS = true;
 
-    public static void test2() {
+    public static void test() {
         Program.VERBOSE = PRINT_DEBUG;
         Scanner sc = new Scanner(System.in);
         String memName = "M";
@@ -448,6 +448,6 @@ public class TestMain {
     }
 
     public static void main(String[] args) {
-        test2();
+        test();
     }
 }

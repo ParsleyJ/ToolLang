@@ -12,8 +12,10 @@ import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
+import com.parsleyj.utils.PJ;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -96,18 +98,9 @@ public class ToolList extends ToolObject {
         return result;
     }
 
-
-    private static List<Integer> getFlattenIndexList2(ToolList indexes) throws ToolNativeException {
-        if (!allIndexesAreIntegersOrLists(indexes)) throw new InvalidIndexTypeException("All index elements have to be Integers (or derivates) or Lists of Integers (or derivates).");
-        List<Integer> result = new ArrayList<>();
-        for (ToolObject to : indexes.getToolObjects()) {
-            if(to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER)){
-                result.add(((ToolInteger) to).getIntegerValue());
-            }else if(to.getBelongingClass().isOrExtends(BaseTypes.C_LIST)){
-                result.addAll(getFlattenIndexList2((ToolList) to));
-            }
-        }
-        return result;
+    @NativeInstanceMethod(value = "reverse", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
+    public static ToolList reverse(@ImplicitParameter ToolList self){
+        return new ToolList(PJ.reverse(self.toolObjects));
     }
 
     private static ToolObject elementAtWithBackIndexes(ToolList list, int index) throws ToolNativeException {
@@ -119,15 +112,6 @@ public class ToolList extends ToolObject {
             if (toolObjects.size() + index < 0) throw new IndexOutOfBoundsExceptionTool(index, toolObjects.size());
             return toolObjects.get(toolObjects.size() + index);
         }
-    }
-
-    private static boolean allIndexesAreIntegersOrLists(ToolList indexes) {
-        for (ToolObject to : indexes.getToolObjects()) {
-            if (!to.getBelongingClass().isOrExtends(BaseTypes.C_LIST) && !to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static boolean allIndexesAreIntegersOrRanges(ToolList indexes){
