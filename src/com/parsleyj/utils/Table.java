@@ -1,5 +1,6 @@
 package com.parsleyj.utils;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -28,6 +29,10 @@ public class Table<Key, Value> {
 
     public Set<Key> keySet() {
         return tableContent.keySet();
+    }
+
+    public Collection<Value> values() {
+        return tableContent.values();
     }
 
     @Override

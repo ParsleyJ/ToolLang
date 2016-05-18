@@ -40,6 +40,7 @@ public class Memory implements ConfigurationElement {
         public CallFrame(ArrayDeque<Scope> definitionScope) {
             stack = new ArrayDeque<>();
             stack.addAll(definitionScope);
+            stack.add(new Scope(Scope.ScopeType.MethodCall));
         }
 
         public ArrayDeque<Scope> getStack() {
@@ -106,6 +107,13 @@ public class Memory implements ConfigurationElement {
             return scopeType;
         }
 
+        public void increaseAllLocalCounters(Memory memory){
+            for (Reference r: referenceTable.values()) {
+                ToolObject o = memory.getObjectById(r.getPointedId());
+                o.increaseReferenceCount();
+            }
+        }
+
     }
 
 
@@ -167,6 +175,10 @@ public class Memory implements ConfigurationElement {
             }
         }
         throw new ReferenceNotFoundException("Reference with name: "+identifierString+" not found.");
+    }
+
+    public ArrayDeque<Scope> getCurrentFrameStack(){
+        return callFrames.getLast().getStack();
     }
 
     public ToolObject getSelfObject() throws ReferenceNotFoundException {
@@ -257,9 +269,7 @@ public class Memory implements ConfigurationElement {
             Scope sc = icf.next();
             try {
                 ToolMethod tm = sc.getMethods().resolve(null, category, name, argumentsTypes);
-                ArrayDeque<Scope> callFrameScope = new ArrayDeque<>();
-                icf.forEachRemaining(callFrameScope::addFirst);
-                return new Pair<>(callFrameScope, tm);
+                return new Pair<>(tm.getDefinitionScope(), tm);
             }catch (MethodNotFoundException mnf){
                 //ignore and try in previous scope, during next iteration
             }
@@ -270,11 +280,12 @@ public class Memory implements ConfigurationElement {
 
     public void removeObject(int id){
         ToolObject o = heap.get(id);
+        o.onDestroy(this);
         gcScopeBeforeDisposal(o.getMembersScope());
         heap.remove(id);
     }
 
-    private void gcScopeBeforeDisposal(Scope scope){
+    public void gcScopeBeforeDisposal(Scope scope){
         Table<String, Reference> t = scope.getReferenceTable();
         List<PhantomReference> lpr = scope.getPhantomReferences();
         for (PhantomReference pr : lpr){

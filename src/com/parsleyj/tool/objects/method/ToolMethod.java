@@ -1,12 +1,15 @@
 package com.parsleyj.tool.objects.method;
 
+import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.RValue;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,6 +30,7 @@ public class ToolMethod extends ToolObject{
     private List<String> argumentNames = new ArrayList<>();
     private RValue condition;
     private RValue body;
+    private ArrayDeque<Memory.Scope> definitionScope = new ArrayDeque<>();
 
     public ToolMethod(Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue body) {
         super(BaseTypes.C_METHOD);
@@ -135,5 +139,26 @@ public class ToolMethod extends ToolObject{
             sb.append("<").append(argumentType.getClassName()).append(">");
             if(i < argumentTypes.size()-1) sb.append(", ");
         }
+    }
+
+    public void putDefinitionScope(ArrayDeque<Memory.Scope> definitionScope, Memory m) {
+        for (Memory.Scope scope : definitionScope) {
+            scope.increaseAllLocalCounters(m);
+            this.definitionScope.add(scope);
+        }
+    }
+
+    public ArrayDeque<Memory.Scope> getDefinitionScope(){
+        return definitionScope;
+    }
+
+    @Override
+    public void onDestroy(Memory memory) {
+        Iterator<Memory.Scope> i = definitionScope.descendingIterator();
+        while(i.hasNext()){
+            Memory.Scope scope = i.next();
+            memory.gcScopeBeforeDisposal(scope);
+        }
+        super.onDestroy(memory);
     }
 }

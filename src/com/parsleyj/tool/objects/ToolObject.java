@@ -138,10 +138,18 @@ public class ToolObject implements RValue {
 
     public MethodTable generateCallableMethodTable(){
         if(this.getBelongingClass()!= null && this != this.getBelongingClass()){
-            MethodTable result = this.getBelongingClass().generateInstanceCallableMethodTable().extend(this.thisMethodTable);
-            return result;
+            return this.getBelongingClass().generateInstanceCallableMethodTable().extend(this.thisMethodTable);
         }else{
             return thisMethodTable;
         }
     }
+
+    /**
+     * Called by Memory right before being destroyed
+     */
+    public void onDestroy(Memory memory){
+        //does nothing here
+    }
+
+
 }

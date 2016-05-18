@@ -43,12 +43,12 @@ public class ToolMethodDefinition implements RValue{
         ToolMethod method = new ToolMethod(
                 Visibility.Public,
                 identifier.getIdentifierString(),
-                new FormalParameter[]{
-                        new FormalParameter(Memory.SELF_IDENTIFIER, BaseTypes.C_OBJECT)},
+                new FormalParameter[]{},
                 formalParameters.toArray(new FormalParameter[formalParameters.size()]),
                 new ToolBoolean(true),
                 body);
-        BaseTypes.C_TOOL.addClassMethod(method);
+        method.putDefinitionScope(memory.getCurrentFrameStack(), memory);
+        memory.getTopScope().addMethod(method);
         return method;
     }
 }
