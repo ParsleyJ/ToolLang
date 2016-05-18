@@ -413,6 +413,8 @@ public class RecursiveParser implements Parser {
         rightComponents.forEach(x -> Lol.v("<"+x.getSyntaxComponentName()+"> "));
         Lol.v("");
 
+        //FIXME: paramlist is never taken because ident is on the left and the right, while
+        //FIXME:    paramlist is composed by "param,param" and param is composed by "ident:ident"
         return grammar.getPriorityCaseList().stream()
                 .map(Pair::getSecond)
                 .filter(candidate -> {

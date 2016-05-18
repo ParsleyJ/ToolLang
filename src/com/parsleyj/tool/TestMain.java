@@ -64,7 +64,7 @@ public class TestMain {
             if (programString.equals("exit")) break;
 
             try {
-                Program prog = pg.interpret("testParsed", programString, rExp, (p, c) -> {
+                Program prog = pg.interpret("testParsed", programString, paramlist, (p, c) -> { //TODO SET AGAIN TO rExp
                     RValue e = (RValue) p.getRootSemanticObject();
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
@@ -365,12 +365,6 @@ public class TestMain {
                         s.convert(n.get(3)),
                         s.convert(n.get(5))),
                 forToken, ident, inToken, rExp, doToken, rExp);
-        SyntaxCaseDefinition parameterDefinitionListBase = new SyntaxCaseDefinition(paramlist, "parameterDefinitionListBase",
-                new UBOConverterMethod<ParameterDefinitionList, ParameterDefinition, ParameterDefinition>(ParameterDefinitionList::new),
-                param, commaToken, param);
-        SyntaxCaseDefinition parameterDefinitionListStep = new SyntaxCaseDefinition(paramlist, "parameterDefinitionListStep",
-                new UBOConverterMethod<ParameterDefinitionList, ParameterDefinitionList, ParameterDefinition>(ParameterDefinitionList::new),
-                paramlist, commaToken, param);
         SyntaxCaseDefinition commaSeparatedExpressionListBase = new SyntaxCaseDefinition(csel, "commaSeparatedExpressionListBase",
                 new UBOConverterMethod<CommaSeparatedExpressionList, RValue, RValue>(CommaSeparatedExpressionList::new),
                 rExp, commaToken, rExp);
@@ -395,6 +389,12 @@ public class TestMain {
                         ((ParameterDefinitionList)s.convert(n.get(3))).getParameterDefinitions(),
                         s.convert(n.get(6))),
                 defToken, ident, openRoundBracketToken, paramlist, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition parameterDefinitionListBase = new SyntaxCaseDefinition(paramlist, "parameterDefinitionListBase",
+                new UBOConverterMethod<ParameterDefinitionList, ParameterDefinition, ParameterDefinition>(ParameterDefinitionList::new),
+                param, commaToken, param);
+        SyntaxCaseDefinition parameterDefinitionListStep = new SyntaxCaseDefinition(paramlist, "parameterDefinitionListStep",
+                new UBOConverterMethod<ParameterDefinitionList, ParameterDefinitionList, ParameterDefinition>(ParameterDefinitionList::new),
+                paramlist, commaToken, param);
 
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
@@ -422,12 +422,12 @@ public class TestMain {
                 whileStatement,
                 forInStatement,
                 assignment,
-                parameterDefinitionListBase,
-                parameterDefinitionListStep,
                 commaSeparatedExpressionListBase,
                 commaSeparatedExpressionListStep,
                 sequentialComposition,
                 methodDefinition0, methodDefinition1, methodDefinition2,
+                parameterDefinitionListBase,
+                parameterDefinitionListStep,
         };
         return new Interpreter(lexicon, grammar);
     }
