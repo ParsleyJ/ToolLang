@@ -3,7 +3,7 @@ package com.parsleyj.toolparser.semanticsconverter;
 import com.parsleyj.toolparser.parser.ParseTreeNode;
 
 /**
- * Helper class used to easily generate a {@link CaseConverterMethod} for
+ * Helper class used to easily interpret a {@link CaseConverterMethod} for
  * closed binary operations, i.e. those binary operations which result is
  * of the same semantic type of its operands.
  */

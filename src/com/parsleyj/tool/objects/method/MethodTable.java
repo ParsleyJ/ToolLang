@@ -88,14 +88,7 @@ public class MethodTable {
         //3.1) there is one method at first place: that's the one!
 
         if(rankedMethods.isEmpty()) { //1) there are no viable functions: throw MethodNotFoundException
-            StringBuilder sb = new StringBuilder("Method not found: " + caller + "." + name + "(");
-            for (int i = 0; i < argumentsTypes.size(); i++) {
-                ToolClass argumentType = argumentsTypes.get(i);
-                sb.append(argumentType.getClassName());
-                if (i < argumentsTypes.size() - 1) sb.append(", ");
-            }
-            sb.append(")");
-            throw new MethodNotFoundException(sb.toString());
+            throw new MethodNotFoundException(MethodNotFoundException.getDefaultMessage(caller, name, argumentsTypes));
         }
 
         if (rankedMethods.size() == 1) {
@@ -116,6 +109,7 @@ public class MethodTable {
         }
 
     }
+
 
     private List<Pair<Integer, List<ToolMethod>>> getRankedMethods(List<ToolMethod> candidates, List<ToolClass> argumentTypes) {
         List<Pair<Integer, List<ToolMethod>>> result = new ArrayList<>();

@@ -21,7 +21,7 @@ public class Grammar {
     private List<Pair<SyntaxClass,SyntaxCase>> priorityCaseList;
 
     /**
-     * @param syntaxCaseDefinitions a list of {@link SyntaxCaseDefinition} used to generate
+     * @param syntaxCaseDefinitions a list of {@link SyntaxCaseDefinition} used to interpret
      *                              the Grammar. The order is important: the first syntax cases will be
      *                              searched first by the parser, so it can be used to set precedence rules.
      */

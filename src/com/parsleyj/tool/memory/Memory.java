@@ -1,14 +1,17 @@
 package com.parsleyj.tool.memory;
 
-import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
-import com.parsleyj.tool.exceptions.ReferenceNotFoundException;
+import com.parsleyj.tool.exceptions.*;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.MethodTable;
+import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
+import com.parsleyj.utils.Pair;
 import com.parsleyj.utils.Table;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,17 +21,105 @@ import java.util.List;
  */
 public class Memory implements ConfigurationElement {
 
+
+
+    /**
+     * Created by Giuseppe on 18/05/16.
+     * TODO: javadoc
+     */
+    public static class CallFrame {
+
+        private static int callFrameIdCounter = 0;
+        private int id = callFrameIdCounter++;
+        private ArrayDeque<Scope> stack;
+        public CallFrame() {
+            stack = new ArrayDeque<>();
+            stack.add(new Scope(Scope.ScopeType.MethodCall));
+        }
+
+        public CallFrame(ArrayDeque<Scope> definitionScope) {
+            stack = new ArrayDeque<>();
+            stack.addAll(definitionScope);
+        }
+
+        public ArrayDeque<Scope> getStack() {
+            return stack;
+        }
+
+    }
+    /**
+     * Created by Giuseppe on 05/04/16.
+     * TODO: javadoc
+     */
+    public static class Scope {
+
+
+        public enum ScopeType{Regular, MethodCall, Object;}
+        private Table<String, Reference> referenceTable = new Table<>();
+        private List<PhantomReference> phantomReferences = new ArrayList<>();
+        private ScopeType scopeType;
+        private MethodTable localMethods = new MethodTable();
+        public Scope(ScopeType scopeType){
+            this.scopeType = scopeType;
+        }
+
+        public Table<String, Reference> getReferenceTable() {
+            return referenceTable;
+        }
+
+        public List<PhantomReference> getPhantomReferences() {
+            return phantomReferences;
+        }
+
+        public boolean contains(String identifier) {
+            return referenceTable.contains(identifier);
+        }
+
+        public void putReference(Reference r) throws AddedReference {
+            referenceTable.put(r.getIdentifierString(), r);
+        }
+
+        public Reference newReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
+            if (contains(identifier)) throw new ReferenceAlreadyExistsException("Reference with name \""+identifier+"\" already exists in this scope.");
+            Reference r = new Reference(identifier, o);
+            try {
+                putReference(r);
+                o.increaseReferenceCount();
+            } catch (AddedReference addedReference) {
+                //exception never thrown, used only as a way to remember to handle reference counting
+            }
+            return r;
+        }
+
+        public MethodTable getMethods(){
+            return localMethods;
+        }
+
+        public void addMethod(ToolMethod tm) throws AmbiguousMethodDefinitionException {
+            localMethods.add(tm);
+        }
+
+        public Reference getReferenceByName(String identifierString) {
+            return referenceTable.get(identifierString);
+        }
+        public ScopeType getScopeType() {
+            return scopeType;
+        }
+
+    }
+
+
     public static final String SELF_IDENTIFIER = "this";
+
     public static final String ARG_IDENTIFIER = "arg";
-
     private final String name;
-    private ArrayDeque<Scope> stack = new ArrayDeque<>(); //TODO: multiple stacks for multithreading
+
+    private ArrayDeque<CallFrame> callFrames = new ArrayDeque<>();
     private Table<Integer, ToolObject> heap = new Table<>();
-
-
     public Memory(String memoryName){
         this.name = memoryName;
     }
+
 
     @Override
     public String getConfigurationElementName() {
@@ -36,17 +127,21 @@ public class Memory implements ConfigurationElement {
     }
 
     public void pushScope(){
-        stack.add(new Scope(Scope.ScopeType.Regular));
+        callFrames.getLast().getStack().add(new Scope(Scope.ScopeType.Regular));
     }
 
-    public void pushMethodCallFrame() throws ReferenceAlreadyExistsException {
-        stack.add(new Scope(Scope.ScopeType.MethodCall));
+    public void pushCallFrame() {
+        callFrames.add(new CallFrame());
+    }
+
+    public void pushCallFrame(ArrayDeque<Scope> definitionScope) {
+        callFrames.add(new CallFrame(definitionScope));
     }
 
 
 
     public Scope getTopScope(){
-        return stack.getLast();
+        return callFrames.getLast().getStack().getLast();
     }
 
     public ToolObject getObjectByIdentifier(String identifierString) throws ReferenceNotFoundException {
@@ -63,15 +158,13 @@ public class Memory implements ConfigurationElement {
     }
 
     public Reference getReferenceByIdentifier(String identifierString) throws ReferenceNotFoundException{
-        Iterator<Scope> i = stack.descendingIterator();
+        Iterator<Scope> i = callFrames.getLast().getStack().descendingIterator();
         while(i.hasNext()){
             Scope p = i.next();
             Table<String, Reference> t = p.getReferenceTable();
             if(t.contains(identifierString)){
                 return t.get(identifierString);
             }
-            if(p.getScopeType() == Scope.ScopeType.MethodCall)
-                break;
         }
         throw new ReferenceNotFoundException("Reference with name: "+identifierString+" not found.");
     }
@@ -114,9 +207,19 @@ public class Memory implements ConfigurationElement {
         o.increaseReferenceCount();
     }
 
+    public void returnFromCall(ToolObject o){
+        Iterator<CallFrame> i = callFrames.descendingIterator();
+        i.next();
+        CallFrame cf = i.next();
+        cf.getStack().getLast().getPhantomReferences().add(new PhantomReference(o));
+        o.increaseReferenceCount();
+        popScopeAndGC();
+        callFrames.removeLast();
+    }
+
     //adds a phantom reference in the scope below the current one (useful to return values from a scope)
     public void createPhantomReference(ToolObject o){
-        Iterator<Scope> i = stack.descendingIterator();
+        Iterator<Scope> i = callFrames.getLast().getStack().descendingIterator();
         i.next();
         Scope p = i.next();
         p.getPhantomReferences().add(new PhantomReference(o));
@@ -132,20 +235,37 @@ public class Memory implements ConfigurationElement {
     public String toString() {
         final StringBuilder result = new StringBuilder("{\n");
         result.append("\tObjects:").append(heap).append("\n");
-        Iterator<Scope> i = stack.descendingIterator();
+        /*Iterator<Scope> i = stack.descendingIterator();
         result.append("\tScopes:\n");
         while(i.hasNext()){
             Scope p = i.next();
             Table<String, Reference> t = p.getReferenceTable();
             result.append("\t\tscope:").append(t).append("\n");
         }
-        result.append("}");
+        result.append("}");*/
         return result.toString();
     }
 
     public void popScopeAndGC() {
         gcScopeBeforeDisposal(getTopScope());
-        this.stack.removeLast();
+        this.callFrames.getLast().getStack().removeLast();
+    }
+
+    public Pair<ArrayDeque<Scope>,ToolMethod> resolveFunction(String category, String name, List<ToolClass> argumentsTypes) throws ToolNativeException{
+        Iterator<Scope> icf = callFrames.getLast().getStack().descendingIterator();
+        while (icf.hasNext()){
+            Scope sc = icf.next();
+            try {
+                ToolMethod tm = sc.getMethods().resolve(null, category, name, argumentsTypes);
+                ArrayDeque<Scope> callFrameScope = new ArrayDeque<>();
+                icf.forEachRemaining(callFrameScope::addFirst);
+                return new Pair<>(callFrameScope, tm);
+            }catch (MethodNotFoundException mnf){
+                //ignore and try in previous scope, during next iteration
+            }
+        }
+        throw new MethodNotFoundException(MethodNotFoundException.getDefaultMessage(null, name, argumentsTypes));
+
     }
 
     public void removeObject(int id){
@@ -190,4 +310,6 @@ public class Memory implements ConfigurationElement {
             }
         }
     }
+
+
 }

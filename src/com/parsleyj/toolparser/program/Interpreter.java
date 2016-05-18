@@ -17,10 +17,10 @@ import java.util.List;
 /**
  * Helpful class used to define a {@link Tokenizer}, a {@link RecursiveParser}
  * and a {@link SemanticsConverter}, which inputs and outputs are chained
- * in order to generate a {@link Program} object from the input {@link String}
+ * in order to interpret a {@link Program} object from the input {@link String}
  * program.
  */
-public class ProgramGenerator {
+public class Interpreter {
 
     private final List<LexicalPattern> patterns;
     private Grammar grammar;
@@ -32,7 +32,7 @@ public class ProgramGenerator {
      * TODO: doc
      * Creates a program generator with the given {@link TokenCategoryDefinition}s and the
      * {@link SyntaxCaseDefinition}s.
-     * The {@code Definition}s objects are used to create the {@link ProgramGenerator}'s
+     * The {@code Definition}s objects are used to create the {@link Interpreter}'s
      * internal {@link Tokenizer}, {@link RecursiveParser} and {@link SemanticsConverter}. The order
      * of both arrays is meaningful: see params descriptions for more.
      * @param tokenCategories  an ordered array of the token categories with eventual method converters.
@@ -41,7 +41,7 @@ public class ProgramGenerator {
      * @param definitions an ordered array of the syntax cases with method converters. The parser
      *                    searches the cases in the input token list following the order of this array.
      */
-    public ProgramGenerator(LexicalPatternDefinition[] patterns, SyntaxCaseDefinition[] definitions){
+    public Interpreter(LexicalPatternDefinition[] patterns, SyntaxCaseDefinition[] definitions){
         this.tokenCategories = new ArrayList<>();
         this.patterns = new ArrayList<>();
         List<TokenConverter> tokenConverters = new ArrayList<>();
@@ -77,8 +77,8 @@ public class ProgramGenerator {
      * @param executionMethod the method used to let the program make a computational execute.
      * @return the Program object.
      */
-    public Program generate(String name, String inputProgram, SyntaxClass rootClass, final ProgramExecutionMethod executionMethod){
-        Tokenizer tokenizer = new Tokenizer(patterns);
+    public Program interpret(String name, String inputProgram, SyntaxClass rootClass, final ProgramExecutionMethod executionMethod){
+        Tokenizer tokenizer = new Tokenizer(patterns); //TODO: move in init method
         List<Token> tokenList = tokenizer.tokenize(inputProgram);
 
         if(printDebugMessages){//TODO use lol class
@@ -91,7 +91,7 @@ public class ProgramGenerator {
             });
         }
 
-        Parser parser = new RecursiveParser(grammar, rootClass);
+        Parser parser = new RecursiveParser(grammar, rootClass); //TODO: move in init method
         ParseTreeNode tree;
         try{
             tree = parser.parse(tokenList);

@@ -31,27 +31,14 @@ public class DotNotationField implements LValue {
     @Override
     public void assign(ToolObject o, Memory m) throws ToolNativeException {
         ToolObject leftExpObject = leftExp.evaluate(m);
-        MethodCall setterCall = new MethodCall(
-                ToolSetterMethod.METHOD_CATEGORY_SETTER,
-                leftExpObject,
-                ident.getIdentifierString(),
-                new RValue[]{
-                        memory -> leftExpObject,
-                        memory -> o
-                }, new RValue[]{});
+        MethodCall setterCall = MethodCall.setter(leftExpObject, ident.getIdentifierString(), o);
         setterCall.evaluate(m);
     }
 
     @Override
     public ToolObject evaluate(Memory m) throws ToolNativeException {
         ToolObject leftExpObject = leftExp.evaluate(m);
-        MethodCall getterCall = new MethodCall(
-                ToolGetterMethod.METHOD_CATEGORY_GETTER,
-                leftExpObject,
-                ident.getIdentifierString(),
-                new RValue[]{
-                        memory -> leftExpObject,
-                }, new RValue[]{});
+        MethodCall getterCall = MethodCall.getter(leftExpObject, ident.getIdentifierString());
         return getterCall.evaluate(m);
     }
 

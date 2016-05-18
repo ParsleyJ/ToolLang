@@ -51,7 +51,7 @@ public class BaseTypes {
     public static final ToolClass C_INTERFACE = new ToolClass("Interface", C_OBJECT);
     public static final ToolClass C_TOOL = new ToolClass("Tool", C_OBJECT);//TODO this must be an object
     public static final ToolClass C_FIELD = new ToolClass("ToolField", C_OBJECT);
-    public static final ToolClass C_BLOCK = new ToolClass("Block", C_OBJECT);
+    public static final ToolClass C_BLOCK = new ToolClass("ScopedBlock", C_OBJECT);
     public static final ToolClass C_METHOD = new ToolClass("Method", C_OBJECT);
     public static final ToolClass C_METHOD_CALL = new ToolClass("MethodCall", C_OBJECT);
     public static final ToolClass C_INTEGER = new ToolClass("Integer", C_OBJECT);

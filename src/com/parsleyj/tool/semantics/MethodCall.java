@@ -1,7 +1,6 @@
 package com.parsleyj.tool.semantics;
 
 import com.parsleyj.tool.exceptions.CallOnNullException;
-import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
@@ -11,9 +10,10 @@ import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
+import com.parsleyj.utils.Pair;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,10 +27,10 @@ public class MethodCall implements RValue {
     private String name;
     private RValue[] implicitArgumentExpressions;
     private RValue[] argumentExpressions;
+    private boolean isScopedFunction = false;
 
 
-
-    public MethodCall(String category, RValue callerExpression, String name, RValue[] implicitArgumentExpressions, RValue[] argumentExpressions) {
+    private MethodCall(String category, RValue callerExpression, String name, RValue[] implicitArgumentExpressions, RValue[] argumentExpressions) {
         this.category = category;
         this.callerExpression = callerExpression;
         this.name = name;
@@ -76,6 +76,16 @@ public class MethodCall implements RValue {
                 new RValue[]{});
     }
 
+    public static MethodCall binaryParametricOperator(RValue selfExpression, String operatorSym1, RValue argExpression, String operatorSym2){
+        return new MethodCall(
+                ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                selfExpression,
+                ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.BinaryParametric, operatorSym1+operatorSym2),
+                new RValue[]{selfExpression, argExpression},
+                new RValue[]{}
+        );
+    }
+
     public static MethodCall getter(RValue selfExpression, String name){
         return new MethodCall(
                 ToolGetterMethod.METHOD_CATEGORY_GETTER,
@@ -94,6 +104,18 @@ public class MethodCall implements RValue {
                 new RValue[]{});
     }
 
+    public static MethodCall function(String name, RValue[] parameters){
+        MethodCall mc = new MethodCall(
+                ToolMethod.METHOD_CATEGORY_METHOD,
+                null,
+                name,
+                new RValue[]{},
+                parameters
+        );
+        mc.isScopedFunction = true;
+        return mc;
+    }
+
     public RValue getCallerExpression() {
         return callerExpression;
     }
@@ -107,7 +129,10 @@ public class MethodCall implements RValue {
     }
 
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
-        return callMethod(memory, category, callerExpression, name, implicitArgumentExpressions, argumentExpressions);
+        return isScopedFunction ?
+                callFunction(memory, category, name, implicitArgumentExpressions, argumentExpressions)
+                :
+                callMethod(memory, category, callerExpression, name, implicitArgumentExpressions, argumentExpressions);
     }
 
     private static ToolObject callMethod(Memory memory, String category, RValue callerExpression, String name, RValue[] implicitArgumentExpressions, RValue[] argumentExpressions) throws ToolNativeException {
@@ -130,7 +155,7 @@ public class MethodCall implements RValue {
         ToolMethod tm = callableMethodTable.resolve(caller, category, name, argumentsTypes);
 
         ToolObject result;
-        memory.pushMethodCallFrame();
+        memory.pushCallFrame();
 
         for (int i = 0; i < tm.getImplicitArgumentNames().size(); ++i)
             memory.newLocalReference(tm.getImplicitArgumentNames().get(i), implicitArguments.get(i));
@@ -139,8 +164,35 @@ public class MethodCall implements RValue {
             memory.newLocalReference(tm.getArgumentNames().get(i), arguments.get(i));
 
         result = tm.getBody().evaluate(memory);
-        memory.createPhantomReference(result);
-        memory.popScopeAndGC();
+        memory.returnFromCall(result);
+        return result;
+    }
+
+    private static ToolObject callFunction(Memory memory, String category, String name, RValue[] implicitArgumentExpressions, RValue[] argumentExpressions) throws ToolNativeException{
+        List<ToolObject> implicitArguments = new ArrayList<>();
+        for (RValue iae : implicitArgumentExpressions) {
+            implicitArguments.add(iae.evaluate(memory));
+        }
+
+        List<ToolObject> arguments = new ArrayList<>();
+        for(RValue ae : argumentExpressions){
+            arguments.add(ae.evaluate(memory));
+        }
+
+        List<ToolClass> argumentsTypes = arguments.stream().map(ToolObject::getBelongingClass).collect(Collectors.toList());
+
+        Pair<ArrayDeque<Memory.Scope>, ToolMethod> tml = memory.resolveFunction(category, name, argumentsTypes);
+        ToolObject result;
+        memory.pushCallFrame(tml.getFirst());
+
+        for (int i = 0; i < tml.getSecond().getImplicitArgumentNames().size(); ++i)
+            memory.newLocalReference(tml.getSecond().getImplicitArgumentNames().get(i), implicitArguments.get(i));
+
+        for (int i = 0; i < tml.getSecond().getArgumentNames().size(); ++i)
+            memory.newLocalReference(tml.getSecond().getArgumentNames().get(i), arguments.get(i));
+
+        result = tml.getSecond().getBody().evaluate(memory);
+        memory.returnFromCall(result);
 
         return result;
     }

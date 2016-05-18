@@ -30,7 +30,7 @@ public class ToolObject implements RValue {
 
     private Integer id = IDGenerator.generate();
 
-    private Scope scope = new Scope(Scope.ScopeType.Object);
+    private Memory.Scope scope = new Memory.Scope(Memory.Scope.ScopeType.Object);
     protected MethodTable thisMethodTable = new MethodTable();
     public ToolObject() {
         this.belongingClass = BaseTypes.C_OBJECT;
@@ -110,7 +110,7 @@ public class ToolObject implements RValue {
         return id;
     }
 
-    public Scope getMembersScope() {
+    public Memory.Scope getMembersScope() {
         return scope;
     }
 

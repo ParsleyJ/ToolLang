@@ -13,7 +13,7 @@ import com.parsleyj.tool.semantics.RValue;
  */
 public class ToolOperatorMethod extends ToolMethod {
 
-    public enum Mode{Prefix, Suffix, Binary, MultiEnclosedSuffix}
+    public enum Mode{Prefix, Suffix, Binary, BinaryParametric}
 
     public static final String METHOD_CATEGORY_OPERATOR = "METHOD_CATEGORY_OPERATOR";
 

@@ -31,7 +31,7 @@ public class ParseTreeNodeFactory {
     }
 
     /**
-     * Private helper class used to generate unique IDs.
+     * Private helper class used to interpret unique IDs.
      */
     private static class IDGenerator {
         private int counter = 0;

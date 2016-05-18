@@ -8,7 +8,6 @@ import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.basetypes.ToolString;
-import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.semantics.*;
 import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxClass;
@@ -28,7 +27,7 @@ import java.util.*;
 public class TestMain {
 
     public static final boolean PRINT_DEBUG = false;
-    public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = true;
+    public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = false;
     public static final boolean MULTILINE = false;
     public static final boolean PRINT_RESULTS = true;
 
@@ -37,13 +36,14 @@ public class TestMain {
         Scanner sc = new Scanner(System.in);
         String memName = "M";
         Memory m = new Memory(memName);
+        m.pushCallFrame();
         m.pushScope();
         m.addObjectToHeap(BaseTypes.O_NULL);
         m.loadClasses(BaseTypes.getAllBaseClasses());
         ToolString testString = new ToolString("yay");
         m.addObjectToHeap(testString);
         BaseTypes.C_TOOL.addClassField(new Reference("test", BaseTypes.C_STRING, testString.getId()));
-        ProgramGenerator pg = getDefaultInterpreter();
+        Interpreter pg = getDefaultInterpreter();
         pg.setPrintDebugMessages(PRINT_DEBUG);
         while (true) {
             StringBuilder sb = new StringBuilder();
@@ -63,9 +63,8 @@ public class TestMain {
 
             if (programString.equals("exit")) break;
 
-            Program prog = null;
             try {
-                prog = pg.generate("testParsed", programString, rExp, (p, c) -> {
+                Program prog = pg.interpret("testParsed", programString, rExp, (p, c) -> {
                     RValue e = (RValue) p.getRootSemanticObject();
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
@@ -93,7 +92,7 @@ public class TestMain {
     private static SyntaxClass param = new SyntaxClass("param");
     private static SyntaxClass paramlist = new SyntaxClass("paramlist");
 
-    private static ProgramGenerator getDefaultInterpreter() {
+    private static Interpreter getDefaultInterpreter() {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
                 ToolString::newFromLiteral);
         TokenCategoryDefinition nullToken = new TokenCategoryDefinition("NULL_KEYWORD", "\\Qnull\\E",
@@ -222,33 +221,26 @@ public class TestMain {
         SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
-
+        SyntaxCaseDefinition expressionBetweenCurlyBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenCurlyBrackets",
+                (n, s) -> new ScopedBlock(s.convert(n.get(1))),
+                openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition parameterDeclaration = new SyntaxCaseDefinition(param, "parameterDeclaration",
                 (n, s) -> new ParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
                 ident, colonToken, ident);
 
         SyntaxCaseDefinition functionCall0 = new SyntaxCaseDefinition(rExp, "functionCall0",
-                (n, s) -> new MethodCall(
-                        ToolMethod.METHOD_CATEGORY_METHOD,
-                        BaseTypes.C_TOOL,
+                (n, s) -> MethodCall.function(
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
-                        new RValue[]{BaseTypes.C_TOOL},
                         new RValue[]{}),
                 ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition functionCall1 = new SyntaxCaseDefinition(rExp, "functionCall1",
-                (n, s) -> new MethodCall(
-                        ToolMethod.METHOD_CATEGORY_METHOD,
-                        BaseTypes.C_TOOL,
+                (n, s) -> MethodCall.function(
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
-                        new RValue[]{BaseTypes.C_TOOL},
                         new RValue[]{s.convert(n.get(2))}),
                 ident, openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition functionCall2 = new SyntaxCaseDefinition(rExp, "functionCall2",
-                (n, s) -> new MethodCall(
-                        ToolMethod.METHOD_CATEGORY_METHOD,
-                        BaseTypes.C_TOOL,
+                (n, s) -> MethodCall.function(
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
-                        new RValue[]{BaseTypes.C_TOOL},
                         ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
                 ident, openRoundBracketToken, csel, closedRoundBracketToken);
 
@@ -258,33 +250,27 @@ public class TestMain {
         SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
                 (n, s) -> {
                     RValue r = s.convert(n.get(0));
-                    return new MethodCall(
-                            ToolMethod.METHOD_CATEGORY_METHOD,
+                    return MethodCall.method(
                             r,
                             ((Identifier) s.convert(n.get(2))).getIdentifierString(),
-                            new RValue[]{r},
                             new RValue[]{});
                 },
                 rExp, dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
         SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
                 (n, s) -> {
                     RValue r = s.convert(n.get(0));
-                    return new MethodCall(
-                            ToolMethod.METHOD_CATEGORY_METHOD,
+                    return MethodCall.method(
                             r,
                             ((Identifier) s.convert(n.get(2))).getIdentifierString(),
-                            new RValue[]{r},
                             new RValue[]{s.convert(n.get(4))});
                 },
                 rExp, dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
         SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
                 (n, s) -> {
                     RValue r = s.convert(n.get(0));
-                    return new MethodCall(
-                            ToolMethod.METHOD_CATEGORY_METHOD,
+                    return MethodCall.method(
                             r,
                             ((Identifier) s.convert(n.get(2))).getIdentifierString(),
-                            new RValue[]{r},
                             ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray());
                 },
                 rExp, dotToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
@@ -413,7 +399,7 @@ public class TestMain {
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
                 identifier,
-                expressionBetweenRoundBrackets,
+                expressionBetweenRoundBrackets, expressionBetweenCurlyBrackets,
                 parameterDeclaration,
                 functionCall0, functionCall1, functionCall2,
                 dotNotationField,
@@ -443,7 +429,7 @@ public class TestMain {
                 sequentialComposition,
                 methodDefinition0, methodDefinition1, methodDefinition2,
         };
-        return new ProgramGenerator(lexicon, grammar);
+        return new Interpreter(lexicon, grammar);
     }
 
     private static List<TokenConverter> getConverters(TokenCategoryDefinition... tcds) {

@@ -28,11 +28,6 @@ public class ElementAccessOperation implements RValue {
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolList toolList = indexes.generateToolList(memory);
-        return new MethodCall(
-                ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
-                left,
-                ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.MultiEnclosedSuffix, "[]"),
-                new RValue[]{left, toolList},
-                new RValue[]{}).evaluate(memory); //TODO add varargs function declaration?
+        return MethodCall.binaryParametricOperator(left, "[", toolList, "]").evaluate(memory);
     }
 }

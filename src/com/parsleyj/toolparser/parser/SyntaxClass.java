@@ -30,7 +30,7 @@ public class SyntaxClass implements SyntaxCaseComponent {
      * Creates a new syntax class with the given name and
      * list of cases.
      * @param name the name of this class.
-     * @param cases the cases that generate instances of this syntax class.
+     * @param cases the cases that interpret instances of this syntax class.
      */
     public SyntaxClass(String name, List<SyntaxCase> cases) {
         this.name = name;
@@ -55,14 +55,14 @@ public class SyntaxClass implements SyntaxCaseComponent {
 
 
     /**
-     * @return the cases that generate instances of this syntax class.
+     * @return the cases that interpret instances of this syntax class.
      */
     public List<SyntaxCase> getSyntaxCases() {
         return cases;
     }
 
     /**
-     * @param cases the cases that generate instances of this syntax
+     * @param cases the cases that interpret instances of this syntax
      *              class.
      */
     public void setCases(SyntaxCase... cases) {
