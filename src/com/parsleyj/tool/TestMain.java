@@ -64,7 +64,7 @@ public class TestMain {
             if (programString.equals("exit")) break;
 
             try {
-                Program prog = pg.interpret("testParsed", programString, paramlist, (p, c) -> { //TODO SET AGAIN TO rExp
+                Program prog = pg.interpret("testParsed", programString, rExp, (p, c) -> { //TODO SET AGAIN TO rExp
                     RValue e = (RValue) p.getRootSemanticObject();
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
@@ -85,11 +85,11 @@ public class TestMain {
     private static SyntaxClass rExp = new SyntaxClass("rExp");
 
     private static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp = lExp can be treated as rExp
-    private static SyntaxClass ident = new SyntaxClass("ident", lExp);
+    private static SyntaxClass param = new SyntaxClass("param");
+    private static SyntaxClass ident = new SyntaxClass("ident", lExp, param);
+
 
     private static SyntaxClass csel = new SyntaxClass("csel");
-
-    private static SyntaxClass param = new SyntaxClass("param");
     private static SyntaxClass paramlist = new SyntaxClass("paramlist");
 
     private static Interpreter getDefaultInterpreter() {
@@ -225,7 +225,7 @@ public class TestMain {
                 (n, s) -> new ScopedBlock(s.convert(n.get(1))),
                 openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition parameterDeclaration = new SyntaxCaseDefinition(param, "parameterDeclaration",
-                (n, s) -> new ParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
+                (n, s) -> new ExplicitTypeParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
                 ident, colonToken, ident);
 
         SyntaxCaseDefinition functionCall0 = new SyntaxCaseDefinition(rExp, "functionCall0",

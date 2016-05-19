@@ -4,6 +4,7 @@ import com.parsleyj.utils.Lol;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ import java.util.List;
 public class SyntaxClass implements SyntaxCaseComponent {
 
     private String name;
-    private SyntaxClass extendedClass = null;
+    private List<SyntaxClass> extendedClasses = null;
     private List<SyntaxCase> cases;
 
     /**
@@ -23,34 +24,22 @@ public class SyntaxClass implements SyntaxCaseComponent {
      */
     public SyntaxClass(String name) {
         this.name = name;
+        this.extendedClasses = Collections.emptyList();
         cases = new ArrayList<>();
     }
 
-    /**
-     * Creates a new syntax class with the given name and
-     * list of cases.
-     * @param name the name of this class.
-     * @param cases the cases that interpret instances of this syntax class.
-     */
-    public SyntaxClass(String name, List<SyntaxCase> cases) {
-        this.name = name;
-        this.cases = cases;
-    }
 
     //TODO: doc
-    public SyntaxClass(String className, SyntaxClass extendedClass) {
+    public SyntaxClass(String className, SyntaxClass... extendedClasses) {
         this.name = className;
-        this.extendedClass = extendedClass;
+        this.extendedClasses = Arrays.asList(extendedClasses);
         this.cases = new ArrayList<>();
     }
 
-    //TODO: doc
-    public boolean isDerivate(){
-        return (extendedClass != null);
-    }
 
-    public SyntaxClass getExtendedClass(){
-        return extendedClass;
+
+    public List<SyntaxClass> getExtendedClasses(){
+        return extendedClasses;
     }
 
 
@@ -90,7 +79,7 @@ public class SyntaxClass implements SyntaxCaseComponent {
         return false;
     }
 
-    public boolean isOrExtends(SyntaxClass c){
+    /*public boolean isOrExtends(SyntaxClass c){
         Lol.vl("<"+this.getSyntaxComponentName()+">.isOrExtends("+c.getSyntaxComponentName()+") ? ");
         SyntaxClass x = this;
         while(x != null){
@@ -98,10 +87,19 @@ public class SyntaxClass implements SyntaxCaseComponent {
                 Lol.v("Yes.");
                 return true;
             }
-            x = x.getExtendedClass();
+            x = x.getExtendedClasses();
         }
         Lol.v("No.");
         return false;
-    }
+    }*/
 
+    public boolean isOrExtends(SyntaxClass c){
+        if (this.matches(c)) return true;
+        if(extendedClasses.isEmpty()) return false;
+        for (SyntaxClass extendedClass : extendedClasses) {
+            if(extendedClass.isOrExtends(c))
+                return true;
+        }
+        return false;
+    }
 }

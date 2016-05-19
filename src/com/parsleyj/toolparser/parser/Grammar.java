@@ -118,17 +118,7 @@ public class Grammar {
             if(ruledComponent instanceof SyntaxClass && instanceComponent instanceof SyntaxParsingInstance){
                 if(!ruledComponent.getSyntaxComponentName().equals(instanceComponent.getSyntaxComponentName())){
                     SyntaxClass instanceClass = ((SyntaxParsingInstance) instanceComponent).getSyntaxClass();
-                    if(!instanceClass.isDerivate()) return false;
-                    SyntaxClass derived = instanceClass;
-                    boolean found = false;
-                    while (derived.isDerivate()){
-                        derived = derived.getExtendedClass();
-                        if(derived.getSyntaxComponentName().equals(ruledComponent.getSyntaxComponentName())) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if(!found) return false;
+                    instanceClass.isOrExtends((SyntaxClass) ruledComponent);
                 }
             }else if(ruledComponent instanceof SpecificCaseComponent && !(instanceComponent instanceof TokenCategory)){
                 if (!ruledComponent.getSyntaxComponentName().equals(instanceComponent.getSyntaxComponentName() + ":" + ((SyntaxParsingInstance) instanceComponent).getSyntaxCaseName()))
