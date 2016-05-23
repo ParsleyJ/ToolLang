@@ -328,5 +328,17 @@ public class Memory implements ConfigurationElement {
         }
     }
 
+    public Pair<NameKind, Scope> recursivelyGetNameKind(String name){
+        ArrayDeque<Scope> scopes = callFrames.getLast().getStack();
+        Iterator<Scope> i = scopes.descendingIterator();
+        while(i.hasNext()){
+            Scope x = i.next();
+            NameKind result = x.getNameTable().get(name);
+            if(result != null) return new Pair<>(result, x);
+        }
+        return null;
+    }
+
+
 
 }

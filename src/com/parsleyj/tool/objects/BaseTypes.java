@@ -77,6 +77,8 @@ public class BaseTypes {
     public static final ToolExceptionClass C_INVALID_PARAMETER_TYPE_EXCEPTION = new ToolExceptionClass("InvalidParameterTypeException");
     public static final ToolExceptionClass C_NAME_ALREADY_USED_EXCEPTION = new ToolExceptionClass("NameAlreadyUsedException");
     public static final ToolExceptionClass C_VISIBILITY_EXCEPTION = new ToolExceptionClass("VisibilityException");
+    public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
+    public static final ToolExceptionClass C_NAME_NOT_FOUND_EXCEPTION = new ToolExceptionClass("NameNotFoundException");
 
     // --- INTERFACES ---
     public static final ToolInterface I_ITERABLE = new ToolInterface("Iterable", Collections.emptyList())
@@ -84,6 +86,8 @@ public class BaseTypes {
                     ToolGetterMethod.METHOD_CATEGORY_GETTER,
                     "iterator",
                     new FormalParameter[]{});
+
+
     public static final ToolInterface I_ITERATOR = new ToolInterface("Iterator", Collections.emptyList())
             .addMethodDeclaration(
                     ToolGetterMethod.METHOD_CATEGORY_GETTER,
@@ -93,9 +97,6 @@ public class BaseTypes {
                     ToolGetterMethod.METHOD_CATEGORY_GETTER,
                     "next",
                     new FormalParameter[]{});
-
-
-    public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
     public static final Map<Class<?>, ToolClass> NATIVE_CLASS_MAP = new MapBuilder<Class<?>, ToolClass>()
             .put(ToolObject.class, C_OBJECT)
             .put(ToolClass.class, C_CLASS)
@@ -142,7 +143,8 @@ public class BaseTypes {
                 C_INVALID_ITERABLE_EXPRESSION_EXCEPTION,
                 C_INVALID_PARAMETER_TYPE_EXCEPTION,
                 C_NAME_ALREADY_USED_EXCEPTION,
-                C_VISIBILITY_EXCEPTION
+                C_VISIBILITY_EXCEPTION,
+                C_NAME_NOT_FOUND_EXCEPTION
         );
     }
 

@@ -331,7 +331,7 @@ public class TestMain {
 
         SyntaxCaseDefinition localDotIdentifier = new SyntaxCaseDefinition(lExp, "localDotIdentifier",
                 (n, s) -> new LocalDotIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                dotToken, ident);
+                dotToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition localDotCall0 = new SyntaxCaseDefinition(rExp, "localDotCall0",
                 (n, s) -> new LocalDotCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
                 dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
@@ -348,7 +348,7 @@ public class TestMain {
 
         SyntaxCaseDefinition localAtIdentifier = new SyntaxCaseDefinition(lExp, "localAtIdentifier",
                 (n, s) -> new LocalAtIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                atToken, ident);
+                atToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition localAtCall0 = new SyntaxCaseDefinition(rExp, "localAtCall0",
                 (n, s) -> new LocalAtCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
                 atToken, ident, openRoundBracketToken, closedRoundBracketToken);

@@ -1,11 +1,14 @@
 package com.parsleyj.tool.semantics.nametabled;
 
+import com.parsleyj.tool.exceptions.MethodNotFoundException;
+import com.parsleyj.tool.exceptions.NameNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.semantics.util.MethodCall;
 import com.parsleyj.tool.semantics.base.RValue;
+import com.parsleyj.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +28,10 @@ public class LocalCall implements RValue {
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
-        Memory.NameKind nameKind = memory.getTopScope().getNameTable().get(name);
+        Pair<Memory.NameKind, Memory.Scope> queryResult = memory.recursivelyGetNameKind(name);
+        Memory.NameKind nameKind = queryResult.getFirst();
         if(nameKind == null){
-            return MethodCall.function(name, parameters).evaluate(memory); //throws a MethodNotFound
+            throw new NameNotFoundException("Name '"+name+"' not found.");
         }else switch (nameKind){
             case Variable:{
                 List<ToolObject> parameterObjectList = new ArrayList<>();
