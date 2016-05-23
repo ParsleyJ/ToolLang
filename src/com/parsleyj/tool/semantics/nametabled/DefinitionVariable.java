@@ -11,11 +11,11 @@ import com.parsleyj.tool.semantics.base.LValue;
  * Created by Giuseppe on 22/05/16.
  * TODO: javadoc
  */
-public class LocalDefinitionVariable implements LValue {
+public class DefinitionVariable implements LValue {
 
     private String identifierString;
 
-    public LocalDefinitionVariable(String identifierString){
+    public DefinitionVariable(String identifierString){
         this.identifierString = identifierString;
     }
 

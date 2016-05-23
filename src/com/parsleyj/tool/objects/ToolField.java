@@ -7,11 +7,13 @@ package com.parsleyj.tool.objects;
 public class ToolField extends ToolObject {
     private ToolClass fieldType;
     private String identifier;
+    private ToolObject defaultValue;
 
-    public ToolField(ToolClass fieldType, String identifier) {
+    public ToolField(ToolClass fieldType, String identifier, ToolObject defaultValue) {
         super(BaseTypes.C_FIELD);
         this.fieldType = fieldType;
         this.identifier = identifier;
+        this.defaultValue = defaultValue;
     }
 
     public ToolClass getFieldType() {
@@ -20,5 +22,9 @@ public class ToolField extends ToolObject {
 
     public String getIdentifier() {
         return identifier;
+    }
+
+    public ToolObject getDefaultValue() {
+        return defaultValue;
     }
 }

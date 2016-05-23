@@ -55,6 +55,10 @@ public class Memory implements ConfigurationElement {
     public static class Scope {
 
 
+        public void setNameTable(HashMap<String, NameKind> nameT) {
+            this.nameTable = nameT;
+        }
+
         public enum ScopeType{Regular, MethodCall, Object}
         private Table<String, Reference> referenceTable = new Table<>();
         private List<PhantomReference> phantomReferences = new ArrayList<>();
@@ -321,6 +325,7 @@ public class Memory implements ConfigurationElement {
     public void loadClasses(List<ToolClass> allBaseClasses) {
         for(ToolClass c:allBaseClasses){
             try {
+                getTopScope().getNameTable().put(c.getClassName(), NameKind.Variable);
                 this.newLocalReference(c);
             } catch (ReferenceAlreadyExistsException e) {
                 e.printStackTrace(); //in theory, these class are the first added when the memory is initialized

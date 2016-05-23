@@ -1,6 +1,6 @@
 package com.parsleyj.tool.semantics.parameter;
 
-import com.parsleyj.tool.exceptions.InvalidParameterTypeException;
+import com.parsleyj.tool.exceptions.InvalidTypeException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.BaseTypes;
@@ -33,7 +33,7 @@ public class ExplicitTypeParameterDefinition implements ParameterDefinition {
         }else if(type.getBelongingClass().isOrExtends(BaseTypes.C_INTERFACE)){
             return new FormalParameter(name.getIdentifierString(), (ToolInterface) type);
         }else{
-            throw new InvalidParameterTypeException("'"+typeExpression+"' is not a valid type");
+            throw new InvalidTypeException("'"+typeExpression+"' is not a valid parameter type");
         }
     }
 }

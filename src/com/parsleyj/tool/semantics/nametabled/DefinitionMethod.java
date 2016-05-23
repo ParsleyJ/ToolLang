@@ -19,19 +19,19 @@ import java.util.List;
  * Created by Giuseppe on 16/05/16.
  * TODO: javadoc
  */
-public class LocalDefinitionMethod implements RValue {
+public class DefinitionMethod implements RValue {
 
     private final Identifier identifier;
     private final RValue body;
     private final List<ParameterDefinition> params;
 
-    public LocalDefinitionMethod(Identifier identifier, RValue body){
+    public DefinitionMethod(Identifier identifier, RValue body){
         this.identifier = identifier;
         this.params = new ArrayList<>();
         this.body = body;
     }
 
-    public LocalDefinitionMethod(Identifier identifier, List<ParameterDefinition> params, RValue body) {
+    public DefinitionMethod(Identifier identifier, List<ParameterDefinition> params, RValue body) {
         this.identifier = identifier;
         this.params = params;
         this.body = body;

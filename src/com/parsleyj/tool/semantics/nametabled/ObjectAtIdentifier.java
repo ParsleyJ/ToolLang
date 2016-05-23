@@ -35,7 +35,7 @@ public class ObjectAtIdentifier implements LValue{
     }
 
     @Override
-    public ToolObject evaluate(Memory m) throws ToolNativeException {
+    public ToolObject evaluate(Memory m) throws ToolNativeException { //TODO: check private access
         ToolObject leftExpObject = leftExp.evaluate(m);
         return m.getObjectById(leftExpObject.getReferenceMember(ident.getIdentifierString()).getPointedId());
     }

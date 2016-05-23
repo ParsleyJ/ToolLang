@@ -184,4 +184,8 @@ public class MethodTable {
     public boolean contains(String category, String name, List<ToolClass> argumentsTypes) {
         return !getResolvedMethods(category, name, argumentsTypes).isEmpty();
     }
+
+    public List<ToolMethod> getAll() {
+        return methods;
+    }
 }

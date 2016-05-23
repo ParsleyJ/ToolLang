@@ -15,11 +15,11 @@ import com.parsleyj.tool.semantics.base.RValue;
  * Created by Giuseppe on 23/05/16.
  * TODO: javadoc
  */
-public class LocalDefinitionGetter implements RValue{
+public class DefinitionGetter implements RValue{
     private String identifierString;
     private RValue body;
 
-    public LocalDefinitionGetter(String identifierString, RValue body) {
+    public DefinitionGetter(String identifierString, RValue body) {
         this.identifierString = identifierString;
         this.body = body;
     }

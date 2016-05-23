@@ -74,7 +74,7 @@ public class BaseTypes {
     public static final ToolExceptionClass C_INVALID_INDEX_TYPE_EXCEPTION = new ToolExceptionClass("InvalidIndexTypeException");
     public static final ToolExceptionClass C_INVALID_INDEX_LIST_EXCEPTION = new ToolExceptionClass("InvalidIndexListException");
     public static final ToolExceptionClass C_INVALID_ITERABLE_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidIterableExpressionException");
-    public static final ToolExceptionClass C_INVALID_PARAMETER_TYPE_EXCEPTION = new ToolExceptionClass("InvalidParameterTypeException");
+    public static final ToolExceptionClass C_INVALID_TYPE_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidTypeException");
     public static final ToolExceptionClass C_NAME_ALREADY_USED_EXCEPTION = new ToolExceptionClass("NameAlreadyUsedException");
     public static final ToolExceptionClass C_VISIBILITY_EXCEPTION = new ToolExceptionClass("VisibilityException");
     public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
@@ -141,7 +141,7 @@ public class BaseTypes {
                 C_INVALID_INDEX_LIST_EXCEPTION,
                 C_INDEX_OUT_OF_BOUNDS_EXCEPTION,
                 C_INVALID_ITERABLE_EXPRESSION_EXCEPTION,
-                C_INVALID_PARAMETER_TYPE_EXCEPTION,
+                C_INVALID_TYPE_EXPRESSION_EXCEPTION,
                 C_NAME_ALREADY_USED_EXCEPTION,
                 C_VISIBILITY_EXCEPTION,
                 C_NAME_NOT_FOUND_EXCEPTION
@@ -211,11 +211,11 @@ public class BaseTypes {
             } else if (f.isAnnotationPresent(InstanceField.class)) {
                 ToolClass baseType = NATIVE_CLASS_MAP.get(f.getType());
                 if (baseType == null) throw new NativeClassLoadFailedException();
-                toolClass.addInstanceField(new ToolField(baseType, f.getName()));
+                toolClass.addInstanceField(new ToolField(baseType, f.getName(), O_NULL)); //TODO: add correct default object
             } else if (f.isAnnotationPresent(Property.class)) {
                 ToolClass baseType = NATIVE_CLASS_MAP.get(f.getType());
                 if (baseType == null) throw new NativeClassLoadFailedException();
-                toolClass.addInstanceField(new ToolField(baseType, f.getName()));
+                toolClass.addInstanceField(new ToolField(baseType, f.getName(), O_NULL)); //TODO: add correct default object
                 Property p = f.getAnnotation(Property.class);
                 switch (p.value()) {
                     case ReadOnly: {
@@ -237,22 +237,6 @@ public class BaseTypes {
     }
 
 
-    public ToolObject convertNativeObject(Object x, Memory m) throws IllegalAccessException, ReferenceAlreadyExistsException {
-        if (x == null) return BaseTypes.O_NULL;
-        if (x instanceof Integer) {
-            return new ToolInteger((Integer) x);
-        } else if (x instanceof Boolean) {
-            return new ToolBoolean((Boolean) x);
-        } else if (x instanceof String) {
-            return new ToolString((String) x);
-        }
-        ToolClass type = NATIVE_CLASS_MAP.get(x.getClass());
-        ToolObject result = type.newInstance();
-        for (Field field : x.getClass().getFields()) {
-            result.addReferenceMember(m.newLocalReference(field.getName(), convertNativeObject(field.get(x), m)));
-        }
-        return result;
-    }
 
     @NotNull
     private static ToolGetterMethod createPropertyGetter(ToolClass selfType, Field f) {

@@ -1,9 +1,16 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
+import com.parsleyj.tool.exceptions.MethodNotFoundException;
+import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
+import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
+import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
+import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 
 import java.util.*;
 
@@ -16,6 +23,7 @@ public class ToolClass extends ToolObject {
     private final ToolClass parentClass;
     private MethodTable instanceMethods = new MethodTable();
     private Map<String, ToolField> fieldMap = new HashMap<>();
+    private Map<String, Memory.NameKind> nameTable = new HashMap<>();
     private List<ToolInterface> explicitInterfaces;
 
     public ToolClass(String className, ToolClass parentClass, ToolInterface... explicitInterfaces) {
@@ -52,6 +60,14 @@ public class ToolClass extends ToolObject {
         for(ToolMethod tm:tms){
             addClassMethod(tm);
         }
+    }
+
+    public Map<String, Memory.NameKind> getNameTable() {
+        return nameTable;
+    }
+
+    public void setNameTable(Map<String, Memory.NameKind> nameTable) {
+        this.nameTable = nameTable;
     }
 
     public void addInstanceField(ToolField field){
@@ -105,8 +121,13 @@ public class ToolClass extends ToolObject {
         return "<CLASS:"+className+">";
     }
 
-    public ToolObject newInstance() {
-        return new ToolObject(this);
+    public ToolObject newInstance(Memory memory) {
+        ToolObject newInstance = new ToolObject(this);
+        for(ToolField f: fieldMap.values()){
+            newInstance.writeObjectMember(f.getIdentifier(), memory, f.getDefaultValue());
+        }
+        newInstance.getMembersScope().setNameTable(new HashMap<>(nameTable));
+        return newInstance;
     }
 
     public MethodTable generateInstanceCallableMethodTable() {
@@ -142,5 +163,13 @@ public class ToolClass extends ToolObject {
             if(!callables.contains(m.getMethodCategory(), m.getMethodName(), m.getArgumentTypes())) return false;
         }
         return true;
+    }
+
+    @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
+    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolList arg) throws MethodNotFoundException {
+        if(arg.getToolObjects().isEmpty()){ //TODO: search for ctors
+            return self.newInstance(memory);
+        }
+        throw new MethodNotFoundException("Constructor not found"); //todo better error
     }
 }

@@ -16,13 +16,13 @@ import com.parsleyj.tool.semantics.base.RValue;
  * Created by Giuseppe on 23/05/16.
  * TODO: javadoc
  */
-public class LocalDefinitionSetter implements RValue {
+public class DefinitionSetter implements RValue {
 
     private String identifierString;
     private ToolClass argType;
     private RValue body;
 
-    public LocalDefinitionSetter(String identifierString, ToolClass argType, RValue body) {
+    public DefinitionSetter(String identifierString, ToolClass argType, RValue body) {
         this.argType = argType;
         this.body = body;
         this.identifierString = identifierString;
