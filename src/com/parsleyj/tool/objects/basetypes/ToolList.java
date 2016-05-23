@@ -40,6 +40,8 @@ public class ToolList extends ToolObject {
         return sb.toString();
     }
 
+
+
     public List<ToolObject> getToolObjects() {
         return toolObjects;
     }
@@ -102,6 +104,7 @@ public class ToolList extends ToolObject {
         return new ToolList(PJ.reverse(self.toolObjects));
     }
 
+    //FIXME REFERENCE COUNTING OF ELEMENTS!!!!!!
     //TODO addAll(collection)
     //TODO removeAt(index)
     //TODO remove(obj)
@@ -115,11 +118,11 @@ public class ToolList extends ToolObject {
         return self;
     }
 
-    /*@NativeInstanceMethod(value = "add")
+    @NativeInstanceMethod(value = "add")
     public static ToolList add(@ImplicitParameter ToolList self, ToolInteger index, ToolObject argument){
         self.getToolObjects().add(index.getIntegerValue(), argument);
         return self;
-    }*/
+    }
 
     @NativeInstanceMethod(value = "addLast")
     public static ToolList addLast(@ImplicitParameter ToolList self, ToolObject argument){

@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Helper class used to define a {@link TokenCategory} and a {@link TokenConverter}, using
+ * Helper class used to defineParameter a {@link TokenCategory} and a {@link TokenConverter}, using
  * the given {@link TokenConverterMethod}.
  */
 public class TokenCategoryDefinition extends TokenCategory implements LexicalPatternDefinition{

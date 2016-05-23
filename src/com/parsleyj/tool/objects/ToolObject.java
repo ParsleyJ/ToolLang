@@ -7,31 +7,22 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.*;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
-import com.parsleyj.tool.semantics.MethodCall;
-import com.parsleyj.tool.semantics.RValue;
+import com.parsleyj.tool.semantics.util.MethodCall;
+import com.parsleyj.tool.semantics.base.RValue;
 
 /**
  * Created by Giuseppe on 01/04/16.
  * TODO: javadoc
  */
 public class ToolObject implements RValue {
+
+
     private int referenceCount = 0;
-
-    private static class IDGenerator {
-
-        private static int id = 0;
-
-        public static int generate() {
-            return id++;
-        }
-
-    }
     private ToolClass belongingClass;
-
     private Integer id = IDGenerator.generate();
-
     private Memory.Scope scope = new Memory.Scope(Memory.Scope.ScopeType.Object);
-    protected MethodTable thisMethodTable = new MethodTable();
+
+
     public ToolObject() {
         this.belongingClass = BaseTypes.C_OBJECT;
     }
@@ -90,7 +81,7 @@ public class ToolObject implements RValue {
     }
 
     public void addMethod(ToolMethod method) throws AmbiguousMethodDefinitionException {
-        thisMethodTable.add(method);
+        scope.getMethods().add(method);
     }
 
     public void decreaseReferenceCount() throws CounterIsZeroRemoveObject {
@@ -138,9 +129,9 @@ public class ToolObject implements RValue {
 
     public MethodTable generateCallableMethodTable(){
         if(this.getBelongingClass()!= null && this != this.getBelongingClass()){
-            return this.getBelongingClass().generateInstanceCallableMethodTable().extend(this.thisMethodTable);
+            return this.getBelongingClass().generateInstanceCallableMethodTable().extend(this.scope.getMethods());
         }else{
-            return thisMethodTable;
+            return this.scope.getMethods();
         }
     }
 
@@ -152,4 +143,13 @@ public class ToolObject implements RValue {
     }
 
 
+    private static class IDGenerator {
+
+        private static int id = 0;
+
+        public static int generate() {
+            return id++;
+        }
+
+    }
 }

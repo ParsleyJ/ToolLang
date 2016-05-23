@@ -5,7 +5,7 @@ import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.semantics.RValue;
+import com.parsleyj.tool.semantics.base.RValue;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

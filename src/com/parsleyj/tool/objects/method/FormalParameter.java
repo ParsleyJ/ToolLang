@@ -2,10 +2,6 @@ package com.parsleyj.tool.objects.method;
 
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolInterface;
-import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.semantics.Identifier;
-import com.parsleyj.tool.semantics.RValue;
-import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
 
 /**
  * Created by Giuseppe on 01/04/16.

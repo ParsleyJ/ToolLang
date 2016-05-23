@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Represents a specific syntax class. This class implements
  * {@link SyntaxCaseComponent}, so its instances can be used
- * as components to define syntax cases.
+ * as components to defineParameter syntax cases.
  */
 public class SyntaxClass implements SyntaxCaseComponent {
 

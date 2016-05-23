@@ -75,6 +75,8 @@ public class BaseTypes {
     public static final ToolExceptionClass C_INVALID_INDEX_LIST_EXCEPTION = new ToolExceptionClass("InvalidIndexListException");
     public static final ToolExceptionClass C_INVALID_ITERABLE_EXPRESSION_EXCEPTION = new ToolExceptionClass("InvalidIterableExpressionException");
     public static final ToolExceptionClass C_INVALID_PARAMETER_TYPE_EXCEPTION = new ToolExceptionClass("InvalidParameterTypeException");
+    public static final ToolExceptionClass C_NAME_ALREADY_USED_EXCEPTION = new ToolExceptionClass("NameAlreadyUsedException");
+    public static final ToolExceptionClass C_VISIBILITY_EXCEPTION = new ToolExceptionClass("VisibilityException");
 
     // --- INTERFACES ---
     public static final ToolInterface I_ITERABLE = new ToolInterface("Iterable", Collections.emptyList())
@@ -138,7 +140,9 @@ public class BaseTypes {
                 C_INVALID_INDEX_LIST_EXCEPTION,
                 C_INDEX_OUT_OF_BOUNDS_EXCEPTION,
                 C_INVALID_ITERABLE_EXPRESSION_EXCEPTION,
-                C_INVALID_PARAMETER_TYPE_EXCEPTION
+                C_INVALID_PARAMETER_TYPE_EXCEPTION,
+                C_NAME_ALREADY_USED_EXCEPTION,
+                C_VISIBILITY_EXCEPTION
         );
     }
 

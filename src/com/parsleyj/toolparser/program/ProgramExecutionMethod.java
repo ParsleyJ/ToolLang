@@ -3,7 +3,7 @@ package com.parsleyj.toolparser.program;
 import com.parsleyj.toolparser.configuration.Configuration;
 
 /**
- * Functional interface used to define how a {@link Program} makes
+ * Functional interface used to defineParameter how a {@link Program} makes
  * a computational execute.
  */
 @FunctionalInterface

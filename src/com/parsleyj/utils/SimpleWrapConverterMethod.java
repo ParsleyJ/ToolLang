@@ -7,7 +7,7 @@ import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
 import com.parsleyj.toolparser.semanticsconverter.SemanticsConverter;
 
 /**
- * Helpful class used to define a converter method that simply takes the
+ * Helpful class used to defineParameter a converter method that simply takes the
  * only child node of the current node and returns it, after a conversion.
  */
 public class SimpleWrapConverterMethod implements CaseConverterMethod {

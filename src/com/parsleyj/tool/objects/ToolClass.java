@@ -67,7 +67,7 @@ public class ToolClass extends ToolObject {
     }
 
     public MethodTable getClassMethodTable() {
-        return thisMethodTable;
+        return getMembersScope().getMethods();
     }
 
     public Map<String, ToolField> getFields() {

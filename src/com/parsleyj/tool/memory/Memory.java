@@ -10,10 +10,7 @@ import com.parsleyj.toolparser.configuration.ConfigurationElement;
 import com.parsleyj.utils.Pair;
 import com.parsleyj.utils.Table;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Giuseppe on 30/03/16.
@@ -48,6 +45,9 @@ public class Memory implements ConfigurationElement {
         }
 
     }
+
+    public enum NameKind{Variable, Accessor, VariableAndAccessor, Method}
+
     /**
      * Created by Giuseppe on 05/04/16.
      * TODO: javadoc
@@ -55,11 +55,13 @@ public class Memory implements ConfigurationElement {
     public static class Scope {
 
 
-        public enum ScopeType{Regular, MethodCall, Object;}
+        public enum ScopeType{Regular, MethodCall, Object}
         private Table<String, Reference> referenceTable = new Table<>();
         private List<PhantomReference> phantomReferences = new ArrayList<>();
         private ScopeType scopeType;
         private MethodTable localMethods = new MethodTable();
+        private HashMap<String, NameKind> nameTable = new HashMap<>();
+
         public Scope(ScopeType scopeType){
             this.scopeType = scopeType;
         }
@@ -74,6 +76,10 @@ public class Memory implements ConfigurationElement {
 
         public boolean contains(String identifier) {
             return referenceTable.contains(identifier);
+        }
+
+        public HashMap<String, NameKind> getNameTable() {
+            return nameTable;
         }
 
         public void putReference(Reference r) throws AddedReference {

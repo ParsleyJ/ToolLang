@@ -4,8 +4,8 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.semantics.MethodCall;
-import com.parsleyj.tool.semantics.RValue;
+import com.parsleyj.tool.semantics.util.MethodCall;
+import com.parsleyj.tool.semantics.base.RValue;
 
 /**
  * Created by Giuseppe on 04/04/16.

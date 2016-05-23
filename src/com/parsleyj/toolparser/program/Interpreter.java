@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Helpful class used to define a {@link Tokenizer}, a {@link RecursiveParser}
+ * Helpful class used to defineParameter a {@link Tokenizer}, a {@link RecursiveParser}
  * and a {@link SemanticsConverter}, which inputs and outputs are chained
  * in order to interpret a {@link Program} object from the input {@link String}
  * program.

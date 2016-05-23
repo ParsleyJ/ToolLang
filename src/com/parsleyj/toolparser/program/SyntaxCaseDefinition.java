@@ -9,7 +9,7 @@ import com.parsleyj.toolparser.semanticsconverter.CaseConverterMethod;
 import com.parsleyj.toolparser.semanticsconverter.CheckedCaseConverter;
 
 /**
- * Helper class used to define a {@link SyntaxCase} with the belonging {@link SyntaxClass}
+ * Helper class used to defineParameter a {@link SyntaxCase} with the belonging {@link SyntaxClass}
  * and a {@link CaseConverter}, using the given {@link CaseConverterMethod}.
  */
 public class SyntaxCaseDefinition extends SyntaxCase {

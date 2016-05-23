@@ -8,7 +8,15 @@ import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.basetypes.ToolString;
-import com.parsleyj.tool.semantics.*;
+import com.parsleyj.tool.semantics.base.*;
+import com.parsleyj.tool.semantics.expr.Assignment;
+import com.parsleyj.tool.semantics.expr.ElementAccessOperation;
+import com.parsleyj.tool.semantics.expr.ExpressionBlock;
+import com.parsleyj.tool.semantics.expr.ScopedBlock;
+import com.parsleyj.tool.semantics.flowcontrol.*;
+import com.parsleyj.tool.semantics.nametabled.*;
+import com.parsleyj.tool.semantics.parameter.ExplicitTypeParameterDefinition;
+import com.parsleyj.tool.semantics.util.MethodCall;
 import com.parsleyj.toolparser.parser.Associativity;
 import com.parsleyj.toolparser.parser.SyntaxClass;
 import com.parsleyj.toolparser.program.*;
@@ -43,8 +51,8 @@ public class TestMain {
         ToolString testString = new ToolString("yay");
         m.addObjectToHeap(testString);
         BaseTypes.C_TOOL.addClassField(new Reference("test", BaseTypes.C_STRING, testString.getId()));
-        Interpreter pg = getDefaultInterpreter();
-        pg.setPrintDebugMessages(PRINT_DEBUG);
+        Interpreter interp = getDefaultInterpreter();
+        interp.setPrintDebugMessages(PRINT_DEBUG);
         while (true) {
             StringBuilder sb = new StringBuilder();
             if (MULTILINE) {
@@ -64,7 +72,7 @@ public class TestMain {
             if (programString.equals("exit")) break;
 
             try {
-                Program prog = pg.interpret("testParsed", programString, rExp, (p, c) -> { //TODO SET AGAIN TO rExp
+                Program prog = interp.interpret("testParsed", programString, rExp, (p, c) -> { //TODO SET AGAIN TO rExp
                     RValue e = (RValue) p.getRootSemanticObject();
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
@@ -82,15 +90,15 @@ public class TestMain {
         }
     }
 
-    private static SyntaxClass rExp = new SyntaxClass("rExp");
-
-    private static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp = lExp can be treated as rExp
     private static SyntaxClass param = new SyntaxClass("param");
+    private static SyntaxClass paramlist = new SyntaxClass("paramlist");
+
+    private static SyntaxClass rExp = new SyntaxClass("rExp");
+    private static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp = lExp can be treated as rExp
     private static SyntaxClass ident = new SyntaxClass("ident", lExp, param);
 
 
     private static SyntaxClass csel = new SyntaxClass("csel");
-    private static SyntaxClass paramlist = new SyntaxClass("paramlist");
 
     private static Interpreter getDefaultInterpreter() {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
@@ -113,14 +121,18 @@ public class TestMain {
         TokenCategoryDefinition orOperatorToken = new TokenCategoryDefinition("OR_OPERATOR", "\\Qor\\E");
         TokenCategoryDefinition notOperatorToken = new TokenCategoryDefinition("NOT_OPERATOR", "\\Qnot\\E");
         TokenCategoryDefinition defToken = new TokenCategoryDefinition("DEF_KEYWORD", "\\Qdef\\E");
+        TokenCategoryDefinition localToken = new TokenCategoryDefinition("LOCAL_KEYWORD", "\\Qlocal\\E");
+        TokenCategoryDefinition getterToken = new TokenCategoryDefinition("GETTER_KEYWORD", "\\Qgetter\\E");
+        TokenCategoryDefinition setterToken = new TokenCategoryDefinition("SETTER_KEYWORD", "\\Qsetter\\E");
         TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
-                Identifier::new);
+                LocalIdentifier::new);
         MultiPatternDefinition identifierMultiPattern = new MultiPatternDefinition("[_a-zA-Z][_a-zA-Z0-9]*") {
             @Override
             public List<TokenConverter> getDeclaredTokenConverters() {
                 return getConverters(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
-                        orOperatorToken, notOperatorToken, defToken, identifierToken);
+                        orOperatorToken, notOperatorToken, defToken, localToken, getterToken, setterToken,
+                        identifierToken);
             }
 
             @Override
@@ -141,6 +153,9 @@ public class TestMain {
                     case "or": return orOperatorToken;
                     case "not": return notOperatorToken;
                     case "def": return defToken;
+                    case "local": return localToken;
+                    case "getter": return getterToken;
+                    case "setter": return setterToken;
                     default: return identifierToken;
                 }
             }
@@ -149,13 +164,15 @@ public class TestMain {
             public List<TokenCategory> declaredTokenCategories() {
                 return Arrays.asList(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
-                        orOperatorToken, notOperatorToken, defToken, identifierToken);
+                        orOperatorToken, notOperatorToken, defToken, localToken, getterToken, setterToken,
+                        identifierToken);
             }
         };
+        TokenCategoryDefinition atToken = new TokenCategoryDefinition("AT", "\\Q@\\E");
         TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
         TokenCategoryDefinition colonToken = new TokenCategoryDefinition("COLON", "\\Q:\\E");
-        TokenCategoryDefinition exclamationPointToken = new TokenCategoryDefinition("EXCLAMATION_POINT", "\\Q!\\E");
         TokenCategoryDefinition commaToken = new TokenCategoryDefinition("COMMA", "\\Q,\\E");
+        TokenCategoryDefinition exclamationPointToken = new TokenCategoryDefinition("EXCLAMATION_POINT", "\\Q!\\E");
         TokenCategoryDefinition plusToken = new TokenCategoryDefinition("PLUS", "\\Q+\\E");
         TokenCategoryDefinition minusToken = new TokenCategoryDefinition("MINUS", "\\Q-\\E");
         TokenCategoryDefinition asteriskToken = new TokenCategoryDefinition("ASTERISK", "\\Q*\\E");
@@ -184,7 +201,8 @@ public class TestMain {
         LexicalPatternDefinition[] lexicon = new LexicalPatternDefinition[]{
                 stringToken,
                 identifierMultiPattern,
-                dotToken, colonToken, exclamationPointToken, commaToken,
+                atToken, dotToken, colonToken, commaToken,
+                exclamationPointToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
                 getBlockDefinitionOperatorToken,
                 equalsOperatorToken, notEqualsOperatorToken,
@@ -218,6 +236,8 @@ public class TestMain {
                 new SimpleWrapConverterMethod(),
                 identifierToken);
 
+
+
         SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
                 openRoundBracketToken, rExp, closedRoundBracketToken);
@@ -228,55 +248,120 @@ public class TestMain {
                 (n, s) -> new ExplicitTypeParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
                 ident, colonToken, ident);
 
-        SyntaxCaseDefinition functionCall0 = new SyntaxCaseDefinition(rExp, "functionCall0",
-                (n, s) -> MethodCall.function(
+        SyntaxCaseDefinition localCall0 = new SyntaxCaseDefinition(rExp, "localCall0",
+                (n, s) -> new LocalCall(
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         new RValue[]{}),
                 ident, openRoundBracketToken, closedRoundBracketToken);
-        SyntaxCaseDefinition functionCall1 = new SyntaxCaseDefinition(rExp, "functionCall1",
-                (n, s) -> MethodCall.function(
+        SyntaxCaseDefinition localCall1 = new SyntaxCaseDefinition(rExp, "localCall1",
+                (n, s) -> new LocalCall(
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         new RValue[]{s.convert(n.get(2))}),
                 ident, openRoundBracketToken, rExp, closedRoundBracketToken);
-        SyntaxCaseDefinition functionCall2 = new SyntaxCaseDefinition(rExp, "functionCall2",
-                (n, s) -> MethodCall.function(
+        SyntaxCaseDefinition localCall2 = new SyntaxCaseDefinition(rExp, "localCall2",
+                (n, s) -> new LocalCall(
                         ((Identifier) s.convert(n.get(0))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(2))).getUnevaluatedArray()),
                 ident, openRoundBracketToken, csel, closedRoundBracketToken);
 
-        SyntaxCaseDefinition dotNotationField = new SyntaxCaseDefinition(lExp, "dotNotationField",
-                (n, s) -> new DotNotationField(s.convert(n.get(0)), s.convert(n.get(2))),
+        SyntaxCaseDefinition objectDotIdentifier = new SyntaxCaseDefinition(lExp, "objectDotIdentifier",
+                (n, s) -> new ObjectDotIdentifier(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, dotToken, ident);
-        SyntaxCaseDefinition dotNotationMethodCall0 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall0",
+        SyntaxCaseDefinition objectDotCall0 = new SyntaxCaseDefinition(rExp, "objectDotCall0",
                 (n, s) -> {
                     RValue r = s.convert(n.get(0));
-                    return MethodCall.method(
+                    return new ObjectDotCall(
                             r,
                             ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                             new RValue[]{});
                 },
                 rExp, dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
-        SyntaxCaseDefinition dotNotationMethodCall1 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall1",
+        SyntaxCaseDefinition objectDotCall1 = new SyntaxCaseDefinition(rExp, "objectDotCall1",
                 (n, s) -> {
                     RValue r = s.convert(n.get(0));
-                    return MethodCall.method(
+                    return new ObjectDotCall(
                             r,
                             ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                             new RValue[]{s.convert(n.get(4))});
                 },
                 rExp, dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
-        SyntaxCaseDefinition dotNotationMethodCall2 = new SyntaxCaseDefinition(rExp, "dotNotationMethodCall2",
+        SyntaxCaseDefinition objectDotCall2 = new SyntaxCaseDefinition(rExp, "objectDotCall2",
                 (n, s) -> {
                     RValue r = s.convert(n.get(0));
-                    return MethodCall.method(
+                    return new ObjectDotCall(
                             r,
                             ((Identifier) s.convert(n.get(2))).getIdentifierString(),
                             ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray());
                 },
                 rExp, dotToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
-        SyntaxCaseDefinition newVarDeclaration = new SyntaxCaseDefinition(lExp, "newVarDeclaration",
-                (n, s) -> new NewVarDeclaration(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                dotToken, ident).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition localDefinitionVariable = new SyntaxCaseDefinition(lExp, "localDefinitionVariable",
+                (n, s) -> new LocalDefinitionVariable(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                localToken, ident).parsingDirection(Associativity.RightToLeft);
+
+        SyntaxCaseDefinition objectAtIdentifier = new SyntaxCaseDefinition(lExp, "objectAtIdentifier",
+                (n, s) -> new ObjectAtIdentifier(s.convert(n.get(0)), s.convert(n.get(2))),
+                rExp, dotToken, ident);
+        SyntaxCaseDefinition objectAtCall0 = new SyntaxCaseDefinition(rExp, "objectAtCall0",
+                (n, s) -> {
+                    RValue r = s.convert(n.get(0));
+                    return new ObjectAtCall(
+                            r,
+                            ((Identifier) s.convert(n.get(2))).getIdentifierString(),
+                            new RValue[]{});
+                },
+                rExp, dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition objectAtCall1 = new SyntaxCaseDefinition(rExp, "objectAtCall1",
+                (n, s) -> {
+                    RValue r = s.convert(n.get(0));
+                    return new ObjectAtCall(
+                            r,
+                            ((Identifier) s.convert(n.get(2))).getIdentifierString(),
+                            new RValue[]{s.convert(n.get(4))});
+                },
+                rExp, dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition objectAtCall2 = new SyntaxCaseDefinition(rExp, "objectAtCall2",
+                (n, s) -> {
+                    RValue r = s.convert(n.get(0));
+                    return new ObjectAtCall(
+                            r,
+                            ((Identifier) s.convert(n.get(2))).getIdentifierString(),
+                            ((CommaSeparatedExpressionList) s.convert(n.get(4))).getUnevaluatedArray());
+                },
+                rExp, dotToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
+
+        SyntaxCaseDefinition localDotIdentifier = new SyntaxCaseDefinition(lExp, "localDotIdentifier",
+                (n, s) -> new LocalDotIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                dotToken, ident);
+        SyntaxCaseDefinition localDotCall0 = new SyntaxCaseDefinition(rExp, "localDotCall0",
+                (n, s) -> new LocalDotCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
+                dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition localDotCall1 = new SyntaxCaseDefinition(rExp, "localDotCall1",
+                (n, s) -> new LocalDotCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        new RValue[]{s.convert(n.get(3))}),
+                dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition localDotCall2 = new SyntaxCaseDefinition(rExp, "localDotCall2",
+                (n, s) -> new LocalDotCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        ((CommaSeparatedExpressionList) s.convert(n.get(3))).getUnevaluatedArray()),
+                dotToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
+
+        SyntaxCaseDefinition localAtIdentifier = new SyntaxCaseDefinition(lExp, "localAtIdentifier",
+                (n, s) -> new LocalAtIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                atToken, ident);
+        SyntaxCaseDefinition localAtCall0 = new SyntaxCaseDefinition(rExp, "localAtCall0",
+                (n, s) -> new LocalAtCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
+                atToken, ident, openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition localAtCall1 = new SyntaxCaseDefinition(rExp, "localAtCall1",
+                (n, s) -> new LocalAtCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        new RValue[]{s.convert(n.get(3))}),
+                atToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition localAtCall2 = new SyntaxCaseDefinition(rExp, "localAtCall2",
+                (n, s) -> new LocalAtCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        ((CommaSeparatedExpressionList) s.convert(n.get(3))).getUnevaluatedArray()),
+                atToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
 
         SyntaxCaseDefinition arrayLiteral0 = new SyntaxCaseDefinition(rExp, "arrayLiteral0",
                 (n, s) -> (RValue) m -> new ToolList(new ArrayList<>()),
@@ -375,20 +460,27 @@ public class TestMain {
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
                 rExp, semicolonToken, rExp);
         SyntaxCaseDefinition methodDefinition0 = new SyntaxCaseDefinition(rExp, "methodDefinition0",
-                (n, s) -> new ToolMethodDefinition(s.convert(n.get(1)), s.convert(n.get(5))),
+                (n, s) -> new LocalDefinitionMethod(s.convert(n.get(1)), s.convert(n.get(5))),
                 defToken, ident, openRoundBracketToken, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition methodDefinition1 = new SyntaxCaseDefinition(rExp, "methodDefinition1",
-                (n, s) -> new ToolMethodDefinition(
+                (n, s) -> new LocalDefinitionMethod(
                         s.convert(n.get(1)),
                         Collections.singletonList(s.convert(n.get(3))),
                         s.convert(n.get(6))),
                 defToken, ident, openRoundBracketToken, param, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition methodDefinition2 = new SyntaxCaseDefinition(rExp, "methodDefinition2",
-                (n, s) -> new ToolMethodDefinition(
+                (n, s) -> new LocalDefinitionMethod(
                         s.convert(n.get(1)),
                         ((ParameterDefinitionList)s.convert(n.get(3))).getParameterDefinitions(),
                         s.convert(n.get(6))),
                 defToken, ident, openRoundBracketToken, paramlist, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition getterDefinition = new SyntaxCaseDefinition(rExp, "getterDefinition",
+                (n, s) -> new LocalDefinitionGetter(((Identifier) s.convert(n.get(1))).getIdentifierString(), s.convert(n.get(3))),
+                getterToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition setterDefinition = new SyntaxCaseDefinition(rExp, "setterDefinition",
+                (n, s) -> new LocalDefinitionSetter(((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        BaseTypes.C_OBJECT, s.convert(n.get(3))),
+                setterToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition parameterDefinitionListBase = new SyntaxCaseDefinition(paramlist, "parameterDefinitionListBase",
                 new UBOConverterMethod<ParameterDefinitionList, ParameterDefinition, ParameterDefinition>(ParameterDefinitionList::new),
                 param, commaToken, param);
@@ -401,13 +493,21 @@ public class TestMain {
                 identifier,
                 expressionBetweenRoundBrackets, expressionBetweenCurlyBrackets,
                 parameterDeclaration,
-                functionCall0, functionCall1, functionCall2,
-                dotNotationField,
-                dotNotationMethodCall0, dotNotationMethodCall1, dotNotationMethodCall2,
-                newVarDeclaration,
+
+                localCall0, localCall1, localCall2,
+                objectDotIdentifier,
+                objectDotCall0, objectDotCall1, objectDotCall2,
+                objectAtIdentifier,
+                objectAtCall0, objectAtCall1, objectAtCall2,
+                localDotIdentifier,
+                localDotCall0, localDotCall1, localDotCall2,
+                localAtIdentifier,
+                localAtCall0, localAtCall1, localAtCall2,
+                localDefinitionVariable,
+
                 arrayLiteral0, arrayLiteral1, arrayLiteral2,
-                elementAccessOperation1,
-                elementAccessOperation2,
+                elementAccessOperation1, elementAccessOperation2,
+
                 unaryMinusOperation,
                 logicalNotOperation,
                 intervalOperation,
@@ -418,14 +518,19 @@ public class TestMain {
                 equalsOperation, notEqualsOperation,
                 logicalAndOperation,
                 logicalOrOperation,
+
                 ifThenElseStatement, ifThenStatement,
                 whileStatement,
                 forInStatement,
                 assignment,
+
                 commaSeparatedExpressionListBase,
                 commaSeparatedExpressionListStep,
+
                 sequentialComposition,
+
                 methodDefinition0, methodDefinition1, methodDefinition2,
+                getterDefinition, setterDefinition,
                 parameterDefinitionListBase,
                 parameterDefinitionListStep,
         };
