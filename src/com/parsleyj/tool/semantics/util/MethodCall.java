@@ -184,11 +184,15 @@ public class MethodCall implements RValue {
         ToolObject result;
         memory.pushCallFrame();
 
-        for (int i = 0; i < tm.getImplicitArgumentNames().size(); ++i)
+        for (int i = 0; i < tm.getImplicitArgumentNames().size(); ++i) {
             memory.newLocalReference(tm.getImplicitArgumentNames().get(i), implicitArguments.get(i));
+            memory.getTopScope().getNameTable().put(tm.getImplicitArgumentNames().get(i), Memory.NameKind.Variable);
+        }
 
-        for (int i = 0; i < tm.getArgumentNames().size(); ++i)
+        for (int i = 0; i < tm.getArgumentNames().size(); ++i) {
             memory.newLocalReference(tm.getArgumentNames().get(i), arguments.get(i));
+            memory.getTopScope().getNameTable().put(tm.getArgumentNames().get(i), Memory.NameKind.Variable);
+        }
 
         result = tm.getBody().evaluate(memory);
         memory.returnFromCall(result);
@@ -212,11 +216,15 @@ public class MethodCall implements RValue {
         ToolObject result;
         memory.pushCallFrame(tml.getFirst());
 
-        for (int i = 0; i < tml.getSecond().getImplicitArgumentNames().size(); ++i)
+        for (int i = 0; i < tml.getSecond().getImplicitArgumentNames().size(); ++i) {
             memory.newLocalReference(tml.getSecond().getImplicitArgumentNames().get(i), implicitArguments.get(i));
+            memory.getTopScope().getNameTable().put(tml.getSecond().getImplicitArgumentNames().get(i), Memory.NameKind.Variable);
+        }
 
-        for (int i = 0; i < tml.getSecond().getArgumentNames().size(); ++i)
+        for (int i = 0; i < tml.getSecond().getArgumentNames().size(); ++i) {
             memory.newLocalReference(tml.getSecond().getArgumentNames().get(i), arguments.get(i));
+            memory.getTopScope().getNameTable().put(tml.getSecond().getArgumentNames().get(i), Memory.NameKind.Variable);
+        }
 
         result = tml.getSecond().getBody().evaluate(memory);
         memory.returnFromCall(result);

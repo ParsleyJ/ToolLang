@@ -25,10 +25,9 @@ public class LocalIdentifier implements Identifier {
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         Pair<Memory.NameKind, Memory.Scope> queryResult = memory.recursivelyGetNameKind(identifierString);
-        Memory.NameKind nk = queryResult.getFirst();
-        if(nk == null){
+        if(queryResult == null || queryResult.getFirst() == null){
             throw new NameNotFoundException("Name '"+identifierString+"' not found.");
-        }else switch(nk){
+        }else switch(queryResult.getFirst()){
             case Variable:
             case Method:
                 return memory.getObjectByIdentifier(identifierString); //probably throws an error when there is no variable
