@@ -35,12 +35,12 @@ public class ToolBoolean extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "and", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _logicalAnd_(@ImplicitParameter ToolBoolean a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolBoolean b){
+    public static ToolBoolean _logicalAnd_(@ImplicitParameter ToolBoolean a, ToolBoolean b){
         return new ToolBoolean(a.getBoolValue() && b.getBoolValue());
     }
 
     @NativeInstanceMethod(value = "or", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _logicalOr_(@ImplicitParameter ToolBoolean a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolBoolean b){
+    public static ToolBoolean _logicalOr_(@ImplicitParameter ToolBoolean a, ToolBoolean b){
         return new ToolBoolean(a.getBoolValue() || b.getBoolValue());
     }
 

@@ -47,17 +47,17 @@ public class ToolString extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "+", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolString _plus_(@ImplicitParameter ToolString a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolString b){
+    public static ToolString _plus_(@ImplicitParameter ToolString a, ToolString b){
         return new ToolString(a.getStringValue() + b.getStringValue());
     }
 
     @NativeInstanceMethod(value = "+", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolString _plus_(@ImplicitParameter ToolString a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolObject b){
+    public static ToolString _plus_(@ImplicitParameter ToolString a, ToolObject b){
         return new ToolString(a.getStringValue() + b.getPrintString());
     }
 
     @NativeInstanceMethod(value = "/", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolList _slash_(@ImplicitParameter ToolString a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolString delimiter){
+    public static ToolList _slash_(@ImplicitParameter ToolString a, ToolString delimiter){
         return new ToolList(PJ.list(a.getStringValue().split(delimiter.getStringValue()))
                 .stream()
                 .map(ToolString::new)

@@ -79,6 +79,7 @@ public class BaseTypes {
     public static final ToolExceptionClass C_VISIBILITY_EXCEPTION = new ToolExceptionClass("VisibilityException");
     public static final ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass("IndexOutOfBoundsException");
     public static final ToolExceptionClass C_NAME_NOT_FOUND_EXCEPTION = new ToolExceptionClass("NameNotFoundException");
+    public static final ToolExceptionClass C_INVALID_DEFINITION_EXCEPTION = new ToolExceptionClass("InvalidDefinitionException");
 
     // --- INTERFACES ---
     public static final ToolInterface I_ITERABLE = new ToolInterface("Iterable", Collections.emptyList())
@@ -144,7 +145,8 @@ public class BaseTypes {
                 C_INVALID_TYPE_EXPRESSION_EXCEPTION,
                 C_NAME_ALREADY_USED_EXCEPTION,
                 C_VISIBILITY_EXCEPTION,
-                C_NAME_NOT_FOUND_EXCEPTION
+                C_NAME_NOT_FOUND_EXCEPTION,
+                C_INVALID_DEFINITION_EXCEPTION
         );
     }
 

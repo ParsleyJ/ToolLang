@@ -55,19 +55,25 @@ public class Memory implements ConfigurationElement {
     public static class Scope {
 
 
-        public void setNameTable(HashMap<String, NameKind> nameT) {
-            this.nameTable = nameT;
-        }
+        public enum ScopeType{Regular, MethodCall, Object, ClassDefinition}
 
-        public enum ScopeType{Regular, MethodCall, Object}
+        private ScopeType scopeType;
+
+
+
         private Table<String, Reference> referenceTable = new Table<>();
         private List<PhantomReference> phantomReferences = new ArrayList<>();
-        private ScopeType scopeType;
+        private ToolClass definedClass = null;
         private MethodTable localMethods = new MethodTable();
         private HashMap<String, NameKind> nameTable = new HashMap<>();
 
         public Scope(ScopeType scopeType){
             this.scopeType = scopeType;
+        }
+
+        public Scope(ToolClass klass) {
+            this.scopeType = ScopeType.ClassDefinition;
+            this.definedClass = klass;
         }
 
         public Table<String, Reference> getReferenceTable() {
@@ -113,8 +119,16 @@ public class Memory implements ConfigurationElement {
         public Reference getReferenceByName(String identifierString) {
             return referenceTable.get(identifierString);
         }
+
+        public void setNameTable(HashMap<String, NameKind> nameT) {
+            this.nameTable = nameT;
+        }
         public ScopeType getScopeType() {
             return scopeType;
+        }
+
+        public ToolClass getDefinedClass(){
+            return definedClass;
         }
 
         public void increaseAllLocalCounters(Memory memory){
@@ -156,7 +170,9 @@ public class Memory implements ConfigurationElement {
         callFrames.add(new CallFrame(definitionScope));
     }
 
-
+    public void pushClassDefinitionScope(ToolClass klass){
+        callFrames.getLast().getStack().add(new Scope(klass));
+    }
 
     public Scope getTopScope(){
         return callFrames.getLast().getStack().getLast();

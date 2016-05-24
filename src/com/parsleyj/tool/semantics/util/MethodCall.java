@@ -54,8 +54,8 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 selfExpression,
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, operatorSym),
-                new RValue[]{selfExpression, argExpression},
-                new RValue[]{});
+                new RValue[]{selfExpression},
+                new RValue[]{argExpression});
     }
 
     public static MethodCall prefixOperator(String operatorSym, RValue selfExpression){
@@ -82,8 +82,8 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 selfExpression,
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.BinaryParametric, operatorSym1+operatorSym2),
-                new RValue[]{selfExpression, argExpression},
-                new RValue[]{}
+                new RValue[]{selfExpression},
+                new RValue[]{argExpression}
         );
     }
 

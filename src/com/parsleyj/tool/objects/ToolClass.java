@@ -99,10 +99,10 @@ public class ToolClass extends ToolObject {
         return false;
     }
 
-    public int getConvertibility(ToolClass c){
-        ToolClass tmp = c;
+    public int getConvertibility(ToolClass toBeConverted){
+        ToolClass tmp = toBeConverted;
         int points = 0;
-        while (tmp != c || !Objects.equals(tmp.getId(), c.getId())){
+        while (this != tmp || !Objects.equals(this.getId(), tmp.getId())){
             ++points;
             tmp = tmp.getParentClass();
         }
@@ -166,7 +166,7 @@ public class ToolClass extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolList arg) throws MethodNotFoundException {
+    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg) throws MethodNotFoundException {
         if(arg.getToolObjects().isEmpty()){ //TODO: search for ctors
             return self.newInstance(memory);
         }

@@ -35,28 +35,28 @@ public class ToolInteger extends ToolObject {
 
 
     @NativeInstanceMethod(value = "+", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolInteger _plus_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolInteger _plus_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolInteger(a.getIntegerValue() + b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "-", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolInteger _minus_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolInteger _minus_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolInteger(a.getIntegerValue() - b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "*", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolInteger _asterisk_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolInteger _asterisk_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolInteger(a.getIntegerValue() * b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "/", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolInteger _slash_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b) throws ToolArithmeticException {
+    public static ToolInteger _slash_(@ImplicitParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
         if((b.getIntegerValue() == 0)) throw new ToolArithmeticException("Division by zero.");
         return new ToolInteger(a.getIntegerValue() / b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "%", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolInteger _percentSign_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b) throws ToolArithmeticException {
+    public static ToolInteger _percentSign_(@ImplicitParameter ToolInteger a, ToolInteger b) throws ToolArithmeticException {
         if((b.getIntegerValue() == 0)) throw new ToolArithmeticException("Division by zero.");
         return new ToolInteger(a.getIntegerValue() % b.getIntegerValue());
     }
@@ -67,37 +67,37 @@ public class ToolInteger extends ToolObject {
     }
 
     @NativeInstanceMethod(value = ">", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _greater_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolBoolean _greater_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() > b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "<", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _less_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolBoolean _less_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() < b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "==", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _equals_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolBoolean _equals_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(Objects.equals(a.getIntegerValue(), b.getIntegerValue()));
     }
 
     @NativeInstanceMethod(value = ">=", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _equalsOrGreater_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolBoolean _equalsOrGreater_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() >= b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "<=", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _equalsOrLess_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolBoolean _equalsOrLess_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(a.getIntegerValue() <= b.getIntegerValue());
     }
 
     @NativeInstanceMethod(value = "!=", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _notEquals_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolBoolean _notEquals_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolBoolean(!Objects.equals(a.getIntegerValue(), b.getIntegerValue()));
     }
 
     @NativeInstanceMethod(value = "to", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolIntegerRange _to_(@ImplicitParameter ToolInteger a, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolInteger b){
+    public static ToolIntegerRange _to_(@ImplicitParameter ToolInteger a, ToolInteger b){
         return new ToolIntegerRange(a.getIntegerValue(), b.getIntegerValue());
     }
 

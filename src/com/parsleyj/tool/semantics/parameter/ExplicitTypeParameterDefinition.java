@@ -10,6 +10,8 @@ import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.ParameterDefinition;
+import com.parsleyj.tool.semantics.base.RValue;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by Giuseppe on 16/05/16.
@@ -27,11 +29,16 @@ public class ExplicitTypeParameterDefinition implements ParameterDefinition {
 
     @Override
     public FormalParameter defineParameter(Memory memory) throws ToolNativeException {
+        return getFormalParameter(memory, typeExpression, name.getIdentifierString());
+    }
+
+    @NotNull
+    public static FormalParameter getFormalParameter(Memory memory, RValue typeExpression, String name) throws ToolNativeException {
         ToolObject type = typeExpression.evaluate(memory);
         if(type.getBelongingClass().isOrExtends(BaseTypes.C_CLASS)) {
-            return new FormalParameter(name.getIdentifierString(), (ToolClass) type);
+            return new FormalParameter(name, (ToolClass) type);
         }else if(type.getBelongingClass().isOrExtends(BaseTypes.C_INTERFACE)){
-            return new FormalParameter(name.getIdentifierString(), (ToolInterface) type);
+            return new FormalParameter(name, (ToolInterface) type);
         }else{
             throw new InvalidTypeException("'"+typeExpression+"' is not a valid parameter type");
         }

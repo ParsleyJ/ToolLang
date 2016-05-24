@@ -47,7 +47,7 @@ public class ToolList extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "[]", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject _elementAt_(@ImplicitParameter ToolList self, @ImplicitParameter(Memory.ARG_IDENTIFIER) ToolList indexes) throws ToolNativeException {
+    public static ToolObject _elementAt_(@ImplicitParameter ToolList self, ToolList indexes) throws ToolNativeException {
         if (!allIndexesAreIntegersOrRanges(indexes)) throw new InvalidIndexTypeException("All index elements have to be instances of Integer or IntegerRange.");
         if(indexes.toolObjects.isEmpty()) throw new InvalidIndexListException("At least one index is needed.");
         List<ToolObject> resultList = new ArrayList<>();

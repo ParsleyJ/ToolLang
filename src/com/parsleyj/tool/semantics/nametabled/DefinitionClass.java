@@ -17,14 +17,14 @@ import java.util.List;
  * Created by Giuseppe on 23/05/16.
  * TODO: javadoc
  */
-public class ClassDefinition implements RValue{
+public class DefinitionClass implements RValue{
 
     private String name;
     private RValue parentTypeExpression;
     private List<RValue> explicitImplementsExpressions;
     private RValue body;
 
-    public ClassDefinition(String name, List<RValue> parents, RValue body) {
+    public DefinitionClass(String name, List<RValue> parents, RValue body) {
         this.name = name;
         if(parents.isEmpty()){
             parentTypeExpression = BaseTypes.C_OBJECT;
@@ -48,7 +48,7 @@ public class ClassDefinition implements RValue{
         ToolClass klass = new ToolClass(
                 name, evalAsClass(parentTypeExpression, memory),
                 interfaces.toArray(new ToolInterface[interfaces.size()]));
-        memory.pushScope();
+        memory.pushClassDefinitionScope(klass);
         ToolObject bodyResult = body.evaluate(memory);//todo: result can be the default value
         for(Reference r: memory.getTopScope().getReferenceTable().values()){
             klass.addInstanceField(new ToolField(r.getReferenceType(), r.getIdentifierString(), memory.getObjectById(r.getPointedId())));

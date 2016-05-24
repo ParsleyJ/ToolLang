@@ -2,7 +2,6 @@ package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
@@ -122,6 +121,7 @@ public class TestMain {
         TokenCategoryDefinition getterToken = new TokenCategoryDefinition("GETTER_KEYWORD", "\\Qgetter\\E");
         TokenCategoryDefinition setterToken = new TokenCategoryDefinition("SETTER_KEYWORD", "\\Qsetter\\E");
         TokenCategoryDefinition classToken = new TokenCategoryDefinition("CLASS_KEYWORD", "\\Qclass\\E");
+        TokenCategoryDefinition operatorToken = new TokenCategoryDefinition("OPERATOR_KEYWORD", "\\Qoperator\\E");
         TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
                 LocalIdentifier::new);
         MultiPatternDefinition identifierMultiPattern = new MultiPatternDefinition("[_a-zA-Z][_a-zA-Z0-9]*") {
@@ -130,7 +130,8 @@ public class TestMain {
                 return getConverters(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
                         orOperatorToken, notOperatorToken,
-                        defToken, localToken, getterToken, setterToken, classToken,
+                        defToken, localToken, getterToken, setterToken, operatorToken,
+                        classToken,
                         identifierToken);
             }
 
@@ -156,6 +157,7 @@ public class TestMain {
                     case "getter": return getterToken;
                     case "setter": return setterToken;
                     case "class": return classToken;
+                    case "operator": return operatorToken;
                     default: return identifierToken;
                 }
             }
@@ -165,7 +167,8 @@ public class TestMain {
                 return Arrays.asList(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
                         orOperatorToken, notOperatorToken,
-                        defToken, localToken, getterToken, setterToken, classToken,
+                        defToken, localToken, getterToken, setterToken, operatorToken,
+                        classToken,
                         identifierToken);
             }
         };
@@ -236,8 +239,6 @@ public class TestMain {
         SyntaxCaseDefinition identifier = new SyntaxCaseDefinition(ident, "identifier",
                 new SimpleWrapConverterMethod(),
                 identifierToken);
-
-
 
         SyntaxCaseDefinition expressionBetweenRoundBrackets = new SyntaxCaseDefinition(rExp, "expressionBetweenRoundBrackets",
                 (n, s) -> new ExpressionBlock(s.convert(n.get(1))),
@@ -475,26 +476,168 @@ public class TestMain {
                         ((ParameterDefinitionList)s.convert(n.get(3))).getParameterDefinitions(),
                         s.convert(n.get(6))),
                 defToken, ident, openRoundBracketToken, paramlist, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition methodDefinitionEB0 = new SyntaxCaseDefinition(rExp, "methodDefinitionEB0",
+                (n, s) -> new DefinitionMethod(s.convert(n.get(1)), s.convert(n.get(5))),
+                defToken, ident, openRoundBracketToken, closedRoundBracketToken, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition methodDefinitionEB1 = new SyntaxCaseDefinition(rExp, "methodDefinitionEB1",
+                (n, s) -> new DefinitionMethod(
+                        s.convert(n.get(1)),
+                        Collections.singletonList(s.convert(n.get(3))),
+                        s.convert(n.get(6))),
+                defToken, ident, openRoundBracketToken, param, closedRoundBracketToken, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition methodDefinitionEB2 = new SyntaxCaseDefinition(rExp, "methodDefinitionEB2",
+                (n, s) -> new DefinitionMethod(
+                        s.convert(n.get(1)),
+                        ((ParameterDefinitionList)s.convert(n.get(3))).getParameterDefinitions(),
+                        s.convert(n.get(6))),
+                defToken, ident, openRoundBracketToken, paramlist, closedRoundBracketToken, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition getterDefinition = new SyntaxCaseDefinition(rExp, "getterDefinition",
                 (n, s) -> new DefinitionGetter(((Identifier) s.convert(n.get(1))).getIdentifierString(), s.convert(n.get(3))),
                 getterToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition getterDefinitionEB = new SyntaxCaseDefinition(rExp, "getterDefinitionEB",
+                (n, s) -> new DefinitionGetter(((Identifier) s.convert(n.get(1))).getIdentifierString(), s.convert(n.get(3))),
+                getterToken, ident, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition setterDefinition = new SyntaxCaseDefinition(rExp, "setterDefinition",
                 (n, s) -> new DefinitionSetter(((Identifier) s.convert(n.get(1))).getIdentifierString(),
                         BaseTypes.C_OBJECT, s.convert(n.get(3))),
                 setterToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition setterDefinitionEB = new SyntaxCaseDefinition(rExp, "setterDefinitionEB",
+                (n, s) -> new DefinitionSetter(((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        BaseTypes.C_OBJECT, s.convert(n.get(3))),
+                setterToken, ident, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+
+        SyntaxCaseDefinition functorCallOperatorDefinition = new SyntaxCaseDefinition(rExp, "functorCallOperatorDefinition",
+                (n, s) -> DefinitionOperator.binaryParametric(
+                        s.convert(n.get(1)),
+                        "()",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(6))),
+                operatorToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition elementAccessOperatorDefinition = new SyntaxCaseDefinition(rExp, "elementAccessOperatorDefinition",
+                (n, s) -> DefinitionOperator.binaryParametric(
+                        s.convert(n.get(1)),
+                        "[]",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(6))),
+                operatorToken, ident, openSquareBracketToken, ident, closedSquareBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition unaryMinusOperatorDefinition = new SyntaxCaseDefinition(rExp, "unaryMinusOperatorDefinition",
+                (n, s) -> DefinitionOperator.unaryPrefix("-", s.convert(n.get(2)), s.convert(n.get(4))),
+                operatorToken, minusToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition logicalNotOperatorDefinition = new SyntaxCaseDefinition(rExp, "logicalNotOperatorDefinition",
+                (n, s) -> DefinitionOperator.unaryPrefix("!", s.convert(n.get(2)), s.convert(n.get(4))),
+                operatorToken, exclamationPointToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition intervalOperatorDefinition = new SyntaxCaseDefinition(rExp, "intervalOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "to",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, toOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition asteriskOperatorDefinition = new SyntaxCaseDefinition(rExp, "asteriskOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "*",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, asteriskToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition slashOperatorDefinition = new SyntaxCaseDefinition(rExp, "slashOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "/",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, slashToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition percentSignOperatorDefinition = new SyntaxCaseDefinition(rExp, "percentSignOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "%",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, percentSignToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition minusOperatorDefinition = new SyntaxCaseDefinition(rExp, "minusOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "-",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, minusToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition plusOperatorDefinition = new SyntaxCaseDefinition(rExp, "plusOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "+",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, plusToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition greaterOperatorDefinition = new SyntaxCaseDefinition(rExp, "greaterOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        ">",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, greaterOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition equalGreaterOperatorDefinition = new SyntaxCaseDefinition(rExp, "equalGreaterOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        ">=",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, equalGreaterOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition lessOperatorDefinition = new SyntaxCaseDefinition(rExp, "lessOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "<",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, lessOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition equalLessOperatorDefinition = new SyntaxCaseDefinition(rExp, "equalLessOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "<=",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, equalLessOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition equalsOperatorDefinition = new SyntaxCaseDefinition(rExp, "equalsOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "==",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, equalsOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition notEqualsOperatorDefinition = new SyntaxCaseDefinition(rExp, "notEqualsOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "!=",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, notEqualsOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition logicalAndOperatorDefinition = new SyntaxCaseDefinition(rExp, "logicalAndOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "and",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, andOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition logicalOrOperatorDefinition = new SyntaxCaseDefinition(rExp, "logicalOrOperatorDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(1)),
+                        "or",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(5))),
+                operatorToken, ident, orOperatorToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+
         SyntaxCaseDefinition classDefinitionA = new SyntaxCaseDefinition(rExp, "classDefinitionA",
-                (n, s) -> new ClassDefinition(
+                (n, s) -> new DefinitionClass(
                         ((Identifier) s.convert(n.get(1))).getIdentifierString(),
                         new ArrayList<>(), s.convert(n.get(3))),
                 classToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition classDefinitionB1 = new SyntaxCaseDefinition(rExp, "classDefinitionB1",
-                (n, s) -> new ClassDefinition(
+                (n, s) -> new DefinitionClass(
                         ((Identifier) s.convert(n.get(1))).getIdentifierString(),
                         Collections.singletonList(s.convert(n.get(3))),
                         s.convert(n.get(5))),
                 classToken, ident, colonToken, rExp, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition classDefinitionB2 = new SyntaxCaseDefinition(rExp, "classDefinitionB2",
-                (n, s) -> new ClassDefinition(
+                (n, s) -> new DefinitionClass(
                         ((Identifier) s.convert(n.get(1))).getIdentifierString(),
                         ((CommaSeparatedExpressionList) s.convert(n.get(3))).getUnevaluatedList(),
                         s.convert(n.get(5))),
@@ -525,8 +668,8 @@ public class TestMain {
                 localDefinitionVariable,
 
                 arrayLiteral0, arrayLiteral1, arrayLiteral2,
-                elementAccessOperation1, elementAccessOperation2,
 
+                elementAccessOperation1, elementAccessOperation2,
                 unaryMinusOperation,
                 logicalNotOperation,
                 intervalOperation,
@@ -549,10 +692,27 @@ public class TestMain {
                 sequentialComposition,
 
                 methodDefinition0, methodDefinition1, methodDefinition2,
-                getterDefinition, setterDefinition,
+                methodDefinitionEB0, methodDefinitionEB1, methodDefinitionEB2,
+                getterDefinition, getterDefinitionEB, setterDefinition, setterDefinitionEB,
+
+                functorCallOperatorDefinition,
+                elementAccessOperatorDefinition,
+                unaryMinusOperatorDefinition,
+                logicalNotOperatorDefinition,
+                intervalOperatorDefinition,
+                asteriskOperatorDefinition, slashOperatorDefinition, percentSignOperatorDefinition,
+                minusOperatorDefinition, plusOperatorDefinition,
+                greaterOperatorDefinition, equalGreaterOperatorDefinition,
+                lessOperatorDefinition, equalLessOperatorDefinition,
+                equalsOperatorDefinition, notEqualsOperatorDefinition,
+                logicalAndOperatorDefinition,
+                logicalOrOperatorDefinition,
+
                 classDefinitionA, classDefinitionB1, classDefinitionB2,
                 parameterDefinitionListBase,
                 parameterDefinitionListStep,
+
+
         };
         return new Interpreter(lexicon, grammar);
     }
