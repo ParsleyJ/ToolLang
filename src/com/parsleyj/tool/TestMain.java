@@ -68,7 +68,7 @@ public class TestMain {
             if (programString.equals("exit")) break;
 
             try {
-                Program prog = interp.interpret("testParsed", programString, rExp, (p, c) -> { //TODO SET AGAIN TO rExp
+                Program prog = interp.interpret("testParsed", programString, rExp, (p, c) -> {
                     RValue e = (RValue) p.getRootSemanticObject();
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));
@@ -76,6 +76,7 @@ public class TestMain {
                     } catch (ToolNativeException e1) {
                         if (PRINT_TOOL_EXCEPTION_STACK_TRACE) e1.printStackTrace();
                         System.err.println("Tool Exception not handled of type " + e1.getExceptionObject().getBelongingClass().getClassName() + ": " + e1.getExceptionObject().getExplain());
+                        System.err.println(e1.getFrameTrace());
                     }
                     return true;
                 });
@@ -248,7 +249,7 @@ public class TestMain {
                 openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition parameterDeclaration = new SyntaxCaseDefinition(param, "parameterDeclaration",
                 (n, s) -> new ExplicitTypeParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
-                ident, colonToken, ident);
+                ident, colonToken, rExp); //TODO: make this be ident, colonToken, rExp (adjust semantics)
 
         SyntaxCaseDefinition localCall0 = new SyntaxCaseDefinition(rExp, "localCall0",
                 (n, s) -> new LocalCall(

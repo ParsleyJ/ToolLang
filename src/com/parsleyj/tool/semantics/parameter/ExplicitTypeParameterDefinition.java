@@ -20,9 +20,9 @@ import org.jetbrains.annotations.NotNull;
 public class ExplicitTypeParameterDefinition implements ParameterDefinition {
 
     private final Identifier name;
-    private final Identifier typeExpression;
+    private final RValue typeExpression;
 
-    public ExplicitTypeParameterDefinition(Identifier name, Identifier typeExpression){
+    public ExplicitTypeParameterDefinition(Identifier name, RValue typeExpression){
         this.name = name;
         this.typeExpression = typeExpression;
     }

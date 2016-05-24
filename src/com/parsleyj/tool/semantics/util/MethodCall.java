@@ -194,7 +194,13 @@ public class MethodCall implements RValue {
             memory.getTopScope().getNameTable().put(tm.getArgumentNames().get(i), Memory.NameKind.Variable);
         }
 
-        result = tm.getBody().evaluate(memory);
+        try {
+            result = tm.getBody().evaluate(memory);
+        }catch (ToolNativeException tne) {
+            tne.addFrameToTrace("\tat: "+ tm.completeInstanceMethodName(caller.getBelongingClass()));
+            memory.returnFromCallError();
+            throw tne;
+        }
         memory.returnFromCall(result);
         return result;
     }
@@ -226,8 +232,16 @@ public class MethodCall implements RValue {
             memory.getTopScope().getNameTable().put(tml.getSecond().getArgumentNames().get(i), Memory.NameKind.Variable);
         }
 
-        result = tml.getSecond().getBody().evaluate(memory);
+        try {
+            result = tml.getSecond().getBody().evaluate(memory);
+        }catch (ToolNativeException tne) {
+            tne.addFrameToTrace("\tat: "+tml.getSecond().completeFunctionName());
+            memory.returnFromCallError();
+            throw tne;
+        }
         memory.returnFromCall(result);
+
+
 
         return result;
     }

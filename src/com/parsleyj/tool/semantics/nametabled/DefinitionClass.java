@@ -20,36 +20,44 @@ import java.util.List;
 public class DefinitionClass implements RValue{
 
     private String name;
-    private RValue parentTypeExpression;
-    private List<RValue> explicitImplementsExpressions;
+    private List<RValue> parentsExpressions;
     private RValue body;
 
     public DefinitionClass(String name, List<RValue> parents, RValue body) {
         this.name = name;
-        if(parents.isEmpty()){
-            parentTypeExpression = BaseTypes.C_OBJECT;
-            explicitImplementsExpressions = new ArrayList<>();
-        } else {
-            this.parentTypeExpression = parents.get(0);
-            explicitImplementsExpressions = new ArrayList<>();
-            for(int i = 1; i < parents.size(); ++i){
-                explicitImplementsExpressions.add(parents.get(i));
-            }
-        }
+        this.parentsExpressions = parents;
         this.body = body;
     }
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
+
+        ToolClass parentClass;
         List<ToolInterface> interfaces = new ArrayList<>();
-        for (RValue interfaceExpr: explicitImplementsExpressions) {
-            interfaces.add(evalAsInterface(interfaceExpr, memory));
+        if(parentsExpressions.isEmpty()){
+            parentClass = BaseTypes.C_OBJECT;
+        } else {
+            ToolObject o = parentsExpressions.get(0).evaluate(memory);
+            if(o.getBelongingClass().isOrExtends(BaseTypes.C_CLASS)){
+                parentClass = (ToolClass) o;
+            }else if(o.getBelongingClass().isOrExtends(BaseTypes.C_INTERFACE)){
+                parentClass = BaseTypes.C_OBJECT;
+                interfaces.add((ToolInterface) o);
+            }else{
+                throw new InvalidTypeException("'"+parentsExpressions.get(0)+"' is not a valid class or interface");
+            }
+
+            for(int i = 1; i < parentsExpressions.size(); ++i){
+                interfaces.add(evalAsInterface(parentsExpressions.get(i), memory));
+            }
         }
+
+
         ToolClass klass = new ToolClass(
-                name, evalAsClass(parentTypeExpression, memory),
+                name, parentClass,
                 interfaces.toArray(new ToolInterface[interfaces.size()]));
         memory.pushClassDefinitionScope(klass);
-        ToolObject bodyResult = body.evaluate(memory);//todo: result can be the default value
+        ToolObject bodyResult = body.evaluate(memory);//todo: result could be the default value
         for(Reference r: memory.getTopScope().getReferenceTable().values()){
             klass.addInstanceField(new ToolField(r.getReferenceType(), r.getIdentifierString(), memory.getObjectById(r.getPointedId())));
         }
@@ -62,14 +70,7 @@ public class DefinitionClass implements RValue{
         return klass;
     }
 
-    public static ToolClass evalAsClass(RValue typeExpression, Memory memory) throws ToolNativeException{
-        ToolObject type = typeExpression.evaluate(memory);
-        if(type.getBelongingClass().isOrExtends(BaseTypes.C_CLASS)) {
-            return (ToolClass) type;
-        }else{
-            throw new InvalidTypeException("'"+typeExpression+"' is not a valid class");
-        }
-    }
+
 
     public static ToolInterface evalAsInterface(RValue interfaceExpression, Memory memory) throws ToolNativeException{
         ToolObject type = interfaceExpression.evaluate(memory);

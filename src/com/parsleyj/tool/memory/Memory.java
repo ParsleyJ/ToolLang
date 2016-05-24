@@ -245,6 +245,11 @@ public class Memory implements ConfigurationElement {
         o.increaseReferenceCount();
     }
 
+    public void returnFromCallError(){
+        popScopeAndGC();
+        callFrames.removeLast();
+    }
+
     public void returnFromCall(ToolObject o){
         Iterator<CallFrame> i = callFrames.descendingIterator();
         i.next();

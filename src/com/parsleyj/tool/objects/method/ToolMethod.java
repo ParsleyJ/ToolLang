@@ -133,6 +133,13 @@ public class ToolMethod extends ToolObject{
         return sb.toString();
     }
 
+    public String completeFunctionName(){//TODO: change for categories
+        StringBuilder sb = new StringBuilder(name+"(");
+        addParameterListToStringBuilder(sb);
+        sb.append(")");
+        return sb.toString();
+    }
+
     private void addParameterListToStringBuilder(StringBuilder sb){
         for (int i = 0; i < argumentTypes.size(); i++) {
             ToolClass argumentType = argumentTypes.get(i);
