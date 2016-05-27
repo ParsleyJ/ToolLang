@@ -25,7 +25,7 @@ public class DefinitionPropertyVar implements LValue {
             ToolObject arg = memory.getObjectByIdentifier(Memory.ARG_IDENTIFIER);
             new LocalAtIdentifier(name).assign(arg, memory);
             return arg;
-        });
+        }).evaluate(m);
     }
 
     @Override
