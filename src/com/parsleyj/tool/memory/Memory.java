@@ -36,7 +36,9 @@ public class Memory implements ConfigurationElement {
         public CallFrame(Memory belongingMemory, ToolObject owner) {
             this.owner = owner;
             stack = new ArrayDeque<>();
+            stack.add(owner.getMembersScope());
             stack.add(new Scope(belongingMemory, Scope.ScopeType.MethodCall));
+
         }
 
         public CallFrame(Memory belongingMemory, ToolObject owner, ArrayDeque<Scope> definitionScope) {
@@ -66,14 +68,12 @@ public class Memory implements ConfigurationElement {
         public enum ScopeType{Regular, MethodCall, Object, ClassDefinition}
 
         private ScopeType scopeType;
-
-
         private Memory belongingMemory;
+        private ToolClass definedClass = null;
         private Table<String, Reference> referenceTable = new Table<>();
         private List<PhantomReference> phantomReferences = new ArrayList<>();
-        private ToolClass definedClass = null;
-        private MethodTable localMethods;
         private HashMap<String, NameKind> nameTable = new HashMap<>();
+        private MethodTable localMethods;
 
         public Scope(Memory mem, ScopeType scopeType){
             this.belongingMemory = mem;
