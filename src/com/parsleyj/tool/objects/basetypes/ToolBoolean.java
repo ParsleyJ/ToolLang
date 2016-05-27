@@ -2,8 +2,8 @@ package com.parsleyj.tool.objects.basetypes;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
@@ -14,8 +14,8 @@ import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
  */
 public class ToolBoolean extends ToolObject {
     private boolean x;
-    public ToolBoolean(boolean x){
-        super(BaseTypes.C_BOOLEAN);
+    public ToolBoolean(Memory m, boolean x){
+        super(m, m.baseTypes().C_BOOLEAN);
         this.x = x;
     }
 
@@ -30,18 +30,18 @@ public class ToolBoolean extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "!", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Prefix)
-    public static ToolBoolean _logicalNot_(@ImplicitParameter ToolBoolean a){
-        return new ToolBoolean(!a.getBoolValue());
+    public static ToolBoolean _logicalNot_(@MemoryParameter Memory m, @ImplicitParameter ToolBoolean a){
+        return new ToolBoolean(m, !a.getBoolValue());
     }
 
     @NativeInstanceMethod(value = "and", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _logicalAnd_(@ImplicitParameter ToolBoolean a, ToolBoolean b){
-        return new ToolBoolean(a.getBoolValue() && b.getBoolValue());
+    public static ToolBoolean _logicalAnd_(@MemoryParameter Memory m, @ImplicitParameter ToolBoolean a, ToolBoolean b){
+        return new ToolBoolean(m, a.getBoolValue() && b.getBoolValue());
     }
 
     @NativeInstanceMethod(value = "or", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean _logicalOr_(@ImplicitParameter ToolBoolean a, ToolBoolean b){
-        return new ToolBoolean(a.getBoolValue() || b.getBoolValue());
+    public static ToolBoolean _logicalOr_(@MemoryParameter Memory m, @ImplicitParameter ToolBoolean a, ToolBoolean b){
+        return new ToolBoolean(m, a.getBoolValue() || b.getBoolValue());
     }
 
     @Override

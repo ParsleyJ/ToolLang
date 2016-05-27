@@ -3,7 +3,6 @@ package com.parsleyj.tool.semantics.nametabled;
 import com.parsleyj.tool.exceptions.NameAlreadyUsedException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.LValue;
 
@@ -35,14 +34,14 @@ public class DefinitionVariable implements LValue {
                 m.newLocalReference(identifierString, o);
                 break;
             case Method:
-                throw new NameAlreadyUsedException("Cannot create local variable: '"+identifierString+"' is an already used name in this scope.");
+                throw new NameAlreadyUsedException(m, "Cannot create local variable: '"+identifierString+"' is an already used name in this scope.");
         }
 
     }
 
     @Override
     public ToolObject evaluate(Memory memory) {
-        return BaseTypes.O_NULL;
+        return memory.baseTypes().O_NULL;
     } //TODO: a definition can only be assigned (to prevent nullity)
 
     @Override

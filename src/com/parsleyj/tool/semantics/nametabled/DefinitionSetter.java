@@ -42,7 +42,7 @@ public class DefinitionSetter implements RValue {
             case VariableAndAccessor:
                 return  createAndAddSetter(memory, identifierString, argType, body);
             case Method:
-                throw new NameAlreadyUsedException("Cannot define setter: '"+identifierString+"' is an already used name in this scope.");
+                throw new NameAlreadyUsedException(memory, "Cannot define setter: '"+identifierString+"' is an already used name in this scope.");
             default:
                 return null;
         }
@@ -50,6 +50,7 @@ public class DefinitionSetter implements RValue {
 
     public static ToolMethod createAndAddSetter(Memory memory, String name, ToolClass argType, RValue body) throws ToolNativeException{
         ToolMethod method = new ToolMethod(
+                memory,
                 ToolSetterMethod.METHOD_CATEGORY_SETTER,
                 Visibility.Public,
                 name,
@@ -57,7 +58,7 @@ public class DefinitionSetter implements RValue {
                         new FormalParameter("arg", argType)
                 },
                 new FormalParameter[]{},
-                new ToolBoolean(true),
+                new ToolBoolean(memory, true),
                 body);
         method.putDefinitionScope(memory.getCurrentFrameStack(), memory);
         memory.getTopScope().addMethod(method);

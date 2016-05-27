@@ -1,7 +1,7 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
-import com.parsleyj.tool.exceptions.MethodNotFoundException;
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
@@ -11,6 +11,7 @@ import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
+import com.parsleyj.tool.semantics.util.MethodCall;
 
 import java.util.*;
 
@@ -21,16 +22,19 @@ import java.util.*;
 public class ToolClass extends ToolObject {
     private final String className;
     private final ToolClass parentClass;
-    private MethodTable instanceMethods = new MethodTable();
+    private MethodTable instanceMethods;
+    private MethodTable ctors;
     private Map<String, ToolField> fieldMap = new HashMap<>();
     private Map<String, Memory.NameKind> nameTable = new HashMap<>();
     private List<ToolInterface> explicitInterfaces;
 
-    public ToolClass(String className, ToolClass parentClass, ToolInterface... explicitInterfaces) {
-        super(BaseTypes.C_CLASS);
+    public ToolClass(Memory m, String className, ToolClass parentClass, ToolInterface... explicitInterfaces) {
+        super(m, m.baseTypes().C_CLASS);
         this.className = className;
         this.parentClass = parentClass;
         this.explicitInterfaces = Arrays.asList(explicitInterfaces);
+        instanceMethods = new MethodTable(m);
+        ctors = new MethodTable(m);
     }
 
 
@@ -61,6 +65,21 @@ public class ToolClass extends ToolObject {
             addClassMethod(tm);
         }
     }
+
+    public MethodTable getCtors(){
+        return ctors;
+    }
+
+    public void addCtor(ToolMethod tm) throws AmbiguousMethodDefinitionException {
+        getCtors().add(tm);
+    }
+
+    public void addCtors(List<ToolMethod> tms)throws  AmbiguousMethodDefinitionException {
+        for (ToolMethod tm : tms) {
+            addCtor(tm);
+        }
+    }
+
 
     public Map<String, Memory.NameKind> getNameTable() {
         return nameTable;
@@ -122,7 +141,7 @@ public class ToolClass extends ToolObject {
     }
 
     public ToolObject newInstance(Memory memory) {
-        ToolObject newInstance = new ToolObject(this);
+        ToolObject newInstance = new ToolObject(memory, this);
         for(ToolField f: fieldMap.values()){
             newInstance.writeObjectMember(f.getIdentifier(), memory, f.getDefaultValue());
         }
@@ -166,10 +185,16 @@ public class ToolClass extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg) throws MethodNotFoundException {
-        if(arg.getToolObjects().isEmpty()){ //TODO: search for ctors
+    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg) throws ToolNativeException {
+        if(arg.getToolObjects().isEmpty() && self.getCtors().isEmpty()){
             return self.newInstance(memory);
+        }else{
+            ToolObject newInstance = self.newInstance(memory);
+            return MethodCall.ctor(newInstance, self, arg.getToolObjects().toArray(new ToolObject[arg.getToolObjects().size()]), self.ctors).evaluate(memory);
         }
-        throw new MethodNotFoundException("Constructor not found"); //todo better error
+    }
+
+    public boolean isExactly(ToolClass otherClass) {
+        return Objects.equals(this.getId(), otherClass.getId());
     }
 }

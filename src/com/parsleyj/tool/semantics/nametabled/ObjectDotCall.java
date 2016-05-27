@@ -31,7 +31,7 @@ public class ObjectDotCall implements RValue {
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolObject caller = callerExpression.evaluate(memory);
-        if(caller == null || caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
+        if(caller == null || caller.isNull()) throw new CallOnNullException(memory, "Failed trying to call a method with null as caller object.");
 
         Memory.NameKind nameKind = caller.getMembersScope().getNameTable().get(name);
         if(nameKind == null){
@@ -39,7 +39,7 @@ public class ObjectDotCall implements RValue {
             return MethodCall.method(caller, name, parameters).evaluate(memory);
         }else switch (nameKind){
             case Variable:
-                throw new VisibilityException("Attempted to access private name via public access notation");
+                throw new VisibilityException(memory, "Attempted to access private name via public access notation");
             case Accessor:
             case VariableAndAccessor: {
                 List<ToolObject> parameterObjectList = new ArrayList<>();
@@ -50,7 +50,7 @@ public class ObjectDotCall implements RValue {
                 return MethodCall.binaryParametricOperator(
                         MethodCall.getter(caller, name).evaluate(memory),
                         "(",
-                        new ToolList(parameterObjectList),
+                        new ToolList(memory, parameterObjectList),
                         ")").evaluate(memory);
 
             }

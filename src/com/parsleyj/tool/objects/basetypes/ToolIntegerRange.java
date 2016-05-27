@@ -2,7 +2,6 @@ package com.parsleyj.tool.objects.basetypes;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
@@ -22,8 +21,8 @@ public class ToolIntegerRange extends ToolObject implements Iterable<Integer>{
     private Integer end;
     private boolean descending;
 
-    public ToolIntegerRange(Integer start, Integer end) {
-        super(BaseTypes.C_INTEGER_RANGE);
+    public ToolIntegerRange(Memory m, Integer start, Integer end) {
+        super(m, m.baseTypes().C_INTEGER_RANGE);
         this.start = start;
         this.end = end;
         descending = start>end;
@@ -58,20 +57,20 @@ public class ToolIntegerRange extends ToolObject implements Iterable<Integer>{
 
     @NativeInstanceMethod(value = "iterator", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
     public static ToolObject iterator(@MemoryParameter Memory memory0, @ImplicitParameter ToolIntegerRange selfRange) throws ToolNativeException {
-        ToolObject result = new ToolObject();
+        ToolObject result = new ToolObject(memory0);
 
-        result.writeObjectMember("index", memory0, new ToolInteger(selfRange.start));
+        result.writeObjectMember("index", memory0, new ToolInteger(memory0, selfRange.start));
 
-        result.addMethod(new ToolGetterMethod("hasNext", result.getBelongingClass(), memory -> {
+        result.addMethod(new ToolGetterMethod(memory0, "hasNext", result.getBelongingClass(), memory -> {
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
-            return new ToolBoolean((!selfRange.descending) ? (index.getIntegerValue()<=selfRange.end) : (index.getIntegerValue()>=selfRange.end));
+            return new ToolBoolean(memory, (!selfRange.descending) ? (index.getIntegerValue()<=selfRange.end) : (index.getIntegerValue()>=selfRange.end));
         }));
 
-        result.addMethod(new ToolGetterMethod("next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
+        result.addMethod(new ToolGetterMethod(memory0, "next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
-            ToolInteger oldIndex = new ToolInteger(index.getIntegerValue());
+            ToolInteger oldIndex = new ToolInteger(memory, index.getIntegerValue());
             index.setIntegerValue((!selfRange.descending) ? index.getIntegerValue()+1 : index.getIntegerValue()-1);
             return oldIndex;
         }));
@@ -80,19 +79,19 @@ public class ToolIntegerRange extends ToolObject implements Iterable<Integer>{
     }
 
     @NativeInstanceMethod(value = "toList", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolList toList(@ImplicitParameter ToolIntegerRange self) throws ToolNativeException {
+    public static ToolList toList(@MemoryParameter Memory m, @ImplicitParameter ToolIntegerRange self) throws ToolNativeException {
         List<ToolObject> integers = new ArrayList<>();
         int i = self.start;
         while(self.descending?(i>=self.end):(i<=self.end)){
-            integers.add(new ToolInteger(i));
+            integers.add(new ToolInteger(m, i));
             if(self.descending) i--; else i++;
         }
-        return new ToolList(integers);
+        return new ToolList(m, integers);
     }
 
     @NativeInstanceMethod(value = "reverse", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolIntegerRange reverse(@ImplicitParameter ToolIntegerRange self) throws ToolNativeException{
-        return new ToolIntegerRange(self.end, self.start);
+    public static ToolIntegerRange reverse(@MemoryParameter Memory m, @ImplicitParameter ToolIntegerRange self) throws ToolNativeException{
+        return new ToolIntegerRange(m, self.end, self.start);
     }
 
     @Override

@@ -29,14 +29,14 @@ public class ObjectAtCall implements RValue {
     }
 
     @Override
-    public ToolObject evaluate(Memory memory) throws ToolNativeException { //TODO check private access
-        ToolObject caller = callerExpression.evaluate(memory);
-        if(caller == null || caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
-
-        Memory.NameKind nameKind = caller.getMembersScope().getNameTable().get(name);
+    public ToolObject evaluate(Memory memory) throws ToolNativeException {
+        ToolObject owner = callerExpression.evaluate(memory);
+        if(owner == null || owner.isNull()) throw new CallOnNullException(memory, "Failed trying to call a method with null as owner object.");
+        if(!memory.protectedAccessTo(owner)) throw new VisibilityException(memory, "There is not private access from this context to "+owner+" .");
+        Memory.NameKind nameKind = owner.getMembersScope().getNameTable().get(name);
         if(nameKind == null){
             //tries to call (throws error)
-            return MethodCall.method(caller, name, parameters).evaluate(memory);
+            return MethodCall.method(owner, name, parameters).evaluate(memory);
         }else switch (nameKind){
             case Variable:
             case VariableAndAccessor:{
@@ -46,17 +46,17 @@ public class ObjectAtCall implements RValue {
                 }
                 //call () operator on object pointed by reference
                 return MethodCall.binaryParametricOperator(
-                        memory.getObjectById(caller.getReferenceMember(name).getPointedId()),
+                        memory.getObjectById(owner.getReferenceMember(name).getPointedId()),
                         "(",
-                        new ToolList(parameterObjectList),
+                        new ToolList(memory, parameterObjectList),
                         ")").evaluate(memory);
             }
             case Accessor: {
-                throw new VisibilityException("Attempted to access public name via private access notation");
+                throw new VisibilityException(memory, "Attempted to access public name via private access notation");
             }
             case Method:
                 //classic method call
-                return MethodCall.method(caller, name, parameters).evaluate(memory);
+                return MethodCall.method(owner, name, parameters).evaluate(memory);
             default:
                 return null;
         }

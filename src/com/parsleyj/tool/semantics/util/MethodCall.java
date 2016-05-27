@@ -7,11 +7,13 @@ import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.special.ToolCtorMethod;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 import com.parsleyj.tool.semantics.base.RValue;
 import com.parsleyj.utils.Pair;
+import com.parsleyj.utils.Triple;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -44,9 +46,61 @@ public class MethodCall implements RValue {
                 ToolMethod.METHOD_CATEGORY_METHOD,
                 callerExpression,
                 name,
-                new RValue[]{callerExpression},
+                new RValue[]{},
                 parameters
         );
+    }
+
+    public static MethodCall ctor(ToolObject newInstance, ToolClass klass, RValue[] parameters, MethodTable ctorTable){
+        return new MethodCall(
+                ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR,
+                newInstance,
+                ToolCtorMethod.getCtorName(klass),
+                new RValue[]{newInstance},
+                parameters
+        ){
+            @Override
+            public ToolObject evaluate(Memory memory) throws ToolNativeException {
+                {
+                    if(newInstance.isNull()) throw new CallOnNullException(memory, "Failed trying to call a method with null as caller object.");
+
+                    List<ToolObject> implicitArguments = new ArrayList<>();
+                    implicitArguments.add(newInstance);
+
+                    List<ToolObject> arguments = new ArrayList<>();
+                    for(RValue ae : parameters){
+                        arguments.add(ae.evaluate(memory));
+                    }
+
+                    List<ToolClass> argumentsTypes = arguments.stream().map(ToolObject::getBelongingClass).collect(Collectors.toList());
+
+                    ToolMethod tm = ctorTable.resolve(newInstance, ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR, ToolCtorMethod.getCtorName(klass), argumentsTypes);
+
+                    ToolObject result;
+                    memory.pushCallFrame(newInstance);
+
+                    for (int i = 0; i < tm.getImplicitArgumentNames().size(); ++i) {
+                        memory.newLocalReference(tm.getImplicitArgumentNames().get(i), implicitArguments.get(i));
+                        memory.getTopScope().getNameTable().put(tm.getImplicitArgumentNames().get(i), Memory.NameKind.Variable);
+                    }
+
+                    for (int i = 0; i < tm.getArgumentNames().size(); ++i) {
+                        memory.newLocalReference(tm.getArgumentNames().get(i), arguments.get(i));
+                        memory.getTopScope().getNameTable().put(tm.getArgumentNames().get(i), Memory.NameKind.Variable);
+                    }
+
+                    try {
+                        result = tm.getBody().evaluate(memory);
+                    }catch (ToolNativeException tne) {
+                        tne.addFrameToTrace("\tat: "+ tm.completeInstanceMethodName(newInstance.getBelongingClass()));
+                        memory.returnFromCallError();
+                        throw tne;
+                    }
+                    memory.returnFromCall(result);
+                    return result;
+                }
+            }
+        };
     }
 
     public static MethodCall binaryOperator(RValue selfExpression, String operatorSym, RValue argExpression){
@@ -54,7 +108,7 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 selfExpression,
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, operatorSym),
-                new RValue[]{selfExpression},
+                new RValue[]{},
                 new RValue[]{argExpression});
     }
 
@@ -63,7 +117,7 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 selfExpression,
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Prefix, operatorSym),
-                new RValue[]{selfExpression},
+                new RValue[]{},
                 new RValue[]{});
 
     }
@@ -73,7 +127,7 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 selfExpression,
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Suffix, operatorSym),
-                new RValue[]{selfExpression},
+                new RValue[]{},
                 new RValue[]{});
     }
 
@@ -82,7 +136,7 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 selfExpression,
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.BinaryParametric, operatorSym1+operatorSym2),
-                new RValue[]{selfExpression},
+                new RValue[]{},
                 new RValue[]{argExpression}
         );
     }
@@ -92,7 +146,7 @@ public class MethodCall implements RValue {
                 ToolGetterMethod.METHOD_CATEGORY_GETTER,
                 selfExpression,
                 name,
-                new RValue[]{selfExpression},
+                new RValue[]{},
                 new RValue[]{});
     }
 
@@ -101,7 +155,7 @@ public class MethodCall implements RValue {
                 ToolSetterMethod.METHOD_CATEGORY_SETTER,
                 selfExpression,
                 name,
-                new RValue[]{selfExpression, argExpression},
+                new RValue[]{argExpression},
                 new RValue[]{});
     }
 
@@ -164,7 +218,7 @@ public class MethodCall implements RValue {
 
     private static ToolObject callMethod(Memory memory, String category, RValue callerExpression, String name, RValue[] implicitArgumentExpressions, RValue[] argumentExpressions) throws ToolNativeException {
         ToolObject caller = callerExpression.evaluate(memory);
-        if(caller.isNull()) throw new CallOnNullException("Failed trying to call a method with null as caller object.");
+        if(caller.isNull()) throw new CallOnNullException(memory, "Failed trying to call a method with null as caller object.");
 
         List<ToolObject> implicitArguments = new ArrayList<>();
         for (RValue iae : implicitArgumentExpressions) {
@@ -182,7 +236,7 @@ public class MethodCall implements RValue {
         ToolMethod tm = callableMethodTable.resolve(caller, category, name, argumentsTypes);
 
         ToolObject result;
-        memory.pushCallFrame();
+        memory.pushCallFrame(caller);
 
         for (int i = 0; i < tm.getImplicitArgumentNames().size(); ++i) {
             memory.newLocalReference(tm.getImplicitArgumentNames().get(i), implicitArguments.get(i));
@@ -218,9 +272,9 @@ public class MethodCall implements RValue {
 
         List<ToolClass> argumentsTypes = arguments.stream().map(ToolObject::getBelongingClass).collect(Collectors.toList());
 
-        Pair<ArrayDeque<Memory.Scope>, ToolMethod> tml = memory.resolveFunction(category, name, argumentsTypes);
+        Triple<ArrayDeque<Memory.Scope>, ToolMethod, ToolObject> tml = memory.resolveFunction(category, name, argumentsTypes);
         ToolObject result;
-        memory.pushCallFrame(tml.getFirst());
+        memory.pushCallFrame(tml.getThird(), tml.getFirst());
 
         for (int i = 0; i < tml.getSecond().getImplicitArgumentNames().size(); ++i) {
             memory.newLocalReference(tml.getSecond().getImplicitArgumentNames().get(i), implicitArguments.get(i));

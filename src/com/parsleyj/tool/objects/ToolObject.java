@@ -20,14 +20,16 @@ public class ToolObject implements RValue {
     private int referenceCount = 0;
     private ToolClass belongingClass;
     private Integer id = IDGenerator.generate();
-    private Memory.Scope scope = new Memory.Scope(Memory.Scope.ScopeType.Object);
+    private Memory.Scope scope;
 
 
-    public ToolObject() {
-        this.belongingClass = BaseTypes.C_OBJECT;
+    public ToolObject(Memory m) {
+        this.belongingClass = m.baseTypes().C_OBJECT;
+        scope = new Memory.Scope(m, Memory.Scope.ScopeType.Object);
     }
-    public ToolObject(ToolClass belongingClass) {
+    public ToolObject(Memory m, ToolClass belongingClass) {
         this.belongingClass = belongingClass;
+        scope = new Memory.Scope(m, Memory.Scope.ScopeType.Object);
     }
     public void addReferenceMember(Reference reference) {
         try {
@@ -62,13 +64,13 @@ public class ToolObject implements RValue {
         try {
             MethodCall mc = MethodCall.getter(this, "asCondition");
             ToolObject returnedVal = mc.evaluate(memory);
-            if(returnedVal.getBelongingClass().isOrExtends(BaseTypes.C_BOOLEAN)){
+            if(returnedVal.getBelongingClass().isOrExtends(memory.baseTypes().C_BOOLEAN)){
                 return returnedVal.evaluateAsConditional(memory);
             }else{
-                throw new InvalidConditionalExpressionException("Method "+mc+" does not return an object of a type that is or extends Boolean");
+                throw new InvalidConditionalExpressionException(memory, "Method "+mc+" does not return an object of a type that is or extends Boolean");
             }
         } catch (MethodNotFoundException e) {
-            throw new InvalidConditionalExpressionException("The object "+this+" must have semantic asCondition defined or be of type Boolean");
+            throw new InvalidConditionalExpressionException(memory, "The object "+this+" must have semantic asCondition defined or be of type Boolean");
         }
     }
 

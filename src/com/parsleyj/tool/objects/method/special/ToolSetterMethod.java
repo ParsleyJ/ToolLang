@@ -15,8 +15,8 @@ public class ToolSetterMethod extends ToolMethod {
 
     public static final String METHOD_CATEGORY_SETTER = "METHOD_CATEGORY_SETTER";
 
-    public ToolSetterMethod(String name, ToolClass selfType, ToolClass argType, RValue body) {
-        super(METHOD_CATEGORY_SETTER, Visibility.Public, name, new FormalParameter[]{
+    public ToolSetterMethod(Memory memory0, String name, ToolClass selfType, ToolClass argType, RValue body) {
+        super(memory0, METHOD_CATEGORY_SETTER, Visibility.Public, name, new FormalParameter[]{
                 new FormalParameter(Memory.SELF_IDENTIFIER, selfType),
                 new FormalParameter(Memory.ARG_IDENTIFIER, argType)
         }, new FormalParameter[]{}, body);

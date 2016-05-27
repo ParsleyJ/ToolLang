@@ -1,6 +1,8 @@
 package com.parsleyj.tool.semantics.nametabled;
 
+import com.parsleyj.tool.exceptions.CallOnNullException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
+import com.parsleyj.tool.exceptions.VisibilityException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.Identifier;
@@ -29,15 +31,20 @@ public class ObjectAtIdentifier implements LValue{
     }
 
     @Override
-    public void assign(ToolObject o, Memory m) throws ToolNativeException { //TODO: check private access
-        ToolObject leftExpObject = leftExp.evaluate(m);
-        m.updateReference(leftExpObject.getReferenceMember(ident.getIdentifierString()), o);
+    public void assign(ToolObject o, Memory memory) throws ToolNativeException {
+        ToolObject owner = leftExp.evaluate(memory);
+        if(owner == null || owner.isNull()) throw new CallOnNullException(memory, "Failed trying to call a method with null as owner object.");
+        if(!memory.protectedAccessTo(owner)) throw new VisibilityException(memory, "There is not private access from this context to "+owner+" .");
+
+        memory.updateReference(owner.getReferenceMember(ident.getIdentifierString()), o);
     }
 
     @Override
-    public ToolObject evaluate(Memory m) throws ToolNativeException { //TODO: check private access
-        ToolObject leftExpObject = leftExp.evaluate(m);
-        return m.getObjectById(leftExpObject.getReferenceMember(ident.getIdentifierString()).getPointedId());
+    public ToolObject evaluate(Memory memory) throws ToolNativeException {
+        ToolObject owner = leftExp.evaluate(memory);
+        if(owner == null || owner.isNull()) throw new CallOnNullException(memory, "Failed trying to call a method with null as owner object.");
+        if(!memory.protectedAccessTo(owner)) throw new VisibilityException(memory, "There is not private access from this context to "+owner+" .");
+        return memory.getObjectById(owner.getReferenceMember(ident.getIdentifierString()).getPointedId());
     }
 
     @Override

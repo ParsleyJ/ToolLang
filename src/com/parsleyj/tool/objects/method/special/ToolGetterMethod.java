@@ -15,8 +15,9 @@ public class ToolGetterMethod extends ToolMethod {
 
     public static final String METHOD_CATEGORY_GETTER = "METHOD_CATEGORY_GETTER";
 
-    public ToolGetterMethod(String name, ToolClass selfType, RValue body) {
+    public ToolGetterMethod(Memory m, String name, ToolClass selfType, RValue body) {
         super(
+                m,
                 METHOD_CATEGORY_GETTER,
                 Visibility.Public,
                 name,

@@ -1,13 +1,13 @@
 package com.parsleyj.tool.exceptions;
 
-import com.parsleyj.tool.objects.BaseTypes;
+import com.parsleyj.tool.memory.Memory;
 
 /**
  * Created by Giuseppe on 13/04/16.
  * TODO: javadoc
  */
 public class ToolArithmeticException extends ToolNativeException {
-    public ToolArithmeticException(String msg) {
-        super(BaseTypes.C_ARITHMETIC_EXCEPTION.newExceptionInstance(msg));
+    public ToolArithmeticException(Memory m, String msg) {
+        super(m.baseTypes().C_ARITHMETIC_EXCEPTION.newExceptionInstance(msg));
     }
 }

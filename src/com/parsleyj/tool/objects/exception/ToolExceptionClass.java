@@ -1,7 +1,7 @@
 package com.parsleyj.tool.objects.exception;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
-import com.parsleyj.tool.objects.BaseTypes;
+import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
 
 /**
@@ -9,15 +9,14 @@ import com.parsleyj.tool.objects.ToolClass;
  * TODO: javadoc
  */
 public class ToolExceptionClass extends ToolClass {
-    public ToolExceptionClass(String className) {
-        super(className, BaseTypes.C_EXCEPTION);
+    private Memory memory;
+    public ToolExceptionClass(Memory m, String className) {
+        super(m, className, m.baseTypes().C_EXCEPTION);
+        memory = m;
     }
 
-    public ToolNativeException newThrowableInstance(String message){
-        return new ToolNativeException(new ToolException(this, message));
-    }
 
     public ToolException newExceptionInstance(String message){
-        return new ToolException(this, message);
+        return new ToolException(memory, this, message);
     }
 }

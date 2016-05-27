@@ -2,7 +2,6 @@ package com.parsleyj.tool.semantics.flowcontrol;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.RValue;
 
@@ -24,7 +23,7 @@ public class IfThenStatement implements RValue {
         if (RValue.evaluateAsConditional(condition, memory)) {
             return thenBranch.evaluate(memory);
         } else {
-            return BaseTypes.O_NULL;
+            return memory.baseTypes().O_NULL;
         }
     }
 

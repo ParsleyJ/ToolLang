@@ -1,8 +1,11 @@
 package com.parsleyj.tool.exceptions;
 
-import com.parsleyj.tool.objects.BaseTypes;
+import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
+import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -12,19 +15,26 @@ import java.util.List;
  * TODO: javadoc
  */
 public class MethodNotFoundException extends ToolNativeException {
-    public MethodNotFoundException(String msg) {
-        super(BaseTypes.C_METHOD_NOT_FOUND_EXCEPTION.newExceptionInstance(msg));
+    public MethodNotFoundException(Memory m, String msg) {
+        super(m.baseTypes().C_METHOD_NOT_FOUND_EXCEPTION.newExceptionInstance(msg));
     }
 
-    @NotNull //TODO: add category in message
-    public static String getDefaultMessage(ToolObject caller, String name, List<ToolClass> argumentsTypes) {
-        StringBuilder sb = new StringBuilder("Method not found: " + (caller != null ? (caller + ".") : "") + name + "(");
-        for (int i = 0; i < argumentsTypes.size(); i++) {
-            ToolClass argumentType = argumentsTypes.get(i);
-            sb.append(argumentType.getClassName());
-            if (i < argumentsTypes.size() - 1) sb.append(", ");
+    @NotNull
+    public static String getDefaultMessage(String category, ToolObject owner, String name, List<ToolClass> argumentsTypes) {
+        StringBuilder sb = new StringBuilder("Method not found: "+category+" "+
+                (owner != null ? (owner + ".") : "") + name);
+
+        if (!category.equals(ToolGetterMethod.METHOD_CATEGORY_GETTER)
+                && !category.equals(ToolSetterMethod.METHOD_CATEGORY_SETTER)
+                && !category.equals(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR)) {
+            sb.append("(");
+            for (int i = 0; i < argumentsTypes.size(); i++) {
+                ToolClass argumentType = argumentsTypes.get(i);
+                sb.append(argumentType.getClassName());
+                if (i < argumentsTypes.size() - 1) sb.append(", ");
+            }
+            sb.append(")");
         }
-        sb.append(")");
         return sb.toString();
     }
 }

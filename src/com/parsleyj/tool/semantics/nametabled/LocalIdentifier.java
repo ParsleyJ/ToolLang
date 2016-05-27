@@ -3,7 +3,6 @@ package com.parsleyj.tool.semantics.nametabled;
 import com.parsleyj.tool.exceptions.NameNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.semantics.base.Identifier;
@@ -26,7 +25,7 @@ public class LocalIdentifier implements Identifier {
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         Pair<Memory.NameKind, Memory.Scope> queryResult = memory.recursivelyGetNameKind(identifierString);
         if(queryResult == null || queryResult.getFirst() == null){
-            throw new NameNotFoundException("Name '"+identifierString+"' not found.");
+            throw new NameNotFoundException(memory, "Name '"+identifierString+"' not found.");
         }else switch(queryResult.getFirst()){
             case Variable:
             case Method:
@@ -68,7 +67,7 @@ public class LocalIdentifier implements Identifier {
 
     @Override
     public FormalParameter defineParameter(Memory memory) throws ToolNativeException {
-        return new FormalParameter(getIdentifierString(), BaseTypes.C_OBJECT);
+        return new FormalParameter(getIdentifierString(), memory.baseTypes().C_OBJECT);
 
     }
 }

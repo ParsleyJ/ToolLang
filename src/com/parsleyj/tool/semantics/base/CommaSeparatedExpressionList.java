@@ -37,7 +37,7 @@ public class CommaSeparatedExpressionList implements SemanticObject {
         return getUnevaluatedList().toArray(new RValue[unevaluatedList.size()]);
     }
     public ToolList generateToolList(Memory m) throws ToolNativeException {
-        return new ToolList(generateListOfObjects(m));
+        return new ToolList(m, generateListOfObjects(m));
     }
 
     public ToolObject[] generateArrayOfObjects(Memory m) throws ToolNativeException {

@@ -31,7 +31,7 @@ public class LocalDotCall implements RValue{
             return MethodCall.function(name, parameters).evaluate(memory); //throws a MethodNotFound
         }else switch (nameKind){
             case Variable:{
-                throw new VisibilityException("Attempted to access private name via public access notation");
+                throw new VisibilityException(memory, "Attempted to access private name via public access notation");
             }
             case Accessor:
             case VariableAndAccessor:{
@@ -43,7 +43,7 @@ public class LocalDotCall implements RValue{
                 return MethodCall.binaryParametricOperator(
                         MethodCall.localGetter(name).evaluate(memory),
                         "(",
-                        new ToolList(parameterObjectList),
+                        new ToolList(memory, parameterObjectList),
                         ")").evaluate(memory);
             }
             case Method:

@@ -42,12 +42,15 @@ public class TestMain {
         Program.VERBOSE = PRINT_DEBUG;
         Scanner sc = new Scanner(System.in);
         String memName = "M";
-        Memory m = new Memory(memName);
-        m.pushCallFrame();
-        m.pushScope();
-        m.addObjectToHeap(BaseTypes.O_NULL);
-        m.loadClasses(BaseTypes.getAllBaseClasses());
-        Interpreter interp = getDefaultInterpreter();
+        Memory memory = new Memory(memName);
+        ToolObject firstObject = new ToolObject(memory, null);//TODO: change with the correct "global" object
+        memory.pushCallFrame(firstObject);
+        memory.init();
+        firstObject.forceSetBelongingClass(memory.baseTypes().C_OBJECT);
+        memory.pushScope();
+        memory.addObjectToHeap(memory.baseTypes().O_NULL);
+        memory.loadBaseClasses();
+        Interpreter interp = getDefaultInterpreter(memory);
         interp.setPrintDebugMessages(PRINT_DEBUG);
         while (true) {
             StringBuilder sb = new StringBuilder();
@@ -80,7 +83,7 @@ public class TestMain {
                     }
                     return true;
                 });
-                prog.executeProgram(m);
+                prog.executeProgram(memory);
             } catch (Throwable t) {
                 t.printStackTrace();
             }
@@ -94,18 +97,17 @@ public class TestMain {
     private static SyntaxClass lExp = new SyntaxClass("lExp", rExp); //lExp "extends" rExp = lExp can be treated as rExp
     private static SyntaxClass ident = new SyntaxClass("ident", lExp, param);
 
-
     private static SyntaxClass csel = new SyntaxClass("csel");
 
-    private static Interpreter getDefaultInterpreter() {
+    private static Interpreter getDefaultInterpreter(Memory memory) {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
-                ToolString::newFromLiteral);
+                (g) -> ToolString.newFromLiteral(memory, g));
         TokenCategoryDefinition nullToken = new TokenCategoryDefinition("NULL_KEYWORD", "\\Qnull\\E",
-                (g) -> BaseTypes.O_NULL);
+                (g) -> memory.baseTypes().O_NULL);
         TokenCategoryDefinition trueToken = new TokenCategoryDefinition("TRUE_KEYWORD", "\\Qtrue\\E",
-                (g) -> new ToolBoolean(true));
+                (g) -> new ToolBoolean(memory,true));
         TokenCategoryDefinition falseToken = new TokenCategoryDefinition("FALSE_KEYWORD", "\\Qfalse\\E",
-                (g) -> new ToolBoolean(false));
+                (g) -> new ToolBoolean(memory,false));
         TokenCategoryDefinition whileToken = new TokenCategoryDefinition("WHILE_KEYWORD", "\\Qwhile\\E");
         TokenCategoryDefinition forToken = new TokenCategoryDefinition("FOR_KEYWORD", "\\Qfor\\E");
         TokenCategoryDefinition inToken = new TokenCategoryDefinition("IN_KEYWORD", "\\Qin\\E");
@@ -121,8 +123,11 @@ public class TestMain {
         TokenCategoryDefinition localToken = new TokenCategoryDefinition("LOCAL_KEYWORD", "\\Qlocal\\E");
         TokenCategoryDefinition getterToken = new TokenCategoryDefinition("GETTER_KEYWORD", "\\Qgetter\\E");
         TokenCategoryDefinition setterToken = new TokenCategoryDefinition("SETTER_KEYWORD", "\\Qsetter\\E");
-        TokenCategoryDefinition classToken = new TokenCategoryDefinition("CLASS_KEYWORD", "\\Qclass\\E");
         TokenCategoryDefinition operatorToken = new TokenCategoryDefinition("OPERATOR_KEYWORD", "\\Qoperator\\E");
+        TokenCategoryDefinition ctorToken = new TokenCategoryDefinition("CTOR_KEYWORD", "\\Qctor\\E");
+        TokenCategoryDefinition thisToken = new TokenCategoryDefinition("THIS_KEYWORD", "\\Qthis\\E",
+                (g) -> (RValue) Memory::getSelfObject);
+        TokenCategoryDefinition classToken = new TokenCategoryDefinition("CLASS_KEYWORD", "\\Qclass\\E");
         TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
                 LocalIdentifier::new);
         MultiPatternDefinition identifierMultiPattern = new MultiPatternDefinition("[_a-zA-Z][_a-zA-Z0-9]*") {
@@ -131,8 +136,9 @@ public class TestMain {
                 return getConverters(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
                         orOperatorToken, notOperatorToken,
-                        defToken, localToken, getterToken, setterToken, operatorToken,
-                        classToken,
+                        defToken, localToken, getterToken, setterToken,
+                        operatorToken, ctorToken,
+                        thisToken, classToken,
                         identifierToken);
             }
 
@@ -157,8 +163,10 @@ public class TestMain {
                     case "local": return localToken;
                     case "getter": return getterToken;
                     case "setter": return setterToken;
-                    case "class": return classToken;
                     case "operator": return operatorToken;
+                    case "ctor": return ctorToken;
+                    case "this": return thisToken;
+                    case "class": return classToken;
                     default: return identifierToken;
                 }
             }
@@ -168,8 +176,9 @@ public class TestMain {
                 return Arrays.asList(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
                         orOperatorToken, notOperatorToken,
-                        defToken, localToken, getterToken, setterToken, operatorToken,
-                        classToken,
+                        defToken, localToken, getterToken, setterToken,
+                        operatorToken, ctorToken,
+                        thisToken, classToken,
                         identifierToken);
             }
         };
@@ -199,7 +208,7 @@ public class TestMain {
         TokenCategoryDefinition openSquareBracketToken = new TokenCategoryDefinition("OPEN_SQUARE_BRACKET", "\\Q[\\E");
         TokenCategoryDefinition closedSquareBracketToken = new TokenCategoryDefinition("CLOSED_SQUARE_BRACKET", "\\Q]\\E");
         TokenCategoryDefinition numeralToken = new TokenCategoryDefinition("NUMERAL", "(0|([1-9]\\d*))",// "(?<=\\s|^)[-+]?\\d+(?=\\s|$)"
-                g -> new ToolInteger(Integer.decode(g)));
+                g -> new ToolInteger(memory, Integer.decode(g)));
         TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", " ", true);
         TokenCategoryDefinition newLineToken = new TokenCategoryDefinition("NEWLINE", "\\Q\n\\E", true);
 
@@ -237,6 +246,9 @@ public class TestMain {
         SyntaxCaseDefinition string = new SyntaxCaseDefinition(rExp, "string",
                 new SimpleWrapConverterMethod(),
                 stringToken);
+        SyntaxCaseDefinition thisReference = new SyntaxCaseDefinition(rExp, "thisReference",
+                new SimpleWrapConverterMethod(),
+                thisToken);
         SyntaxCaseDefinition identifier = new SyntaxCaseDefinition(ident, "identifier",
                 new SimpleWrapConverterMethod(),
                 identifierToken);
@@ -249,7 +261,7 @@ public class TestMain {
                 openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition parameterDeclaration = new SyntaxCaseDefinition(param, "parameterDeclaration",
                 (n, s) -> new ExplicitTypeParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
-                ident, colonToken, rExp); //TODO: make this be ident, colonToken, rExp (adjust semantics)
+                ident, colonToken, rExp);
 
         SyntaxCaseDefinition localCall0 = new SyntaxCaseDefinition(rExp, "localCall0",
                 (n, s) -> new LocalCall(
@@ -367,10 +379,10 @@ public class TestMain {
                 atToken, ident, openRoundBracketToken, csel, closedRoundBracketToken);
 
         SyntaxCaseDefinition arrayLiteral0 = new SyntaxCaseDefinition(rExp, "arrayLiteral0",
-                (n, s) -> (RValue) m -> new ToolList(new ArrayList<>()),
+                (n, s) -> (RValue) m -> new ToolList(m, new ArrayList<>()),
                 openSquareBracketToken, closedSquareBracketToken);
         SyntaxCaseDefinition arrayLiteral1 = new SyntaxCaseDefinition(rExp, "arrayLiteral1",
-                (n, s) -> (RValue) m -> new ToolList(new ArrayList<>(Collections.singletonList(((RValue)s.convert(n.get(1))).evaluate(m)))),
+                (n, s) -> (RValue) m -> new ToolList(m, new ArrayList<>(Collections.singletonList(((RValue)s.convert(n.get(1))).evaluate(m)))),
                 openSquareBracketToken, rExp, closedSquareBracketToken);
         SyntaxCaseDefinition arrayLiteral2 = new SyntaxCaseDefinition(rExp, "arrayLiteral2",
                 (n, s) -> (RValue) m -> {
@@ -500,12 +512,21 @@ public class TestMain {
                 getterToken, ident, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition setterDefinition = new SyntaxCaseDefinition(rExp, "setterDefinition",
                 (n, s) -> new DefinitionSetter(((Identifier) s.convert(n.get(1))).getIdentifierString(),
-                        BaseTypes.C_OBJECT, s.convert(n.get(3))),
+                        memory.baseTypes().C_OBJECT, s.convert(n.get(3))),
                 setterToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition setterDefinitionEB = new SyntaxCaseDefinition(rExp, "setterDefinitionEB",
                 (n, s) -> new DefinitionSetter(((Identifier) s.convert(n.get(1))).getIdentifierString(),
-                        BaseTypes.C_OBJECT, s.convert(n.get(3))),
+                        memory.baseTypes().C_OBJECT, s.convert(n.get(3))),
                 setterToken, ident, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition ctorDefinition0 = new SyntaxCaseDefinition(rExp, "ctorDefinition0",
+                (n, s) -> new DefinitionCtor(s.convert(n.get(2))),
+                ctorToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition ctorDefinition1 = new SyntaxCaseDefinition(rExp, "ctorDefinition1",
+                (n, s) -> new DefinitionCtor(Collections.singletonList((ParameterDefinition) s.convert(n.get(1))), s.convert(n.get(3))),
+                ctorToken, param, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition ctorDefinition2 = new SyntaxCaseDefinition(rExp, "ctorDefinition2",
+                (n, s) -> new DefinitionCtor(((ParameterDefinitionList) s.convert(n.get(1))).getParameterDefinitions(), s.convert(n.get(3))),
+                ctorToken, paramlist, openCurlyBracketToken, rExp, closedCurlyBracketToken);
 
         SyntaxCaseDefinition functorCallOperatorDefinition = new SyntaxCaseDefinition(rExp, "functorCallOperatorDefinition",
                 (n, s) -> DefinitionOperator.binaryParametric(
@@ -651,9 +672,11 @@ public class TestMain {
                 new UBOConverterMethod<ParameterDefinitionList, ParameterDefinitionList, ParameterDefinition>(ParameterDefinitionList::new),
                 paramlist, commaToken, param);
 
+
+
         SyntaxCaseDefinition[] grammar = new SyntaxCaseDefinition[]{
                 nullLiteral, trueConst, falseConst, numeral, string,
-                identifier,
+                thisReference, identifier,
                 expressionBetweenRoundBrackets, expressionBetweenCurlyBrackets,
                 parameterDeclaration,
 
@@ -695,6 +718,7 @@ public class TestMain {
                 methodDefinition0, methodDefinition1, methodDefinition2,
                 methodDefinitionEB0, methodDefinitionEB1, methodDefinitionEB2,
                 getterDefinition, getterDefinitionEB, setterDefinition, setterDefinitionEB,
+                ctorDefinition0, ctorDefinition1, ctorDefinition2,
 
                 functorCallOperatorDefinition,
                 elementAccessOperatorDefinition,

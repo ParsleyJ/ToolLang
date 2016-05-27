@@ -1,6 +1,6 @@
 package com.parsleyj.tool.objects.exception;
 
-import com.parsleyj.tool.objects.BaseTypes;
+import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 
 /**
@@ -10,13 +10,13 @@ import com.parsleyj.tool.objects.ToolObject;
 public class ToolException extends ToolObject {
     private String explain;
 
-    public ToolException(String explain) {
-        super(BaseTypes.C_EXCEPTION);
+    public ToolException(Memory m, String explain) {
+        super(m, m.baseTypes().C_EXCEPTION);
         this.explain = explain;
     }
 
-    public ToolException(ToolExceptionClass superClass, String explain){
-        super(superClass);
+    public ToolException(Memory m, ToolExceptionClass superClass, String explain){
+        super(m, superClass);
         this.explain = explain;
     }
 

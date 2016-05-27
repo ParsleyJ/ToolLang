@@ -1,6 +1,5 @@
 package com.parsleyj.tool.memory;
 
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.ToolClass;
 
@@ -14,11 +13,6 @@ public class Reference {
     private String identifierString;
     private Integer id;
 
-    public Reference(String identifierString) {
-        this.referenceType = BaseTypes.C_OBJECT;
-        this.identifierString = identifierString;
-        this.id = BaseTypes.O_NULL.getId();
-    }
 
     public Reference(String identifierString, ToolClass type, Integer id) {
         this.referenceType = type;
@@ -32,11 +26,6 @@ public class Reference {
         this.id = obj.getId();
     }
 
-    public Reference(String identifierString, ToolClass type){
-        this.referenceType = type;
-        this.identifierString = identifierString;
-        this.id = BaseTypes.O_NULL.getId();
-    }
 
     public String getIdentifierString() {
         return identifierString;

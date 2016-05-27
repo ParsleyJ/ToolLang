@@ -1,5 +1,6 @@
 package com.parsleyj.tool.objects;
 
+import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
@@ -18,11 +19,13 @@ public class ToolInterface extends ToolObject {
     private final List<ToolInterface> parentInterfaces;
     private List<ToolMethod> instanceMethods = new ArrayList<>();
 
-    public ToolInterface(String interfaceName, List<ToolInterface> parentInterfaces) {
-        super(BaseTypes.C_INTERFACE);
+    public ToolInterface(Memory m, String interfaceName, List<ToolInterface> parentInterfaces) {
+        super(m, m.baseTypes().C_INTERFACE);
         this.interfaceName = interfaceName;
         this.parentInterfaces = parentInterfaces;
     }
+
+
 
     public String getInterfaceName() {
         return interfaceName;
@@ -40,14 +43,15 @@ public class ToolInterface extends ToolObject {
         parentInterfaces.add(toolInterface);
     }
 
-    public ToolInterface addMethodDeclaration(String methodCategory, String name, FormalParameter[] formalParameters){
+    public ToolInterface addMethodDeclaration(Memory m, String methodCategory, String name, FormalParameter[] formalParameters){
         this.instanceMethods.add(new ToolMethod(
+                m,
                 methodCategory,
                 Visibility.Public,
                 name,
                 new FormalParameter[]{},
                 formalParameters,
-                memory -> BaseTypes.O_NULL
+                memory -> memory.baseTypes().O_NULL
         ));
         return this;
     }

@@ -38,7 +38,7 @@ public class DefinitionGetter implements RValue{
             case VariableAndAccessor:
                 return createAndAddGetter(memory, identifierString, body);
             case Method:
-                throw new NameAlreadyUsedException("Cannot define getter: '"+identifierString+"' is an already used name in this scope.");
+                throw new NameAlreadyUsedException(memory, "Cannot define getter: '"+identifierString+"' is an already used name in this scope.");
             default:
                 return null;
         }
@@ -47,12 +47,13 @@ public class DefinitionGetter implements RValue{
     public static ToolMethod createAndAddGetter(Memory memory, String name, RValue body) throws ToolNativeException{
 
         ToolMethod method = new ToolMethod(
+                memory,
                 ToolGetterMethod.METHOD_CATEGORY_GETTER,
                 Visibility.Public,
                 name,
                 new FormalParameter[]{},
                 new FormalParameter[]{},
-                new ToolBoolean(true),
+                new ToolBoolean(memory, true),
                 body);
         method.putDefinitionScope(memory.getCurrentFrameStack(), memory);
         memory.getTopScope().addMethod(method);

@@ -31,7 +31,7 @@ public class LocalCall implements RValue {
         Pair<Memory.NameKind, Memory.Scope> queryResult = memory.recursivelyGetNameKind(name);
         Memory.NameKind nameKind = queryResult.getFirst();
         if(nameKind == null){
-            throw new NameNotFoundException("Name '"+name+"' not found.");
+            throw new NameNotFoundException(memory, "Name '"+name+"' not found.");
         }else switch (nameKind){
             case Variable:{
                 List<ToolObject> parameterObjectList = new ArrayList<>();
@@ -42,7 +42,7 @@ public class LocalCall implements RValue {
                 return MethodCall.binaryParametricOperator(
                         memory.getObjectByIdentifier(name),
                         "(",
-                        new ToolList(parameterObjectList),
+                        new ToolList(memory, parameterObjectList),
                         ")").evaluate(memory);
             }
             case Accessor:
@@ -55,7 +55,7 @@ public class LocalCall implements RValue {
                 return MethodCall.binaryParametricOperator(
                         MethodCall.localGetter(name).evaluate(memory),
                         "(",
-                        new ToolList(parameterObjectList),
+                        new ToolList(memory, parameterObjectList),
                         ")").evaluate(memory);
             }
             case Method:

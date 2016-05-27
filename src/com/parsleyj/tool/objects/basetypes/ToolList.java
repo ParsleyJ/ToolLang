@@ -5,7 +5,6 @@ import com.parsleyj.tool.exceptions.InvalidIndexListException;
 import com.parsleyj.tool.exceptions.InvalidIndexTypeException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
@@ -24,8 +23,8 @@ import java.util.List;
 public class ToolList extends ToolObject {
     public List<ToolObject> toolObjects;
 
-    public ToolList(List<ToolObject> list) {
-        super(BaseTypes.C_LIST);
+    public ToolList(Memory m, List<ToolObject> list) {
+        super(m, m.baseTypes().C_LIST);
         toolObjects = list;
     }
 
@@ -47,48 +46,48 @@ public class ToolList extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "[]", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject _elementAt_(@ImplicitParameter ToolList self, ToolList indexes) throws ToolNativeException {
-        if (!allIndexesAreIntegersOrRanges(indexes)) throw new InvalidIndexTypeException("All index elements have to be instances of Integer or IntegerRange.");
-        if(indexes.toolObjects.isEmpty()) throw new InvalidIndexListException("At least one index is needed.");
+    public static ToolObject _elementAt_(@MemoryParameter Memory m, @ImplicitParameter ToolList self, ToolList indexes) throws ToolNativeException {
+        if (!allIndexesAreIntegersOrRanges(m, indexes)) throw new InvalidIndexTypeException(m, "All index elements have to be instances of Integer or IntegerRange.");
+        if(indexes.toolObjects.isEmpty()) throw new InvalidIndexListException(m, "At least one index is needed.");
         List<ToolObject> resultList = new ArrayList<>();
         for(ToolObject ind: indexes.toolObjects){
-            if(ind.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER))
-                resultList.add(elementAtWithBackIndexes(self, ((ToolInteger) ind).getIntegerValue()));
+            if(ind.getBelongingClass().isOrExtends(m.baseTypes().C_INTEGER))
+                resultList.add(elementAtWithBackIndexes(m, self, ((ToolInteger) ind).getIntegerValue()));
             else{
                 for(Integer i : (ToolIntegerRange) ind){
-                    resultList.add(elementAtWithBackIndexes(self, i));
+                    resultList.add(elementAtWithBackIndexes(m, self, i));
                 }
             }
         }
 
         if(resultList.size() == 1) return resultList.get(0);
-        else return new ToolList(resultList);
+        else return new ToolList(m, resultList);
     }
 
     @NativeInstanceMethod(value = "indexes", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolIntegerRange indexes(@ImplicitParameter ToolList selfList)throws ToolNativeException{
-        return new ToolIntegerRange(0, selfList.getToolObjects().size()-1);
+    public static ToolIntegerRange indexes(@MemoryParameter Memory m, @ImplicitParameter ToolList selfList)throws ToolNativeException{
+        return new ToolIntegerRange(m, 0, selfList.getToolObjects().size()-1);
     }
 
     @NativeInstanceMethod(value = "size", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolInteger size(@ImplicitParameter ToolList selfList) throws ToolNativeException{
-        return new ToolInteger(selfList.getToolObjects().size());
+    public static ToolInteger size(@MemoryParameter Memory m, @ImplicitParameter ToolList selfList) throws ToolNativeException{
+        return new ToolInteger(m, selfList.getToolObjects().size());
     }
 
 
     @NativeInstanceMethod(value = "iterator", category = ToolGetterMethod.METHOD_CATEGORY_GETTER) //TODO: change name after tokenizer upgrade
     public static ToolObject iterator(@MemoryParameter Memory memory0, @ImplicitParameter ToolList selfList) throws ToolNativeException {
-        ToolObject result = new ToolObject();
+        ToolObject result = new ToolObject(memory0);
 
-        result.writeObjectMember("index", memory0, new ToolInteger(0));
+        result.writeObjectMember("index", memory0, new ToolInteger(memory0, 0));
 
-        result.addMethod(new ToolGetterMethod("hasNext", result.getBelongingClass(), memory -> {
+        result.addMethod(new ToolGetterMethod(memory0, "hasNext", result.getBelongingClass(), memory -> {
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
-            return new ToolBoolean(index.getIntegerValue()<selfList.toolObjects.size());
+            return new ToolBoolean(memory, index.getIntegerValue()<selfList.toolObjects.size());
         }));
 
-        result.addMethod(new ToolGetterMethod("next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
+        result.addMethod(new ToolGetterMethod(memory0, "next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
             Integer oldIndex = index.getIntegerValue();
@@ -100,8 +99,8 @@ public class ToolList extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "reverse", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolList reverse(@ImplicitParameter ToolList self){
-        return new ToolList(PJ.reverse(self.toolObjects));
+    public static ToolList reverse(@MemoryParameter Memory m, @ImplicitParameter ToolList self){
+        return new ToolList(m, PJ.reverse(self.toolObjects));
     }
 
     //FIXME REFERENCE COUNTING OF ELEMENTS!!!!!!
@@ -170,20 +169,20 @@ public class ToolList extends ToolObject {
         return self.getToolObjects().get(0);
     }
 
-    private static ToolObject elementAtWithBackIndexes(ToolList list, int index) throws ToolNativeException {
+    private static ToolObject elementAtWithBackIndexes(Memory m, ToolList list, int index) throws ToolNativeException {
         List<? extends ToolObject> toolObjects = list.getToolObjects();
         if (index >= 0) {
-            if (index >= toolObjects.size()) throw new IndexOutOfBoundsExceptionTool(index, toolObjects.size());
+            if (index >= toolObjects.size()) throw new IndexOutOfBoundsExceptionTool(m, index, toolObjects.size());
             return toolObjects.get(index);
         } else {
-            if (toolObjects.size() + index < 0) throw new IndexOutOfBoundsExceptionTool(index, toolObjects.size());
+            if (toolObjects.size() + index < 0) throw new IndexOutOfBoundsExceptionTool(m, index, toolObjects.size());
             return toolObjects.get(toolObjects.size() + index);
         }
     }
 
-    private static boolean allIndexesAreIntegersOrRanges(ToolList indexes){
+    private static boolean allIndexesAreIntegersOrRanges(Memory m, ToolList indexes){
         for(ToolObject to : indexes.getToolObjects()){
-            if(!to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER_RANGE) && !to.getBelongingClass().isOrExtends(BaseTypes.C_INTEGER)) {
+            if(!to.getBelongingClass().isOrExtends(m.baseTypes().C_INTEGER_RANGE) && !to.getBelongingClass().isOrExtends(m.baseTypes().C_INTEGER)) {
                 return false;
             }
         }

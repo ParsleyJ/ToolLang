@@ -1,6 +1,7 @@
 package com.parsleyj.tool.exceptions;
 
-import com.parsleyj.tool.objects.BaseTypes;
+
+import com.parsleyj.tool.memory.Memory;
 
 /**
  * Created by Giuseppe on 02/05/16.
@@ -8,7 +9,7 @@ import com.parsleyj.tool.objects.BaseTypes;
  */
 public class InvalidIndexListException extends ToolNativeException {
 
-    public InvalidIndexListException(String msg) {
-        super(BaseTypes.C_INVALID_INDEX_LIST_EXCEPTION.newExceptionInstance(msg));
+    public InvalidIndexListException(Memory m, String msg) {
+        super(m.baseTypes().C_INVALID_INDEX_LIST_EXCEPTION.newExceptionInstance(msg));
     }
 }

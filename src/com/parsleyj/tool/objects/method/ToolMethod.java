@@ -1,7 +1,6 @@
 package com.parsleyj.tool.objects.method;
 
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
@@ -31,9 +30,10 @@ public class ToolMethod extends ToolObject{
     private RValue condition;
     private RValue body;
     private ArrayDeque<Memory.Scope> definitionScope = new ArrayDeque<>();
+    private ToolObject ownerObject;
 
-    public ToolMethod(Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue body) {
-        super(BaseTypes.C_METHOD);
+    public ToolMethod(Memory m, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue body) {
+        super(m, m.baseTypes().C_METHOD);
         this.methodCategory = METHOD_CATEGORY_METHOD;
         this.visibility = visibility;
         this.name = name;
@@ -46,12 +46,13 @@ public class ToolMethod extends ToolObject{
             this.implicitArgumentTypes.add(implicitParameter.getParameterType());
             this.implicitArgumentNames.add(implicitParameter.getParameterName());
         }
-        this.condition = new ToolBoolean(true);
+        this.condition = new ToolBoolean(m, true);
         this.body = body;
+        this.ownerObject = m.getSelfObject();
     }
 
-    public ToolMethod(Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue condition, RValue body) {
-        super(BaseTypes.C_METHOD);
+    public ToolMethod(Memory m, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue condition, RValue body) {
+        super(m, m.baseTypes().C_METHOD);
         this.methodCategory = METHOD_CATEGORY_METHOD;
         this.visibility = visibility;
         this.name = name;
@@ -66,15 +67,16 @@ public class ToolMethod extends ToolObject{
         }
         this.condition = condition;
         this.body = body;
+        this.ownerObject = m.getSelfObject();
     }
 
-    public ToolMethod(String methodCategory, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue body){
-        this(visibility, name, implicitParameters, parameters, body);
+    public ToolMethod(Memory m, String methodCategory, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue body){
+        this(m, visibility, name, implicitParameters, parameters, body);
         this.methodCategory = methodCategory;
     }
 
-    public ToolMethod(String methodCategory, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue condition, RValue body){
-        this(visibility, name, implicitParameters, parameters, condition, body);
+    public ToolMethod(Memory m, String methodCategory, Visibility visibility, String name, FormalParameter[] implicitParameters, FormalParameter[] parameters, RValue condition, RValue body){
+        this(m, visibility, name, implicitParameters, parameters, condition, body);
         this.methodCategory = methodCategory;
     }
 
@@ -167,5 +169,9 @@ public class ToolMethod extends ToolObject{
             memory.gcScopeBeforeDisposal(scope);
         }
         super.onDestroy(memory);
+    }
+
+    public ToolObject getOwnerObject() {
+        return ownerObject;
     }
 }

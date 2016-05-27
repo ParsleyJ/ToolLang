@@ -9,6 +9,7 @@ import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
 import com.parsleyj.utils.Pair;
 import com.parsleyj.utils.Table;
+import com.parsleyj.utils.Triple;
 
 import java.util.*;
 
@@ -29,21 +30,29 @@ public class Memory implements ConfigurationElement {
         private static int callFrameIdCounter = 0;
         private int id = callFrameIdCounter++;
         private ArrayDeque<Scope> stack;
-        public CallFrame() {
+        private ToolObject owner;
+
+
+        public CallFrame(Memory belongingMemory, ToolObject owner) {
+            this.owner = owner;
             stack = new ArrayDeque<>();
-            stack.add(new Scope(Scope.ScopeType.MethodCall));
+            stack.add(new Scope(belongingMemory, Scope.ScopeType.MethodCall));
         }
 
-        public CallFrame(ArrayDeque<Scope> definitionScope) {
+        public CallFrame(Memory belongingMemory, ToolObject owner, ArrayDeque<Scope> definitionScope) {
+            this.owner = owner;
             stack = new ArrayDeque<>();
             stack.addAll(definitionScope);
-            stack.add(new Scope(Scope.ScopeType.MethodCall));
+            stack.add(new Scope(belongingMemory, Scope.ScopeType.MethodCall));
         }
 
         public ArrayDeque<Scope> getStack() {
             return stack;
         }
 
+        public ToolObject getOwner() {
+            return owner;
+        }
     }
 
     public enum NameKind{Variable, Accessor, VariableAndAccessor, Method}
@@ -60,20 +69,24 @@ public class Memory implements ConfigurationElement {
         private ScopeType scopeType;
 
 
-
+        private Memory belongingMemory;
         private Table<String, Reference> referenceTable = new Table<>();
         private List<PhantomReference> phantomReferences = new ArrayList<>();
         private ToolClass definedClass = null;
-        private MethodTable localMethods = new MethodTable();
+        private MethodTable localMethods;
         private HashMap<String, NameKind> nameTable = new HashMap<>();
 
-        public Scope(ScopeType scopeType){
+        public Scope(Memory mem, ScopeType scopeType){
+            this.belongingMemory = mem;
             this.scopeType = scopeType;
+            localMethods = new MethodTable(mem);
         }
 
-        public Scope(ToolClass klass) {
+        public Scope(Memory belongingMemory, ToolClass klass) {
+            this.belongingMemory = belongingMemory;
             this.scopeType = ScopeType.ClassDefinition;
             this.definedClass = klass;
+            localMethods = new MethodTable(belongingMemory);
         }
 
         public Table<String, Reference> getReferenceTable() {
@@ -97,7 +110,7 @@ public class Memory implements ConfigurationElement {
         }
 
         public Reference newReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
-            if (contains(identifier)) throw new ReferenceAlreadyExistsException("Reference with name \""+identifier+"\" already exists in this scope.");
+            if (contains(identifier)) throw new ReferenceAlreadyExistsException(belongingMemory, "Reference with name \""+identifier+"\" already exists in this scope.");
             Reference r = new Reference(identifier, o);
             try {
                 putReference(r);
@@ -148,8 +161,15 @@ public class Memory implements ConfigurationElement {
 
     private ArrayDeque<CallFrame> callFrames = new ArrayDeque<>();
     private Table<Integer, ToolObject> heap = new Table<>();
+    private BaseTypes baseTypes;
+
     public Memory(String memoryName){
         this.name = memoryName;
+    }
+
+    public void init(){
+        baseTypes = new BaseTypes();
+        baseTypes.init(this);
     }
 
 
@@ -159,19 +179,19 @@ public class Memory implements ConfigurationElement {
     }
 
     public void pushScope(){
-        callFrames.getLast().getStack().add(new Scope(Scope.ScopeType.Regular));
+        callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.Regular));
     }
 
-    public void pushCallFrame() {
-        callFrames.add(new CallFrame());
+    public void pushCallFrame(ToolObject owner) {
+        callFrames.add(new CallFrame(this, owner));
     }
 
-    public void pushCallFrame(ArrayDeque<Scope> definitionScope) {
-        callFrames.add(new CallFrame(definitionScope));
+    public void pushCallFrame(ToolObject owner, ArrayDeque<Scope> definitionScope) {
+        callFrames.add(new CallFrame(this, owner, definitionScope));
     }
 
     public void pushClassDefinitionScope(ToolClass klass){
-        callFrames.getLast().getStack().add(new Scope(klass));
+        callFrames.getLast().getStack().add(new Scope(this, klass));
     }
 
     public Scope getTopScope(){
@@ -186,7 +206,7 @@ public class Memory implements ConfigurationElement {
     public ToolObject getObjectById(Integer id){
         ToolObject to = heap.get(id);
         if (to == null) {
-            return BaseTypes.O_NULL;
+            return baseTypes.O_NULL;
         }
         return to;
     }
@@ -200,17 +220,20 @@ public class Memory implements ConfigurationElement {
                 return t.get(identifierString);
             }
         }
-        throw new ReferenceNotFoundException("Reference with name: "+identifierString+" not found.");
+        throw new ReferenceNotFoundException(this, "Reference with name: "+identifierString+" not found.");
     }
 
     public ArrayDeque<Scope> getCurrentFrameStack(){
         return callFrames.getLast().getStack();
     }
 
-    public ToolObject getSelfObject() throws ReferenceNotFoundException {
-        return getObjectByIdentifier(SELF_IDENTIFIER);
+    public ToolObject getSelfObject() {
+        return getCurrentFrame().getOwner();
     }
 
+    public CallFrame getCurrentFrame(){
+        return callFrames.getLast();
+    }
 
     public Reference newLocalReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
         Reference r = this.getTopScope().newReference(identifier, o);
@@ -294,18 +317,18 @@ public class Memory implements ConfigurationElement {
         this.callFrames.getLast().getStack().removeLast();
     }
 
-    public Pair<ArrayDeque<Scope>,ToolMethod> resolveFunction(String category, String name, List<ToolClass> argumentsTypes) throws ToolNativeException{
+    public Triple<ArrayDeque<Scope>,ToolMethod, ToolObject> resolveFunction(String category, String name, List<ToolClass> argumentsTypes) throws ToolNativeException{
         Iterator<Scope> icf = callFrames.getLast().getStack().descendingIterator();
         while (icf.hasNext()){
             Scope sc = icf.next();
             try {
                 ToolMethod tm = sc.getMethods().resolve(null, category, name, argumentsTypes);
-                return new Pair<>(tm.getDefinitionScope(), tm);
+                return new Triple<>(tm.getDefinitionScope(), tm, tm.getOwnerObject());
             }catch (MethodNotFoundException mnf){
                 //ignore and try in previous scope, during next iteration
             }
         }
-        throw new MethodNotFoundException(MethodNotFoundException.getDefaultMessage(null, name, argumentsTypes));
+        throw new MethodNotFoundException(this, MethodNotFoundException.getDefaultMessage(category, null, name, argumentsTypes));
 
     }
 
@@ -343,6 +366,23 @@ public class Memory implements ConfigurationElement {
         }
     }
 
+    public boolean privateAccessTo(ToolObject o) throws ReferenceNotFoundException {
+        return getSelfObject().getBelongingClass().isExactly(o.getBelongingClass());
+    }
+
+    public boolean protectedAccessTo(ToolObject o) throws ReferenceNotFoundException {
+        return getSelfObject().getBelongingClass().isOrExtends(o.getBelongingClass());
+    }
+
+    public void loadBaseClasses(){
+        loadClasses(baseTypes.getAllBaseClasses());
+    }
+
+    public void loadClass(ToolClass baseClass) throws ReferenceAlreadyExistsException {
+        getTopScope().getNameTable().put(baseClass.getClassName(), NameKind.Variable);
+        this.newLocalReference(baseClass);
+    }
+
     public void loadClasses(List<ToolClass> allBaseClasses) {
         for(ToolClass c:allBaseClasses){
             try {
@@ -365,6 +405,9 @@ public class Memory implements ConfigurationElement {
         return null;
     }
 
+    public BaseTypes baseTypes(){
+        return baseTypes;
+    }
 
 
 }

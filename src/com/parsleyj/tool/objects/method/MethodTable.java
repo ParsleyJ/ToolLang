@@ -4,6 +4,7 @@ import com.parsleyj.tool.exceptions.AmbiguousMethodCallException;
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
+import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.utils.Pair;
@@ -20,12 +21,16 @@ import java.util.stream.Collectors;
  */
 public class MethodTable {
     private List<ToolMethod> methods = new ArrayList<>();
+    private Memory mem;
 
+    public MethodTable(Memory mem) {
+        this.mem = mem;
+    }
 
     public void add(ToolMethod method) throws AmbiguousMethodDefinitionException {
         if (methods.stream().noneMatch(m -> areAmbiguous(m, method)))
             methods.add(0, method);
-        else throw new AmbiguousMethodDefinitionException("Method " + method + " is already defined.");
+        else throw new AmbiguousMethodDefinitionException(mem, "Method " + method + " is already defined.");
     }
 
     public void addAll(Collection<ToolMethod> methods) throws AmbiguousMethodDefinitionException {
@@ -88,7 +93,7 @@ public class MethodTable {
         //3.1) there is one method at first place: that's the one!
 
         if(rankedMethods.isEmpty()) { //1) there are no viable functions: throw MethodNotFoundException
-            throw new MethodNotFoundException(MethodNotFoundException.getDefaultMessage(caller, name, argumentsTypes));
+            throw new MethodNotFoundException(mem, MethodNotFoundException.getDefaultMessage(category, caller, name, argumentsTypes));
         }
 
         if (rankedMethods.size() == 1) {
@@ -105,7 +110,7 @@ public class MethodTable {
             for (ToolMethod tm : rankedMethods) {
                 sb.append(tm).append("\n");
             }
-            throw new AmbiguousMethodCallException(sb.toString());
+            throw new AmbiguousMethodCallException(mem, sb.toString());
         }
 
     }
@@ -167,7 +172,7 @@ public class MethodTable {
     }
 
     public MethodTable extend(MethodTable other) {
-        MethodTable result = new MethodTable();
+        MethodTable result = new MethodTable(mem);
         try {
             result.addAll(this.methods);
         } catch (AmbiguousMethodDefinitionException e) {
@@ -187,5 +192,9 @@ public class MethodTable {
 
     public List<ToolMethod> getAll() {
         return methods;
+    }
+
+    public boolean isEmpty() {
+        return methods.isEmpty();
     }
 }

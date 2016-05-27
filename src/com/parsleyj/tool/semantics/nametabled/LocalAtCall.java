@@ -41,11 +41,11 @@ public class LocalAtCall implements RValue{
                 return MethodCall.binaryParametricOperator(
                         memory.getObjectByIdentifier(name),
                         "(",
-                        new ToolList(parameterObjectList),
+                        new ToolList(memory, parameterObjectList),
                         ")").evaluate(memory);
             }
             case Accessor:
-                throw new ReferenceNotFoundException("Reference with name: "+name+" not found.");
+                throw new ReferenceNotFoundException(memory, "Reference with name: "+name+" not found.");
             case Method:
                 return MethodCall.function(name, parameters).evaluate(memory); //throws a MethodNotFound
             default:
