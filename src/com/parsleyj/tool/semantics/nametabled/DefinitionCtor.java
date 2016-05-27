@@ -12,6 +12,7 @@ import com.parsleyj.tool.objects.method.special.ToolCtorMethod;
 import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.ParameterDefinition;
 import com.parsleyj.tool.semantics.base.RValue;
+import com.parsleyj.tool.semantics.flowcontrol.SequentialComposition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class DefinitionCtor implements RValue {
                 new FormalParameter[]{new FormalParameter(Memory.SELF_IDENTIFIER, klass)},
                 formalParameters.toArray(new FormalParameter[formalParameters.size()]),
                 condition,
-                body);
+                new SequentialComposition(body, Memory::getSelfObject));
         ctor.putDefinitionScope(memory.getCurrentFrameStack(), memory);
         klass.addCtor(ctor);
         return ctor;

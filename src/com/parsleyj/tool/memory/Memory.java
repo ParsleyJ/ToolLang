@@ -63,7 +63,6 @@ public class Memory implements ConfigurationElement {
      */
     public static class Scope {
 
-
         public enum ScopeType{Regular, MethodCall, Object, ClassDefinition}
 
         private ScopeType scopeType;
@@ -129,7 +128,7 @@ public class Memory implements ConfigurationElement {
             localMethods.add(tm);
         }
 
-        public Reference getReferenceByName(String identifierString) {
+        public Reference getReferenceByName(String identifierString){
             return referenceTable.get(identifierString);
         }
 
@@ -142,6 +141,10 @@ public class Memory implements ConfigurationElement {
 
         public ToolClass getDefinedClass(){
             return definedClass;
+        }
+
+        public Memory getBelongingMemory() {
+            return belongingMemory;
         }
 
         public void increaseAllLocalCounters(Memory memory){

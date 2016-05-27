@@ -1,9 +1,6 @@
 package com.parsleyj.tool.objects;
 
-import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
-import com.parsleyj.tool.exceptions.InvalidConditionalExpressionException;
-import com.parsleyj.tool.exceptions.MethodNotFoundException;
-import com.parsleyj.tool.exceptions.ToolNativeException;
+import com.parsleyj.tool.exceptions.*;
 import com.parsleyj.tool.memory.*;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
@@ -40,7 +37,11 @@ public class ToolObject implements RValue {
     }
 
     public void writeObjectMember(String name, Memory memory, ToolObject object) {
-        Reference oldR = getReferenceMember(name);
+        Reference oldR = null;
+        try {
+            oldR = getReferenceMember(name);
+        } catch (ReferenceNotFoundException ignored) {
+        }
         if(oldR!=null){
             ToolObject old = memory.getObjectById(oldR.getPointedId());
             try {
@@ -91,8 +92,12 @@ public class ToolObject implements RValue {
         if(this.referenceCount <= 0) throw new CounterIsZeroRemoveObject();
     }
 
-    public Reference getReferenceMember(String identifierString) {
-        return scope.getReferenceByName(identifierString);
+    public Reference getReferenceMember(String identifierString) throws ReferenceNotFoundException {
+        Reference referenceByName = scope.getReferenceByName(identifierString);
+        if (referenceByName == null) {
+            throw new ReferenceNotFoundException(scope.getBelongingMemory(), "Reference with name: "+identifierString+" not found.");
+        }
+        return referenceByName;
     }
 
     public ToolClass getBelongingClass() {

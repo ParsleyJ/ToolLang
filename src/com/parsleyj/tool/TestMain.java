@@ -209,8 +209,8 @@ public class TestMain {
         TokenCategoryDefinition closedSquareBracketToken = new TokenCategoryDefinition("CLOSED_SQUARE_BRACKET", "\\Q]\\E");
         TokenCategoryDefinition numeralToken = new TokenCategoryDefinition("NUMERAL", "(0|([1-9]\\d*))",// "(?<=\\s|^)[-+]?\\d+(?=\\s|$)"
                 g -> new ToolInteger(memory, Integer.decode(g)));
-        TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", " ", true);
         TokenCategoryDefinition newLineToken = new TokenCategoryDefinition("NEWLINE", "\\Q\n\\E", true);
+        TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", "\\s+", true);
 
         LexicalPatternDefinition[] lexicon = new LexicalPatternDefinition[]{
                 stringToken,
@@ -227,7 +227,8 @@ public class TestMain {
                 openCurlyBracketToken, closedCurlyBracketToken,
                 openSquareBracketToken, closedSquareBracketToken,
                 numeralToken,
-                blankToken, newLineToken
+                newLineToken,
+                blankToken,
         };
 
 

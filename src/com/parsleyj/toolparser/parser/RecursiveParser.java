@@ -416,8 +416,8 @@ public class RecursiveParser implements Parser {
         //FIXME: paramlist is never taken because ident is on the left and the right, while
         //FIXME:    paramlist is composed by "param,param" and param is composed by "ident:ident"
         return grammar.getPriorityCaseList().stream()
-                .map(Pair::getSecond)
-                .filter(candidate -> {
+                .map(Pair::getSecond).collect(Collectors.toList());
+                /*.filter(candidate -> {
                     Lol.v("checking: "+candidate.getCaseName());
                     if (candidate.getAssociativity() == Associativity.RightToLeft) {
                         for (int i = 0; i < leftComponents.size(); ++i) {
@@ -465,7 +465,7 @@ public class RecursiveParser implements Parser {
                         Lol.v("END Fail.");
                         return false;
                     }
-                }).collect(Collectors.toList());
+                }).collect(Collectors.toList());*/ //TODO: this is a tempfix
     }
 
     private boolean isOnlyTerminals(SyntaxCase sc) {
