@@ -72,6 +72,7 @@ public class DefinitionClass implements RValue{
         }
         klass.setNameTable(new HashMap<>(memory.getTopScope().getNameTable()));
         memory.popScopeAndGC();
+        //FIXME: check if class actually implements methods declared in explicitly implemented interfaces
         memory.loadClass(klass);
         return klass;
     }

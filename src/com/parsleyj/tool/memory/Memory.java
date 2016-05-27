@@ -20,7 +20,6 @@ import java.util.*;
 public class Memory implements ConfigurationElement {
 
 
-
     /**
      * Created by Giuseppe on 18/05/16.
      * TODO: javadoc
