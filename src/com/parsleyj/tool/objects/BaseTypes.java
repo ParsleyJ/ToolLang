@@ -38,6 +38,7 @@ public class BaseTypes {
     public ToolClass C_OBJECT;
     public ToolClass C_CLASS;
     public ToolClass C_INTERFACE;
+    public ToolClass C_EXTENSOR;
     public ToolClass C_METHOD;
     public ToolClass C_INTEGER;
     public ToolClass C_STRING;
@@ -78,6 +79,7 @@ public class BaseTypes {
                 C_OBJECT,
                 C_CLASS,
                 C_INTERFACE,
+                C_EXTENSOR,
                 C_METHOD,
                 C_INTEGER,
                 C_STRING,
@@ -125,6 +127,7 @@ public class BaseTypes {
         C_OBJECT = new ToolClass(m, "Object", null);
         C_CLASS = new ToolClass(m, "Class", C_OBJECT);
         C_INTERFACE = new ToolClass(m, "Interface", C_OBJECT);
+        C_EXTENSOR = new ToolClass(m, "Extensor", C_OBJECT);
         C_METHOD = new ToolClass(m, "Method", C_OBJECT);
         C_INTEGER = new ToolClass(m, "Integer", C_OBJECT);
         C_STRING = new ToolClass(m, "String", C_OBJECT);
@@ -180,6 +183,7 @@ public class BaseTypes {
                 .put(ToolObject.class, C_OBJECT)
                 .put(ToolClass.class, C_CLASS)
                 .put(ToolInterface.class, C_INTERFACE)
+                .put(ToolExtensor.class, C_EXTENSOR)
                 .put(ToolMethod.class, C_METHOD)
                 .put(ToolInteger.class, C_INTEGER)
                 .put(ToolString.class, C_STRING)

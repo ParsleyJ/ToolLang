@@ -42,7 +42,6 @@ public class DefinitionCtor implements RValue {
     }
 
     public static ToolMethod createAndAddCtor(Memory memory, List<ParameterDefinition> params, RValue condition, RValue body) throws ToolNativeException{
-        ToolClass klass = memory.getTopScope().getDefinedClass();
         List<FormalParameter> formalParameters = new ArrayList<>();
         for (ParameterDefinition param : params) {
             formalParameters.add(param.defineParameter(memory));
@@ -51,13 +50,13 @@ public class DefinitionCtor implements RValue {
                 memory,
                 ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR,
                 Visibility.Public,
-                ToolCtorMethod.getCtorName(klass),
-                new FormalParameter[]{new FormalParameter(Memory.SELF_IDENTIFIER, klass)},
+                ToolCtorMethod.getCtorName(),
+                new FormalParameter[]{},
                 formalParameters.toArray(new FormalParameter[formalParameters.size()]),
                 condition,
                 new SequentialComposition(body, Memory::getSelfObject));
         ctor.putDefinitionScope(memory.getCurrentFrameStack());
-        klass.addCtor(ctor);
+        memory.getTopScope().addMethod(ctor);
         return ctor;
     }
 }

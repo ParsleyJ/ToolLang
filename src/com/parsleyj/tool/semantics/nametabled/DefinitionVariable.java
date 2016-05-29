@@ -1,5 +1,6 @@
 package com.parsleyj.tool.semantics.nametabled;
 
+import com.parsleyj.tool.exceptions.InvalidDefinitionException;
 import com.parsleyj.tool.exceptions.NameAlreadyUsedException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
@@ -40,9 +41,9 @@ public class DefinitionVariable implements LValue {
     }
 
     @Override
-    public ToolObject evaluate(Memory memory) {
-        return memory.baseTypes().O_NULL;
-    } //TODO: a definition can only be assigned (to prevent nullity)
+    public ToolObject evaluate(Memory memory) throws ToolNativeException {
+        throw new InvalidDefinitionException(memory, "Variable declaration cannot be used as r-value");
+    }
 
     @Override
     public String toString() {

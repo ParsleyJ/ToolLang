@@ -14,7 +14,7 @@ public class ToolCtorMethod {
     public static final String METHOD_CATEGORY_CONSTRUCTOR = "METHOD_CATEGORY_CONSTRUCTOR";
 
 
-    public static String getCtorName(ToolClass klass) {
-        return "#Constructor# "+klass+" #";
+    public static String getCtorName() {
+        return "#_Constructor_#";
     }
 }

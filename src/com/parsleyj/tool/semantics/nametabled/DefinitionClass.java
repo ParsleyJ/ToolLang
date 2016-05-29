@@ -7,6 +7,7 @@ import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.special.ToolCtorMethod;
 import com.parsleyj.tool.semantics.base.RValue;
 
 import java.util.ArrayList;
@@ -61,13 +62,14 @@ public class DefinitionClass implements RValue{
         ToolClass klass = new ToolClass(memory,
                 name, parentClass,
                 interfaces.toArray(new ToolInterface[interfaces.size()]));
-        memory.pushClassDefinitionScope(klass);
+        memory.pushClassDefinitionScope();
         ToolObject bodyResult = body.evaluate(memory);//todo: result could be the default value
         for(Reference r: memory.getTopScope().getReferenceTable().values()){
             klass.addInstanceField(new ToolField(r.getReferenceType(), r.getIdentifierString(), r.getValue()));
         }
         for(ToolMethod m: memory.getTopScope().getMethods().getAll()){
-            klass.addInstanceMethod(m);
+            if(m.getMethodCategory().equals(ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR)) klass.addCtor(m);
+            else klass.addInstanceMethod(m);
         }
         klass.setNameTable(new HashMap<>(memory.getTopScope().getNameTable()));
         memory.popScope();

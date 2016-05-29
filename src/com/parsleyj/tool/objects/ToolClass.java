@@ -28,6 +28,7 @@ public class ToolClass extends ToolObject {
     private Map<String, ToolField> fieldMap = new HashMap<>();
     private Map<String, Memory.NameKind> nameTable = new HashMap<>();
     private List<ToolInterface> explicitInterfaces;
+    private List<ToolExtensor> extensors = new ArrayList<>();
 
     public ToolClass(Memory m, String className, ToolClass parentClass, ToolInterface... explicitInterfaces) {
         super(m, m.baseTypes().C_CLASS);
@@ -160,6 +161,7 @@ public class ToolClass extends ToolObject {
         }else{
             return getParentClass().generateInstanceCallableMethodTable().extend(getInstanceMethods());
         }
+        //TODO: extend with extensors - and do something similar with ctors and members
     }
 
     public List<ToolInterface> getExplicitDeclaredInterfaces() {
@@ -201,5 +203,15 @@ public class ToolClass extends ToolObject {
 
     public boolean isExactly(ToolClass otherClass) {
         return Objects.equals(this.getId(), otherClass.getId());
+    }
+
+
+    public static void putExtensor(ToolClass klass, ToolExtensor extensor) {
+        klass.extensors.add(extensor);
+    }
+
+
+    public static void removeExtensor(ToolClass klass, ToolExtensor extensor) {
+        klass.extensors.remove(extensor);
     }
 }

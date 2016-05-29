@@ -1,5 +1,6 @@
 package com.parsleyj.tool.semantics.nametabled;
 
+import com.parsleyj.tool.exceptions.InvalidDefinitionException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
@@ -30,6 +31,6 @@ public class DefinitionPropertyVar implements LValue {
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
-        return memory.baseTypes().O_NULL; //TODO: this should not be used as RValue to force initialization
+        throw new InvalidDefinitionException(memory, "Var property declaration cannot be used as r-value");
     }
 }

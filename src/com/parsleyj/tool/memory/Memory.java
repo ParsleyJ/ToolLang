@@ -31,7 +31,6 @@ public class Memory implements ConfigurationElement {
         private ArrayDeque<Scope> stack;
         private ToolObject owner;
 
-
         public CallFrame(Memory belongingMemory, ToolObject owner) {
             this.owner = owner;
             stack = new ArrayDeque<>();
@@ -54,6 +53,13 @@ public class Memory implements ConfigurationElement {
         public ToolObject getOwner() {
             return owner;
         }
+
+        public void popAllScopes(){
+            while(!stack.isEmpty()){
+                stack.getLast().executeOnPopActions();
+                stack.removeLast();
+            }
+        }
     }
 
     public enum NameKind {Variable, Accessor, VariableAndAccessor, Method}
@@ -68,22 +74,15 @@ public class Memory implements ConfigurationElement {
 
         private ScopeType scopeType;
         private Memory belongingMemory;
-        private ToolClass definedClass = null;
         private Table<String, Reference> referenceTable = new Table<>();
         private HashMap<String, NameKind> nameTable = new HashMap<>();
         private MethodTable localMethods;
+        private List<OnPopAction> onPopActions = new ArrayList<>();
 
         public Scope(Memory mem, ScopeType scopeType) {
             this.belongingMemory = mem;
             this.scopeType = scopeType;
             localMethods = new MethodTable(mem);
-        }
-
-        public Scope(Memory belongingMemory, ToolClass klass) {
-            this.belongingMemory = belongingMemory;
-            this.scopeType = ScopeType.ClassDefinition;
-            this.definedClass = klass;
-            localMethods = new MethodTable(belongingMemory);
         }
 
         public Table<String, Reference> getReferenceTable() {
@@ -130,14 +129,22 @@ public class Memory implements ConfigurationElement {
             return scopeType;
         }
 
-        public ToolClass getDefinedClass() {
-            return definedClass;
-        }
-
         public Memory getBelongingMemory() {
             return belongingMemory;
         }
 
+        public void addOnPopAction(OnPopAction action){
+            this.onPopActions.add(action);
+        }
+
+        public void executeOnPopActions(){
+            onPopActions.forEach(a -> a.onPop(belongingMemory));
+        }
+
+        @FunctionalInterface
+        public interface OnPopAction{
+            void onPop(Memory m);
+        }
 
     }
 
@@ -176,8 +183,8 @@ public class Memory implements ConfigurationElement {
         callFrames.add(new CallFrame(this, owner, definitionScope));
     }
 
-    public void pushClassDefinitionScope(ToolClass klass) {
-        callFrames.getLast().getStack().add(new Scope(this, klass));
+    public void pushClassDefinitionScope() {
+        callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.ClassDefinition));
     }
 
     public Scope getTopScope() {
@@ -235,11 +242,13 @@ public class Memory implements ConfigurationElement {
 
     public void returnFromCallError() {
         popScope();
+        callFrames.getLast().popAllScopes();
         callFrames.removeLast();
     }
 
     public void returnFromCall() {
         popScope();
+        callFrames.getLast().popAllScopes();
         callFrames.removeLast();
     }
 
@@ -264,6 +273,7 @@ public class Memory implements ConfigurationElement {
     }
 
     public void popScope() {
+        this.callFrames.getLast().getStack().getLast().executeOnPopActions();
         this.callFrames.getLast().getStack().removeLast();
     }
 

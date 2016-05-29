@@ -75,15 +75,12 @@ public class DefinitionOperator implements RValue {
 
 
     public static ToolMethod createAndAddBinaryOperatorMethod(Memory memory, ToolOperatorMethod.Mode mode, String operatorSym, FormalParameter argParam, RValue body) throws ToolNativeException {
-        ToolClass selfType = memory.getTopScope().getDefinedClass();
         ToolMethod method = new ToolMethod(
                 memory,
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 Visibility.Public,
                 ToolOperatorMethod.getOperatorMethodName(mode, operatorSym),
-                new FormalParameter[]{
-                        new FormalParameter(Memory.SELF_IDENTIFIER, selfType)
-                },
+                new FormalParameter[]{},
                 new FormalParameter[]{argParam},
                 new ToolBoolean(memory, true),
                 body);
@@ -93,15 +90,12 @@ public class DefinitionOperator implements RValue {
     }
 
     public static ToolMethod createAndAddUnaryOperatorMethod(Memory memory, ToolOperatorMethod.Mode mode, String operatorSym, RValue body) throws ToolNativeException {
-        ToolClass selfType = memory.getTopScope().getDefinedClass();
         ToolMethod method = new ToolMethod(
                 memory,
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 Visibility.Public,
                 ToolOperatorMethod.getOperatorMethodName(mode, operatorSym),
-                new FormalParameter[]{
-                        new FormalParameter(Memory.SELF_IDENTIFIER, selfType)
-                },
+                new FormalParameter[]{},
                 new FormalParameter[]{},
                 new ToolBoolean(memory, true),
                 body);
