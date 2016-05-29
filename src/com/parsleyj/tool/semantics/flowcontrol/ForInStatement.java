@@ -18,6 +18,9 @@ import com.parsleyj.tool.semantics.util.MethodCall;
  * TODO: javadoc
  */
 public class ForInStatement implements RValue {
+    public static final String BREAKABLE_SCOPE_TAG = "breakable";
+    public static final String LOOP_SCOPE_TAG = "loop";
+    public static final String FOR_LOOP_SCOPE_TAG = "for";
     private final Identifier identifier;
     private final RValue iterableExpression;
     private final RValue doBranch;
@@ -37,6 +40,9 @@ public class ForInStatement implements RValue {
         ToolObject iterator = MethodCall.getter(iterable, "iterator").evaluate(memory);
         ToolObject result = memory.baseTypes().O_NULL;
         memory.pushScope();
+        memory.getTopScope().addTag(BREAKABLE_SCOPE_TAG);
+        memory.getTopScope().addTag(LOOP_SCOPE_TAG);
+        memory.getTopScope().addTag(FOR_LOOP_SCOPE_TAG);
         new DefinitionVariable(identifier.getIdentifierString()).assign(memory.baseTypes().O_NULL, memory);
         while(((ToolBoolean) MethodCall.getter(iterator, "hasNext").evaluate(memory)).getBoolValue()){
             new Assignment(new LocalAtIdentifier(identifier.getIdentifierString()), MethodCall.getter(iterator, "next")).evaluate(memory);

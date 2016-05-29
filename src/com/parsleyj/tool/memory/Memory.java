@@ -19,13 +19,13 @@ import java.util.*;
  */
 public class Memory implements ConfigurationElement {
 
-
     /**
      * Created by Giuseppe on 18/05/16.
      * TODO: javadoc
      */
     public static class CallFrame {
 
+        private List<String> tags = new ArrayList<>();
         private static int callFrameIdCounter = 0;
         private int id = callFrameIdCounter++;
         private ArrayDeque<Scope> stack;
@@ -60,6 +60,14 @@ public class Memory implements ConfigurationElement {
                 stack.removeLast();
             }
         }
+
+        public void addTag(String tag){
+            tags.add(tag);
+        }
+
+        public boolean containsTag(String tag){
+            return tags.contains(tag);
+        }
     }
 
     public enum NameKind {Variable, Accessor, VariableAndAccessor, Method}
@@ -72,6 +80,7 @@ public class Memory implements ConfigurationElement {
 
         public enum ScopeType {Regular, MethodCall, Object, ClassDefinition}
 
+        private List<String> tags = new ArrayList<>();
         private ScopeType scopeType;
         private Memory belongingMemory;
         private Table<String, Reference> referenceTable = new Table<>();
@@ -146,6 +155,13 @@ public class Memory implements ConfigurationElement {
             void onPop(Memory m);
         }
 
+        public void addTag(String tag){
+            tags.add(tag);
+        }
+
+        public boolean containsTag(String tag){
+            return tags.contains(tag);
+        }
     }
 
 
@@ -289,9 +305,7 @@ public class Memory implements ConfigurationElement {
             }
         }
         throw new MethodNotFoundException(this, MethodNotFoundException.getDefaultMessage(category, null, name, argumentsTypes));
-
     }
-
 
     public boolean privateAccessTo(ToolObject o) throws ReferenceNotFoundException {
         return getSelfObject().getBelongingClass().isExactly(o.getBelongingClass());

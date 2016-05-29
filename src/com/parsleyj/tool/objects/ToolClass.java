@@ -21,6 +21,7 @@ import java.util.*;
  * TODO: javadoc
  */
 public class ToolClass extends ToolObject {
+    //TODO inheritance members/methods visibility + inheritance ctors
     private final String className;
     private final ToolClass parentClass;
     private MethodTable instanceMethods;
@@ -82,7 +83,6 @@ public class ToolClass extends ToolObject {
         }
     }
 
-
     public Map<String, Memory.NameKind> getNameTable() {
         return nameTable;
     }
@@ -136,7 +136,6 @@ public class ToolClass extends ToolObject {
         //TODO: consider user-defined conversions
     }
 
-
     @Override
     public String toString() {
         return "<CLASS:"+className+">";
@@ -161,7 +160,7 @@ public class ToolClass extends ToolObject {
         }else{
             return extendMethodsWithExtensors(getParentClass().generateInstanceCallableMethodTable()).extend(getInstanceMethods());
         }
-        //TODO and do something similar with ctors and members
+        //TODO and do something similar with ctors and members!!!
     }
 
     private MethodTable extendMethodsWithExtensors(MethodTable origin){
