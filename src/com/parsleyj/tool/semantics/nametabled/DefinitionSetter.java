@@ -60,7 +60,7 @@ public class DefinitionSetter implements RValue {
                 new FormalParameter[]{},
                 new ToolBoolean(memory, true),
                 body);
-        method.putDefinitionScope(memory.getCurrentFrameStack(), memory);
+        method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
     }

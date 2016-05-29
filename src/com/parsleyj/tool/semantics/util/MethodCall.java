@@ -12,7 +12,6 @@ import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 import com.parsleyj.tool.semantics.base.RValue;
-import com.parsleyj.utils.Pair;
 import com.parsleyj.utils.Triple;
 
 import java.util.ArrayDeque;
@@ -96,7 +95,7 @@ public class MethodCall implements RValue {
                         memory.returnFromCallError();
                         throw tne;
                     }
-                    memory.returnFromCall(result);
+                    memory.returnFromCall();
                     return result;
                 }
             }
@@ -255,7 +254,7 @@ public class MethodCall implements RValue {
             memory.returnFromCallError();
             throw tne;
         }
-        memory.returnFromCall(result);
+        memory.returnFromCall();
         return result;
     }
 
@@ -293,7 +292,7 @@ public class MethodCall implements RValue {
             memory.returnFromCallError();
             throw tne;
         }
-        memory.returnFromCall(result);
+        memory.returnFromCall();
 
 
 
@@ -303,8 +302,7 @@ public class MethodCall implements RValue {
     public static ToolObject executeScopedBlockWithNoParameters(RValue block, Memory memory) throws ToolNativeException {
         memory.pushScope();
         ToolObject result = block.evaluate(memory);
-        memory.createPhantomReference(result);
-        memory.popScopeAndGC();
+        memory.popScope();
         return result;
     }
 

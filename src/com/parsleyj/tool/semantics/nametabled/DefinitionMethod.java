@@ -70,7 +70,7 @@ public class DefinitionMethod implements RValue {
                 formalParameters.toArray(new FormalParameter[formalParameters.size()]),
                 new ToolBoolean(memory, true),
                 body);
-        method.putDefinitionScope(memory.getCurrentFrameStack(), memory);
+        method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
     }

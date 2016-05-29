@@ -239,25 +239,7 @@ public class BaseTypes {
 
 
 
-    @NotNull
-    private ToolGetterMethod createPropertyGetter(Memory memory0, ToolClass selfType, Field f) {
-        return new ToolGetterMethod(memory0, f.getName(), selfType, memory -> {
-            ToolObject self = memory.getObjectByIdentifier(Memory.SELF_IDENTIFIER);
-            Reference r = self.getReferenceMember(f.getName());
-            return memory.getObjectById(r.getPointedId());
-        });
-    }
 
-    @NotNull
-    private ToolSetterMethod createPropertySetter(Memory memory0, ToolClass selfType, ToolClass argType, Field f) {
-        return new ToolSetterMethod(memory0, f.getName(), selfType, argType, memory -> {
-            ToolObject self = memory.getObjectByIdentifier(Memory.SELF_IDENTIFIER);
-            ToolObject arg = memory.getObjectByIdentifier(Memory.ARG_IDENTIFIER);
-            Reference r = self.getReferenceMember(f.getName());
-            memory.updateReference(r, arg);
-            return arg;
-        });
-    }
 
     public void loadNativeMethods(Memory mem, Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException, AmbiguousMethodDefinitionException {
         for (Method m : nativeClass.getMethods()) {

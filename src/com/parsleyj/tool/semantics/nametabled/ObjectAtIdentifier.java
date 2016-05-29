@@ -44,7 +44,7 @@ public class ObjectAtIdentifier implements LValue{
         ToolObject owner = leftExp.evaluate(memory);
         if(owner == null || owner.isNull()) throw new CallOnNullException(memory, "Failed trying to call a method with null as owner object.");
         if(!memory.protectedAccessTo(owner)) throw new VisibilityException(memory, "There is not private access from this context to "+owner+" .");
-        return memory.getObjectById(owner.getReferenceMember(ident.getIdentifierString()).getPointedId());
+        return owner.getReferenceMember(ident.getIdentifierString()).getValue();
     }
 
     @Override

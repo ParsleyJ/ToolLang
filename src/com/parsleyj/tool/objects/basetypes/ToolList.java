@@ -79,17 +79,17 @@ public class ToolList extends ToolObject {
     public static ToolObject iterator(@MemoryParameter Memory memory0, @ImplicitParameter ToolList selfList) throws ToolNativeException {
         ToolObject result = new ToolObject(memory0);
 
-        result.writeObjectMember("index", memory0, new ToolInteger(memory0, 0));
+        result.newMember("index", new ToolInteger(memory0, 0));
 
         result.addMethod(new ToolGetterMethod(memory0, "hasNext", result.getBelongingClass(), memory -> {
             ToolObject selfIterator = memory.getSelfObject();
-            ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
+            ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
             return new ToolBoolean(memory, index.getIntegerValue()<selfList.toolObjects.size());
         }));
 
         result.addMethod(new ToolGetterMethod(memory0, "next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
             ToolObject selfIterator = memory.getSelfObject();
-            ToolInteger index = (ToolInteger) memory.getObjectById(selfIterator.getReferenceMember("index").getPointedId());
+            ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
             Integer oldIndex = index.getIntegerValue();
             index.setIntegerValue(index.getIntegerValue()+1);
             return selfList.toolObjects.get(oldIndex);

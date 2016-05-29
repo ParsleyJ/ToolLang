@@ -10,7 +10,6 @@ import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.semantics.base.RValue;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -65,13 +64,13 @@ public class DefinitionClass implements RValue{
         memory.pushClassDefinitionScope(klass);
         ToolObject bodyResult = body.evaluate(memory);//todo: result could be the default value
         for(Reference r: memory.getTopScope().getReferenceTable().values()){
-            klass.addInstanceField(new ToolField(r.getReferenceType(), r.getIdentifierString(), memory.getObjectById(r.getPointedId())));
+            klass.addInstanceField(new ToolField(r.getReferenceType(), r.getIdentifierString(), r.getValue()));
         }
         for(ToolMethod m: memory.getTopScope().getMethods().getAll()){
             klass.addInstanceMethod(m);
         }
         klass.setNameTable(new HashMap<>(memory.getTopScope().getNameTable()));
-        memory.popScopeAndGC();
+        memory.popScope();
         //FIXME: check if class actually implements methods declared in explicitly implemented interfaces
         memory.loadClass(klass);
         return klass;

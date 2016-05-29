@@ -56,7 +56,7 @@ public class DefinitionCtor implements RValue {
                 formalParameters.toArray(new FormalParameter[formalParameters.size()]),
                 condition,
                 new SequentialComposition(body, Memory::getSelfObject));
-        ctor.putDefinitionScope(memory.getCurrentFrameStack(), memory);
+        ctor.putDefinitionScope(memory.getCurrentFrameStack());
         klass.addCtor(ctor);
         return ctor;
     }

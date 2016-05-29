@@ -87,7 +87,7 @@ public class DefinitionOperator implements RValue {
                 new FormalParameter[]{argParam},
                 new ToolBoolean(memory, true),
                 body);
-        method.putDefinitionScope(memory.getCurrentFrameStack(), memory);
+        method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
     }
@@ -105,7 +105,7 @@ public class DefinitionOperator implements RValue {
                 new FormalParameter[]{},
                 new ToolBoolean(memory, true),
                 body);
-        method.putDefinitionScope(memory.getCurrentFrameStack(), memory);
+        method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
     }

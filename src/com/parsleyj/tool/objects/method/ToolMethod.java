@@ -150,9 +150,8 @@ public class ToolMethod extends ToolObject{
         }
     }
 
-    public void putDefinitionScope(ArrayDeque<Memory.Scope> definitionScope, Memory m) {
+    public void putDefinitionScope(ArrayDeque<Memory.Scope> definitionScope) {
         for (Memory.Scope scope : definitionScope) {
-            scope.increaseAllLocalCounters(m);
             this.definitionScope.add(scope);
         }
     }
@@ -161,15 +160,6 @@ public class ToolMethod extends ToolObject{
         return definitionScope;
     }
 
-    @Override
-    public void onDestroy(Memory memory) {
-        Iterator<Memory.Scope> i = definitionScope.descendingIterator();
-        while(i.hasNext()){
-            Memory.Scope scope = i.next();
-            memory.gcScopeBeforeDisposal(scope);
-        }
-        super.onDestroy(memory);
-    }
 
     public ToolObject getOwnerObject() {
         return ownerObject;

@@ -11,19 +11,19 @@ public class Reference {
 
     private ToolClass referenceType;
     private String identifierString;
-    private Integer id;
+    private ToolObject value;
 
 
-    public Reference(String identifierString, ToolClass type, Integer id) {
+    public Reference(String identifierString, ToolClass type, ToolObject value) {
         this.referenceType = type;
         this.identifierString = identifierString;
-        this.id = id;
+        this.value = value;
     }
 
     public Reference(String identifierString, ToolObject obj) {
         this.referenceType = obj.getBelongingClass();
         this.identifierString = identifierString;
-        this.id = obj.getId();
+        this.value = obj;
     }
 
 
@@ -31,16 +31,16 @@ public class Reference {
         return identifierString;
     }
 
-    public Integer getPointedId() {
-        return id;
-    }
-
-    public void setPointedId(Integer id) {
-        this.id = id;
-    }
-
     public ToolClass getReferenceType() {
         return referenceType;
+    }
+
+    public ToolObject getValue() {
+        return value;
+    }
+
+    public void setValue(ToolObject value) {
+        this.value = value;
     }
 
     //TODO: add type check

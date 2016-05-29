@@ -37,13 +37,13 @@ public class DefinitionExtension implements RValue{
         memory.pushClassDefinitionScope(newklass);
         ToolObject bodyResult = body.evaluate(memory);//todo: result could be the default value
         for(Reference r: memory.getTopScope().getReferenceTable().values()){
-            newklass.addInstanceField(new ToolField(r.getReferenceType(), r.getIdentifierString(), memory.getObjectById(r.getPointedId())));
+            newklass.addInstanceField(new ToolField(r.getReferenceType(), r.getIdentifierString(), r.getValue()));
         }
         for(ToolMethod m: memory.getTopScope().getMethods().getAll()){
             newklass.addInstanceMethod(m);
         }
         newklass.setNameTable(new HashMap<>(memory.getTopScope().getNameTable()));
-        memory.popScopeAndGC();
+        memory.popScope();
         memory.loadClass(newklass);
         return null;
     }

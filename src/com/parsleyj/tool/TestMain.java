@@ -48,7 +48,6 @@ public class TestMain {
         memory.init();
         firstObject.forceSetBelongingClass(memory.baseTypes().C_OBJECT);
         memory.pushScope();
-        memory.addObjectToHeap(memory.baseTypes().O_NULL);
         memory.loadBaseClasses();
         Interpreter interp = getDefaultInterpreter(memory);
         interp.setPrintDebugMessages(PRINT_DEBUG);

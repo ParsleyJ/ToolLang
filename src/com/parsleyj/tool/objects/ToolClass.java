@@ -1,6 +1,7 @@
 package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
+import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
@@ -93,8 +94,8 @@ public class ToolClass extends ToolObject {
         this.fieldMap.put(field.getIdentifier(), field);
     }
 
-    public void addClassField(Reference reference){
-        this.addReferenceMember(reference);
+    public void addClassField(Reference reference) throws ReferenceAlreadyExistsException {
+        this.newMember(reference);
     }
 
     public MethodTable getInstanceMethods() {
@@ -143,7 +144,11 @@ public class ToolClass extends ToolObject {
     public ToolObject newInstance(Memory memory) {
         ToolObject newInstance = new ToolObject(memory, this);
         for(ToolField f: fieldMap.values()){
-            newInstance.writeObjectMember(f.getIdentifier(), memory, f.getDefaultValue());
+            try {
+                newInstance.newMember(f.getIdentifier(), f.getDefaultValue());
+            } catch (ReferenceAlreadyExistsException e) {
+                e.printStackTrace();
+            }
         }
         newInstance.getMembersScope().setNameTable(new HashMap<>(nameTable));
         return newInstance;

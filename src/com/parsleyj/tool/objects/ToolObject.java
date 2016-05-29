@@ -14,45 +14,43 @@ import com.parsleyj.tool.semantics.base.RValue;
 public class ToolObject implements RValue {
 
 
-    private int referenceCount = 0;
     private ToolClass belongingClass;
     private Integer id = IDGenerator.generate();
     private Memory.Scope scope;
+    private Memory memory;
 
 
     public ToolObject(Memory m) {
+        this.memory = m;
         this.belongingClass = m.baseTypes().C_OBJECT;
         scope = new Memory.Scope(m, Memory.Scope.ScopeType.Object);
     }
     public ToolObject(Memory m, ToolClass belongingClass) {
+        this.memory = m;
         this.belongingClass = belongingClass;
         scope = new Memory.Scope(m, Memory.Scope.ScopeType.Object);
     }
-    public void addReferenceMember(Reference reference) {
-        try {
-            this.scope.putReference(reference);
-        } catch (AddedReference addedReference) {
-            //
-        }
+
+    public void newMember(Reference reference) throws ReferenceAlreadyExistsException {
+        this.scope.putReference(reference);
     }
 
-    public void writeObjectMember(String name, Memory memory, ToolObject object) {
-        Reference oldR = null;
-        try {
-            oldR = getReferenceMember(name);
-        } catch (ReferenceNotFoundException ignored) {
+    public void newMember(String name, ToolObject object) throws ReferenceAlreadyExistsException {
+        this.scope.putReference(new Reference(name, object));
+    }
+
+    public void updateMember(String name, ToolObject object) throws ReferenceNotFoundException {
+        Reference ref = this.scope.getReferenceByName(name);
+        if(ref == null) throw new ReferenceNotFoundException(memory, "Reference with name: " + name + " not found.");
+        ref.setValue(object);
+    }
+
+    public Reference getReferenceMember(String identifierString) throws ReferenceNotFoundException {
+        Reference referenceByName = scope.getReferenceByName(identifierString);
+        if (referenceByName == null) {
+            throw new ReferenceNotFoundException(scope.getBelongingMemory(), "Reference with name: "+identifierString+" not found.");
         }
-        if(oldR!=null){
-            ToolObject old = memory.getObjectById(oldR.getPointedId());
-            try {
-                old.decreaseReferenceCount();
-            } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
-                memory.removeObject(old.id);
-            }
-        }
-        memory.addObjectToHeap(object);
-        Reference r = new Reference(name, object);
-        addReferenceMember(r);
+        return referenceByName;
     }
 
 
@@ -75,30 +73,14 @@ public class ToolObject implements RValue {
         }
     }
 
-    public int getReferenceCount() {
-        return referenceCount;
-    }
 
-    public void increaseReferenceCount() {
-        ++this.referenceCount;
-    }
 
     public void addMethod(ToolMethod method) throws AmbiguousMethodDefinitionException {
         scope.getMethods().add(method);
     }
 
-    public void decreaseReferenceCount() throws CounterIsZeroRemoveObject {
-        --this.referenceCount;
-        if(this.referenceCount <= 0) throw new CounterIsZeroRemoveObject();
-    }
 
-    public Reference getReferenceMember(String identifierString) throws ReferenceNotFoundException {
-        Reference referenceByName = scope.getReferenceByName(identifierString);
-        if (referenceByName == null) {
-            throw new ReferenceNotFoundException(scope.getBelongingMemory(), "Reference with name: "+identifierString+" not found.");
-        }
-        return referenceByName;
-    }
+
 
     public ToolClass getBelongingClass() {
         return belongingClass;

@@ -38,7 +38,7 @@ public class ForInStatement implements RValue {
             memory.updateReference(identifier.getIdentifierString(), MethodCall.getter(iterator, "next").evaluate(memory));
             result = MethodCall.executeScopedBlockWithNoParameters(doBranch, memory);
         }
-        memory.popScopeAndGC();
+        memory.popScope();
         return result;
     }
 }

@@ -46,7 +46,7 @@ public class ObjectAtCall implements RValue {
                 }
                 //call () operator on object pointed by reference
                 return MethodCall.binaryParametricOperator(
-                        memory.getObjectById(owner.getReferenceMember(name).getPointedId()),
+                        owner.getReferenceMember(name).getValue(),
                         "(",
                         new ToolList(memory, parameterObjectList),
                         ")").evaluate(memory);

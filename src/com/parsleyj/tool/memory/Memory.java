@@ -56,7 +56,7 @@ public class Memory implements ConfigurationElement {
         }
     }
 
-    public enum NameKind{Variable, Accessor, VariableAndAccessor, Method}
+    public enum NameKind {Variable, Accessor, VariableAndAccessor, Method}
 
     /**
      * Created by Giuseppe on 05/04/16.
@@ -64,17 +64,16 @@ public class Memory implements ConfigurationElement {
      */
     public static class Scope {
 
-        public enum ScopeType{Regular, MethodCall, Object, ClassDefinition}
+        public enum ScopeType {Regular, MethodCall, Object, ClassDefinition}
 
         private ScopeType scopeType;
         private Memory belongingMemory;
         private ToolClass definedClass = null;
         private Table<String, Reference> referenceTable = new Table<>();
-        private List<PhantomReference> phantomReferences = new ArrayList<>();
         private HashMap<String, NameKind> nameTable = new HashMap<>();
         private MethodTable localMethods;
 
-        public Scope(Memory mem, ScopeType scopeType){
+        public Scope(Memory mem, ScopeType scopeType) {
             this.belongingMemory = mem;
             this.scopeType = scopeType;
             localMethods = new MethodTable(mem);
@@ -91,10 +90,6 @@ public class Memory implements ConfigurationElement {
             return referenceTable;
         }
 
-        public List<PhantomReference> getPhantomReferences() {
-            return phantomReferences;
-        }
-
         public boolean contains(String identifier) {
             return referenceTable.contains(identifier);
         }
@@ -103,23 +98,19 @@ public class Memory implements ConfigurationElement {
             return nameTable;
         }
 
-        public void putReference(Reference r) throws AddedReference {
+        public void putReference(Reference r) throws ReferenceAlreadyExistsException {
+            if(contains(r.getIdentifierString()))
+                throw new ReferenceAlreadyExistsException(belongingMemory, "Reference with name \"" + r.getIdentifierString() + "\" already exists in this scope.");
             referenceTable.put(r.getIdentifierString(), r);
         }
 
         public Reference newReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
-            if (contains(identifier)) throw new ReferenceAlreadyExistsException(belongingMemory, "Reference with name \""+identifier+"\" already exists in this scope.");
             Reference r = new Reference(identifier, o);
-            try {
-                putReference(r);
-                o.increaseReferenceCount();
-            } catch (AddedReference addedReference) {
-                //exception never thrown, used only as a way to remember to handle reference counting
-            }
+            putReference(r);
             return r;
         }
 
-        public MethodTable getMethods(){
+        public MethodTable getMethods() {
             return localMethods;
         }
 
@@ -127,18 +118,19 @@ public class Memory implements ConfigurationElement {
             localMethods.add(tm);
         }
 
-        public Reference getReferenceByName(String identifierString){
+        public Reference getReferenceByName(String identifierString) {
             return referenceTable.get(identifierString);
         }
 
         public void setNameTable(HashMap<String, NameKind> nameT) {
             this.nameTable = nameT;
         }
+
         public ScopeType getScopeType() {
             return scopeType;
         }
 
-        public ToolClass getDefinedClass(){
+        public ToolClass getDefinedClass() {
             return definedClass;
         }
 
@@ -146,30 +138,22 @@ public class Memory implements ConfigurationElement {
             return belongingMemory;
         }
 
-        public void increaseAllLocalCounters(Memory memory){
-            for (Reference r: referenceTable.values()) {
-                ToolObject o = memory.getObjectById(r.getPointedId());
-                o.increaseReferenceCount();
-            }
-        }
 
     }
 
 
     public static final String SELF_IDENTIFIER = "this";
-
     public static final String ARG_IDENTIFIER = "arg";
-    private final String name;
+    private final String memoryName;
 
     private ArrayDeque<CallFrame> callFrames = new ArrayDeque<>();
-    private Table<Integer, ToolObject> heap = new Table<>();
     private BaseTypes baseTypes;
 
-    public Memory(String memoryName){
-        this.name = memoryName;
+    public Memory(String memoryName) {
+        this.memoryName = memoryName;
     }
 
-    public void init(){
+    public void init() {
         baseTypes = new BaseTypes();
         baseTypes.init(this);
     }
@@ -177,10 +161,10 @@ public class Memory implements ConfigurationElement {
 
     @Override
     public String getConfigurationElementName() {
-        return name;
+        return memoryName;
     }
 
-    public void pushScope(){
+    public void pushScope() {
         callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.Regular));
     }
 
@@ -192,40 +176,33 @@ public class Memory implements ConfigurationElement {
         callFrames.add(new CallFrame(this, owner, definitionScope));
     }
 
-    public void pushClassDefinitionScope(ToolClass klass){
+    public void pushClassDefinitionScope(ToolClass klass) {
         callFrames.getLast().getStack().add(new Scope(this, klass));
     }
 
-    public Scope getTopScope(){
+    public Scope getTopScope() {
         return callFrames.getLast().getStack().getLast();
     }
 
     public ToolObject getObjectByIdentifier(String identifierString) throws ReferenceNotFoundException {
         Reference r = getReferenceByIdentifier(identifierString);
-        return getObjectById(r.getPointedId());
+        return r.getValue();
     }
 
-    public ToolObject getObjectById(Integer id){
-        ToolObject to = heap.get(id);
-        if (to == null) {
-            return baseTypes.O_NULL;
-        }
-        return to;
-    }
 
-    public Reference getReferenceByIdentifier(String identifierString) throws ReferenceNotFoundException{
+    public Reference getReferenceByIdentifier(String identifierString) throws ReferenceNotFoundException {
         Iterator<Scope> i = callFrames.getLast().getStack().descendingIterator();
-        while(i.hasNext()){
+        while (i.hasNext()) {
             Scope p = i.next();
             Table<String, Reference> t = p.getReferenceTable();
-            if(t.contains(identifierString)){
+            if (t.contains(identifierString)) {
                 return t.get(identifierString);
             }
         }
-        throw new ReferenceNotFoundException(this, "Reference with name: "+identifierString+" not found.");
+        throw new ReferenceNotFoundException(this, "Reference with name: " + identifierString + " not found.");
     }
 
-    public ArrayDeque<Scope> getCurrentFrameStack(){
+    public ArrayDeque<Scope> getCurrentFrameStack() {
         return callFrames.getLast().getStack();
     }
 
@@ -233,66 +210,39 @@ public class Memory implements ConfigurationElement {
         return getCurrentFrame().getOwner();
     }
 
-    public CallFrame getCurrentFrame(){
+    public CallFrame getCurrentFrame() {
         return callFrames.getLast();
     }
 
     public Reference newLocalReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {
-        Reference r = this.getTopScope().newReference(identifier, o);
-        this.heap.put(o.getId(), o);
-        return r;
+        return this.getTopScope().newReference(identifier, o);
     }
 
-    public Reference newLocalReference(ToolClass c) throws ReferenceAlreadyExistsException{
+    public Reference newLocalReference(ToolClass c) throws ReferenceAlreadyExistsException {
         return newLocalReference(c.getClassName(), c);
     }
 
-    public Reference updateReference(String identifier, ToolObject o) throws ReferenceNotFoundException{
+    public Reference updateReference(String identifier, ToolObject o) throws ReferenceNotFoundException {
         Reference r = getReferenceByIdentifier(identifier);
         updateReference(r, o);
         return r;
     }
 
-    public Integer addObjectToHeap(ToolObject o){
-        heap.put(o.getId(), o);
-        return o.getId();
+
+    public void updateReference(Reference r, ToolObject o) throws ReferenceNotFoundException {
+        r.setValue(o);
     }
 
-    public void updateReference(Reference r, ToolObject o) throws ReferenceNotFoundException{
-        ToolObject oldO = getObjectById(r.getPointedId());
-        try {
-            oldO.decreaseReferenceCount();
-        } catch (CounterIsZeroRemoveObject c) {
-            removeObject(oldO.getId());
-        }
-        heap.put(o.getId(),o);
-        r.setPointedId(o.getId());
-        o.increaseReferenceCount();
-    }
-
-    public void returnFromCallError(){
-        popScopeAndGC();
+    public void returnFromCallError() {
+        popScope();
         callFrames.removeLast();
     }
 
-    public void returnFromCall(ToolObject o){
-        Iterator<CallFrame> i = callFrames.descendingIterator();
-        i.next();
-        CallFrame cf = i.next();
-        cf.getStack().getLast().getPhantomReferences().add(new PhantomReference(o));
-        o.increaseReferenceCount();
-        popScopeAndGC();
+    public void returnFromCall() {
+        popScope();
         callFrames.removeLast();
     }
 
-    //adds a phantom reference in the scope below the current one (useful to return values from a scope)
-    public void createPhantomReference(ToolObject o){
-        Iterator<Scope> i = callFrames.getLast().getStack().descendingIterator();
-        i.next();
-        Scope p = i.next();
-        p.getPhantomReferences().add(new PhantomReference(o));
-        o.increaseReferenceCount();
-    }
 
     @Override
     public boolean toBePrinted() {
@@ -300,9 +250,8 @@ public class Memory implements ConfigurationElement {
     }
 
     @Override
-    public String toString() {
+    public String toString() { //TODO: re-impl
         final StringBuilder result = new StringBuilder("{\n");
-        result.append("\tObjects:").append(heap).append("\n");
         /*Iterator<Scope> i = stack.descendingIterator();
         result.append("\tScopes:\n");
         while(i.hasNext()){
@@ -314,19 +263,18 @@ public class Memory implements ConfigurationElement {
         return result.toString();
     }
 
-    public void popScopeAndGC() {
-        gcScopeBeforeDisposal(getTopScope());
+    public void popScope() {
         this.callFrames.getLast().getStack().removeLast();
     }
 
-    public Triple<ArrayDeque<Scope>,ToolMethod, ToolObject> resolveFunction(String category, String name, List<ToolClass> argumentsTypes) throws ToolNativeException{
+    public Triple<ArrayDeque<Scope>, ToolMethod, ToolObject> resolveFunction(String category, String name, List<ToolClass> argumentsTypes) throws ToolNativeException {
         Iterator<Scope> icf = callFrames.getLast().getStack().descendingIterator();
-        while (icf.hasNext()){
+        while (icf.hasNext()) {
             Scope sc = icf.next();
             try {
                 ToolMethod tm = sc.getMethods().resolve(null, category, name, argumentsTypes);
                 return new Triple<>(tm.getDefinitionScope(), tm, tm.getOwnerObject());
-            }catch (MethodNotFoundException mnf){
+            } catch (MethodNotFoundException mnf) {
                 //ignore and try in previous scope, during next iteration
             }
         }
@@ -334,39 +282,6 @@ public class Memory implements ConfigurationElement {
 
     }
 
-    public void removeObject(int id){
-        ToolObject o = heap.get(id);
-        o.onDestroy(this);
-        gcScopeBeforeDisposal(o.getMembersScope());
-        heap.remove(id);
-    }
-
-    public void gcScopeBeforeDisposal(Scope scope){
-        Table<String, Reference> t = scope.getReferenceTable();
-        List<PhantomReference> lpr = scope.getPhantomReferences();
-        for (PhantomReference pr : lpr){
-            Integer id = pr.getPointedId();
-            ToolObject to = heap.get(id);
-            if(to == null) continue;
-            try {
-                to.decreaseReferenceCount();
-            } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
-                removeObject(id);
-            }
-
-        }
-        for (String s: t.keySet()) {
-            Reference r = t.get(s);
-            Integer id = r.getPointedId();
-            ToolObject to = heap.get(id);
-            if(to == null) continue;
-            try {
-                to.decreaseReferenceCount();
-            } catch (CounterIsZeroRemoveObject counterIsZeroRemoveObject) {
-                removeObject(id);
-            }
-        }
-    }
 
     public boolean privateAccessTo(ToolObject o) throws ReferenceNotFoundException {
         return getSelfObject().getBelongingClass().isExactly(o.getBelongingClass());
@@ -376,7 +291,7 @@ public class Memory implements ConfigurationElement {
         return getSelfObject().getBelongingClass().isOrExtends(o.getBelongingClass());
     }
 
-    public void loadBaseClasses(){
+    public void loadBaseClasses() {
         loadClasses(baseTypes.getAllBaseClasses());
     }
 
@@ -386,7 +301,7 @@ public class Memory implements ConfigurationElement {
     }
 
     public void loadClasses(List<ToolClass> allBaseClasses) {
-        for(ToolClass c:allBaseClasses){
+        for (ToolClass c : allBaseClasses) {
             try {
                 getTopScope().getNameTable().put(c.getClassName(), NameKind.Variable);
                 this.newLocalReference(c);
@@ -396,18 +311,18 @@ public class Memory implements ConfigurationElement {
         }
     }
 
-    public Pair<NameKind, Scope> recursivelyGetNameKind(String name){
+    public Pair<NameKind, Scope> recursivelyGetNameKind(String name) {
         ArrayDeque<Scope> scopes = callFrames.getLast().getStack();
         Iterator<Scope> i = scopes.descendingIterator();
-        while(i.hasNext()){
+        while (i.hasNext()) {
             Scope x = i.next();
             NameKind result = x.getNameTable().get(name);
-            if(result != null) return new Pair<>(result, x);
+            if (result != null) return new Pair<>(result, x);
         }
         return null;
     }
 
-    public BaseTypes baseTypes(){
+    public BaseTypes baseTypes() {
         return baseTypes;
     }
 
