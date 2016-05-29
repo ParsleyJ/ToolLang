@@ -54,7 +54,7 @@ public class MethodCall implements RValue {
         return new MethodCall(
                 ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR,
                 newInstance,
-                ToolCtorMethod.getCtorName(klass),
+                ToolCtorMethod.getCtorName(),
                 new RValue[]{newInstance},
                 parameters
         ){
@@ -73,7 +73,7 @@ public class MethodCall implements RValue {
 
                     List<ToolClass> argumentsTypes = arguments.stream().map(ToolObject::getBelongingClass).collect(Collectors.toList());
 
-                    ToolMethod tm = ctorTable.resolve(newInstance, ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR, ToolCtorMethod.getCtorName(klass), argumentsTypes);
+                    ToolMethod tm = ctorTable.resolve(newInstance, ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR, ToolCtorMethod.getCtorName(), argumentsTypes);
 
                     ToolObject result;
                     memory.pushCallFrame(newInstance);

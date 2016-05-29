@@ -17,7 +17,7 @@ public class ToolObject implements RValue {
     private ToolClass belongingClass;
     private Integer id = IDGenerator.generate();
     private Memory.Scope scope;
-    private Memory memory;
+    protected Memory memory;
 
 
     public ToolObject(Memory m) {

@@ -7,6 +7,7 @@ import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
+import com.parsleyj.tool.semantics.nametabled.DefinitionGetter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -59,15 +60,15 @@ public class ToolIntegerRange extends ToolObject implements Iterable<Integer>{
     public static ToolObject iterator(@MemoryParameter Memory memory0, @ImplicitParameter ToolIntegerRange selfRange) throws ToolNativeException {
         ToolObject result = new ToolObject(memory0);
 
-        result.updateMember("index", new ToolInteger(memory0, selfRange.start));
+        result.newMember("index", new ToolInteger(memory0, selfRange.start));
 
-        result.addMethod(new ToolGetterMethod(memory0, "hasNext", result.getBelongingClass(), memory -> {
+        result.addMethod(DefinitionGetter.createGetter(memory0, "hasNext", memory -> {
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
             return new ToolBoolean(memory, (!selfRange.descending) ? (index.getIntegerValue()<=selfRange.end) : (index.getIntegerValue()>=selfRange.end));
         }));
 
-        result.addMethod(new ToolGetterMethod(memory0, "next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
+        result.addMethod(DefinitionGetter.createGetter(memory0, "next", memory -> { //TODO: add index out of bounds check
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
             ToolInteger oldIndex = new ToolInteger(memory, index.getIntegerValue());

@@ -7,6 +7,10 @@ import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.RValue;
+import com.parsleyj.tool.semantics.expr.Assignment;
+import com.parsleyj.tool.semantics.nametabled.DefinitionVariable;
+import com.parsleyj.tool.semantics.nametabled.LocalAtIdentifier;
+import com.parsleyj.tool.semantics.nametabled.LocalIdentifier;
 import com.parsleyj.tool.semantics.util.MethodCall;
 
 /**
@@ -33,9 +37,9 @@ public class ForInStatement implements RValue {
         ToolObject iterator = MethodCall.getter(iterable, "iterator").evaluate(memory);
         ToolObject result = memory.baseTypes().O_NULL;
         memory.pushScope();
-        memory.newLocalReference(identifier.getIdentifierString(), memory.baseTypes().O_NULL);
+        new DefinitionVariable(identifier.getIdentifierString()).assign(memory.baseTypes().O_NULL, memory);
         while(((ToolBoolean) MethodCall.getter(iterator, "hasNext").evaluate(memory)).getBoolValue()){
-            memory.updateReference(identifier.getIdentifierString(), MethodCall.getter(iterator, "next").evaluate(memory));
+            new Assignment(new LocalAtIdentifier(identifier.getIdentifierString()), MethodCall.getter(iterator, "next")).evaluate(memory);
             result = MethodCall.executeScopedBlockWithNoParameters(doBranch, memory);
         }
         memory.popScope();

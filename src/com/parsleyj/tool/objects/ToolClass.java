@@ -157,11 +157,19 @@ public class ToolClass extends ToolObject {
 
     public MethodTable generateInstanceCallableMethodTable() {
         if(this.getParentClass() == null || this == this.getParentClass()){
-            return getInstanceMethods();
+            return extendMethodsWithExtensors(new MethodTable(memory)).extend(getInstanceMethods());
         }else{
-            return getParentClass().generateInstanceCallableMethodTable().extend(getInstanceMethods());
+            return extendMethodsWithExtensors(getParentClass().generateInstanceCallableMethodTable()).extend(getInstanceMethods());
         }
-        //TODO: extend with extensors - and do something similar with ctors and members
+        //TODO and do something similar with ctors and members
+    }
+
+    private MethodTable extendMethodsWithExtensors(MethodTable origin){
+        MethodTable tmp = origin;
+        for (ToolExtensor extensor : extensors) {
+            tmp = tmp.extend(extensor.getInstanceMethods());
+        }
+        return tmp;
     }
 
     public List<ToolInterface> getExplicitDeclaredInterfaces() {
@@ -206,12 +214,15 @@ public class ToolClass extends ToolObject {
     }
 
 
-    public static void putExtensor(ToolClass klass, ToolExtensor extensor) {
+    @NativeInstanceMethod(value = "putExtensor")
+    public static ToolObject putExtensor(@MemoryParameter Memory memory, @ImplicitParameter ToolClass klass, ToolExtensor extensor) {
         klass.extensors.add(extensor);
+        return klass;
     }
 
-
-    public static void removeExtensor(ToolClass klass, ToolExtensor extensor) {
+    @NativeInstanceMethod(value = "removeExtensor")
+    public static ToolObject removeExtensor(@MemoryParameter Memory memory, @ImplicitParameter ToolClass klass, ToolExtensor extensor) {
         klass.extensors.remove(extensor);
+        return klass;
     }
 }

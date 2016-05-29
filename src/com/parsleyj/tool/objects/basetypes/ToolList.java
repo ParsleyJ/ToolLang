@@ -11,6 +11,7 @@ import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
+import com.parsleyj.tool.semantics.nametabled.DefinitionGetter;
 import com.parsleyj.utils.PJ;
 
 import java.util.ArrayList;
@@ -75,19 +76,19 @@ public class ToolList extends ToolObject {
     }
 
 
-    @NativeInstanceMethod(value = "iterator", category = ToolGetterMethod.METHOD_CATEGORY_GETTER) //TODO: change name after tokenizer upgrade
+    @NativeInstanceMethod(value = "iterator", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
     public static ToolObject iterator(@MemoryParameter Memory memory0, @ImplicitParameter ToolList selfList) throws ToolNativeException {
         ToolObject result = new ToolObject(memory0);
 
         result.newMember("index", new ToolInteger(memory0, 0));
 
-        result.addMethod(new ToolGetterMethod(memory0, "hasNext", result.getBelongingClass(), memory -> {
+        result.addMethod(DefinitionGetter.createGetter(memory0, "hasNext", memory -> {
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
             return new ToolBoolean(memory, index.getIntegerValue()<selfList.toolObjects.size());
         }));
 
-        result.addMethod(new ToolGetterMethod(memory0, "next", result.getBelongingClass(), memory -> { //TODO: add index out of bounds check
+        result.addMethod(DefinitionGetter.createGetter(memory0, "next", memory -> { //TODO: add index out of bounds check
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
             Integer oldIndex = index.getIntegerValue();
@@ -100,7 +101,9 @@ public class ToolList extends ToolObject {
 
     @NativeInstanceMethod(value = "reverse", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
     public static ToolList reverse(@MemoryParameter Memory m, @ImplicitParameter ToolList self){
-        return new ToolList(m, PJ.reverse(self.toolObjects));
+        List<ToolObject> newL = new ArrayList<>();
+        self.toolObjects.forEach(to -> newL.add(0, to));
+        return new ToolList(m, newL);
     }
 
     //FIXME REFERENCE COUNTING OF ELEMENTS!!!!!!

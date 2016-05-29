@@ -3,16 +3,16 @@ package com.parsleyj.tool.semantics.nametabled;
 import com.parsleyj.tool.exceptions.InvalidDefinitionException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
-import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.RValue;
 import com.parsleyj.tool.semantics.parameter.ExplicitTypeParameterDefinition;
+
+import java.util.Objects;
 
 /**
  * Created by Giuseppe on 24/05/16.
@@ -23,39 +23,39 @@ public class DefinitionOperator implements RValue {
 
     private ToolOperatorMethod.Mode mode;
     private String operatorSym;
-    private String selfIdentifier;
+    private RValue selfExpression;
     private RValue argTypeExpression;
     private RValue body;
 
-    private DefinitionOperator(ToolOperatorMethod.Mode mode, String operatorSym, String selfIdentifier, RValue argTypeExpression, RValue body) {
+    private DefinitionOperator(ToolOperatorMethod.Mode mode, String operatorSym, RValue selfExpression, RValue argTypeExpression, RValue body) {
         this.mode = mode;
         this.operatorSym = operatorSym;
-        this.selfIdentifier = selfIdentifier;
+        this.selfExpression = selfExpression;
         this.argTypeExpression = argTypeExpression;
         this.body = body;
     }
 
-    public static DefinitionOperator binary(Identifier selfIdentifier, String operatorSym, RValue argTypeExpression, RValue body) {
-        return new DefinitionOperator(ToolOperatorMethod.Mode.Binary, operatorSym, selfIdentifier.getIdentifierString(), argTypeExpression, body);
+    public static DefinitionOperator binary(RValue selfExpression, String operatorSym, RValue argTypeExpression, RValue body) {
+        return new DefinitionOperator(ToolOperatorMethod.Mode.Binary, operatorSym, selfExpression, argTypeExpression, body);
     }
 
-    public static DefinitionOperator unaryPrefix(String operatorSym, Identifier selfIdentifier, RValue body) {
-        return new DefinitionOperator(ToolOperatorMethod.Mode.Prefix, operatorSym, selfIdentifier.getIdentifierString(), null, body);
+    public static DefinitionOperator unaryPrefix(String operatorSym, RValue selfExpression, RValue body) {
+        return new DefinitionOperator(ToolOperatorMethod.Mode.Prefix, operatorSym, selfExpression, null, body);
     }
 
-    public static DefinitionOperator unarySuffix(Identifier selfIdentifier, String operatorSym, RValue body) {
-        return new DefinitionOperator(ToolOperatorMethod.Mode.Suffix, operatorSym, selfIdentifier.getIdentifierString(), null, body);
+    public static DefinitionOperator unarySuffix(RValue selfExpression, String operatorSym, RValue body) {
+        return new DefinitionOperator(ToolOperatorMethod.Mode.Suffix, operatorSym, selfExpression, null, body);
     }
 
-    public static DefinitionOperator binaryParametric(Identifier selfIdentifier, String operatorSym, RValue argTypeExpression, RValue body) {
-        return new DefinitionOperator(ToolOperatorMethod.Mode.BinaryParametric, operatorSym, selfIdentifier.getIdentifierString(), argTypeExpression, body);
+    public static DefinitionOperator binaryParametric(RValue selfExpression, String operatorSym, RValue argTypeExpression, RValue body) {
+        return new DefinitionOperator(ToolOperatorMethod.Mode.BinaryParametric, operatorSym, selfExpression, argTypeExpression, body);
     }
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         DefinitionClass.assertInClassDefinition(memory);
-        if (!selfIdentifier.equals(Memory.SELF_IDENTIFIER))
-            throw new InvalidDefinitionException(memory, "The first operand in an operator definition must be always '" + Memory.SELF_IDENTIFIER + "'.");
+        if (!Objects.equals(selfExpression.evaluate(memory).getId(), memory.getSelfObject().getId()))
+            throw new InvalidDefinitionException(memory, "The one operand in an operator definition must be always 'this'.");
         switch (mode) {
             case Prefix:
             case Suffix: {

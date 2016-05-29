@@ -44,9 +44,8 @@ public class DefinitionGetter implements RValue{
         }
     }
 
-    public static ToolMethod createAndAddGetter(Memory memory, String name, RValue body) throws ToolNativeException{
-
-        ToolMethod method = new ToolMethod(
+    public static ToolMethod createGetter(Memory memory, String name, RValue body) throws ToolNativeException{
+        return new ToolMethod(
                 memory,
                 ToolGetterMethod.METHOD_CATEGORY_GETTER,
                 Visibility.Public,
@@ -55,6 +54,10 @@ public class DefinitionGetter implements RValue{
                 new FormalParameter[]{},
                 new ToolBoolean(memory, true),
                 body);
+    }
+
+    public static ToolMethod createAndAddGetter(Memory memory, String name, RValue body) throws ToolNativeException{
+        ToolMethod method = createGetter(memory, name, body);
         method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
