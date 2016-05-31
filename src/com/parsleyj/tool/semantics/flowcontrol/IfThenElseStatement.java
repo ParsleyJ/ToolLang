@@ -23,7 +23,7 @@ public class IfThenElseStatement implements RValue {
 
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
-        if (RValue.evaluateAsConditional(condition, memory)) {
+        if (condition.evaluateAsConditional(memory)) {
             return thenBranch.evaluate(memory);
         } else {
             return elseBranch.evaluate(memory);

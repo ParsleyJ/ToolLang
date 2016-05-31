@@ -1,6 +1,6 @@
 package com.parsleyj.tool.objects.basetypes;
 
-import com.parsleyj.tool.exceptions.IndexOutOfBoundsExceptionTool;
+import com.parsleyj.tool.exceptions.ToolIndexOutOfBoundsException;
 import com.parsleyj.tool.exceptions.InvalidIndexListException;
 import com.parsleyj.tool.exceptions.InvalidIndexTypeException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
@@ -12,7 +12,6 @@ import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.semantics.nametabled.DefinitionGetter;
-import com.parsleyj.utils.PJ;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,10 +174,10 @@ public class ToolList extends ToolObject {
     private static ToolObject elementAtWithBackIndexes(Memory m, ToolList list, int index) throws ToolNativeException {
         List<? extends ToolObject> toolObjects = list.getToolObjects();
         if (index >= 0) {
-            if (index >= toolObjects.size()) throw new IndexOutOfBoundsExceptionTool(m, index, toolObjects.size());
+            if (index >= toolObjects.size()) throw new ToolIndexOutOfBoundsException(m, index, toolObjects.size());
             return toolObjects.get(index);
         } else {
-            if (toolObjects.size() + index < 0) throw new IndexOutOfBoundsExceptionTool(m, index, toolObjects.size());
+            if (toolObjects.size() + index < 0) throw new ToolIndexOutOfBoundsException(m, index, toolObjects.size());
             return toolObjects.get(toolObjects.size() + index);
         }
     }

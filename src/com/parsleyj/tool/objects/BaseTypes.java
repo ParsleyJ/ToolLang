@@ -66,6 +66,7 @@ public class BaseTypes {
     public ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION;
     public ToolExceptionClass C_NAME_NOT_FOUND_EXCEPTION;
     public ToolExceptionClass C_INVALID_DEFINITION_EXCEPTION;
+    public ToolExceptionClass C_INVALID_BREAK_EXPRESSION;
 
     // --- INTERFACES ---
     public ToolInterface I_ITERABLE;
@@ -104,7 +105,8 @@ public class BaseTypes {
                 C_NAME_ALREADY_USED_EXCEPTION,
                 C_VISIBILITY_EXCEPTION,
                 C_NAME_NOT_FOUND_EXCEPTION,
-                C_INVALID_DEFINITION_EXCEPTION
+                C_INVALID_DEFINITION_EXCEPTION,
+                C_INVALID_BREAK_EXPRESSION
         );
     }
 
@@ -154,6 +156,7 @@ public class BaseTypes {
         C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass(m, "IndexOutOfBoundsException");
         C_NAME_NOT_FOUND_EXCEPTION = new ToolExceptionClass(m, "NameNotFoundException");
         C_INVALID_DEFINITION_EXCEPTION = new ToolExceptionClass(m, "InvalidDefinitionException");
+        C_INVALID_BREAK_EXPRESSION = new ToolExceptionClass(m, "InvalidBreakExpression");
 
         I_ITERABLE = new ToolInterface(m, "Iterable", Collections.emptyList())
                 .addMethodDeclaration(

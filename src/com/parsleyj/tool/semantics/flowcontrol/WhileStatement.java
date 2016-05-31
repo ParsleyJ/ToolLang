@@ -5,8 +5,7 @@ import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.RValue;
 
-import static com.parsleyj.tool.semantics.flowcontrol.ForInStatement.BREAKABLE_SCOPE_TAG;
-import static com.parsleyj.tool.semantics.flowcontrol.ForInStatement.FOR_LOOP_SCOPE_TAG;
+import static com.parsleyj.tool.semantics.flowcontrol.BreakStatement.BREAKABLE_SCOPE_TAG;
 import static com.parsleyj.tool.semantics.flowcontrol.ForInStatement.LOOP_SCOPE_TAG;
 
 /**
@@ -23,18 +22,26 @@ public class WhileStatement implements RValue {
         this.doBranch = doBranch;
     }
 
-
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolObject result = null;
-        while (RValue.evaluateAsConditional(condition, memory)) {
-            memory.pushScope();
-            memory.getTopScope().addTag(BREAKABLE_SCOPE_TAG);
-            memory.getTopScope().addTag(LOOP_SCOPE_TAG);
-            memory.getTopScope().addTag(WHILE_LOOP_SCOPE_TAG);
-            result = doBranch.evaluate(memory);
-            memory.popScope();
+        memory.pushScope();
+        memory.getTopScope().addTag(BREAKABLE_SCOPE_TAG);
+        memory.getTopScope().addTag(LOOP_SCOPE_TAG);
+        memory.getTopScope().addTag(WHILE_LOOP_SCOPE_TAG);
+        try {
+            while (condition.evaluateAsConditional(memory)) {
+                result = doBranch.evaluate(memory);
+            }
+        } catch (BreakStatement.Break e) {
+            if (memory.getTopScope().containsTag(e.getTag())) {
+                memory.popScope();
+                return e.getResult();
+            } else {
+                throw e;
+            }
         }
+        memory.popScope();
         return result;
     }
 
