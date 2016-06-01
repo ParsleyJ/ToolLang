@@ -8,6 +8,8 @@ import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.basetypes.ToolBoolean;
+import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
@@ -21,7 +23,7 @@ import java.util.*;
  * Created by Giuseppe on 01/04/16.
  * TODO: javadoc
  */
-public class ToolClass extends ToolObject {
+public class ToolClass extends ToolObject implements TypeHelperInterface {
     //TODO inheritance members/methods visibility + inheritance ctors
     private final String className;
     private final ToolClass parentClass;
@@ -132,6 +134,7 @@ public class ToolClass extends ToolObject {
         return points;
     }
 
+
     public boolean canBeConvertedTo(ToolClass type){
         return isOrExtends(type);
         //TODO: consider user-defined conversions
@@ -199,6 +202,49 @@ public class ToolClass extends ToolObject {
         return true;
     }
 
+    public boolean isExactly(ToolClass otherClass) {
+        return Objects.equals(this.getId(), otherClass.getId());
+    }
+
+    @Override
+    public boolean is(ToolObject o) {
+        return o.getBelongingClass().isOrExtends(this);
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Override
+    public boolean canBeUsedAs(TypeHelperInterface other) {
+        if(other instanceof ToolClass){
+            return this.isOrExtends((ToolClass) other);
+        }else if(other instanceof ToolInterface){
+            return this.implementsInterface((ToolInterface) other);
+        }else return false;
+    }
+
+    @Override
+    public int getConvertibility(TypeHelperInterface from) {
+        if(from instanceof ToolClass){
+            return this.getConvertibility((ToolClass) from);
+        }else return Integer.MAX_VALUE;
+    }
+
+    @NativeInstanceMethod(value = "is", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
+    public static ToolBoolean is(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolObject o){
+        return new ToolBoolean(memory, self.is(o));
+    }
+
+    //TODO: These must be moved to default definition (not via native wrapping)
+    @NativeInstanceMethod(value = "canBeUsedAs")
+    public static ToolBoolean canBeUsedAs(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, TypeHelperInterface other){
+        return new ToolBoolean(memory, self.canBeUsedAs(other));
+    }
+
+    //TODO: These must be moved to default definition (not via native wrapping)
+    @NativeInstanceMethod(value = "getConvertibility")
+    public static ToolInteger getConvertibility(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, TypeHelperInterface from){
+        return new ToolInteger(memory, self.getConvertibility(from));
+    }
+
     @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
     public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg) throws ToolNativeException {
         if(arg.getToolObjects().isEmpty() && self.getCtors().isEmpty()){
@@ -208,11 +254,6 @@ public class ToolClass extends ToolObject {
             return MethodCall.ctor(newInstance, self, arg.getToolObjects().toArray(new ToolObject[arg.getToolObjects().size()]), self.ctors).evaluate(memory);
         }
     }
-
-    public boolean isExactly(ToolClass otherClass) {
-        return Objects.equals(this.getId(), otherClass.getId());
-    }
-
 
     @NativeInstanceMethod(value = "putExtensor")
     public static ToolObject putExtensor(@MemoryParameter Memory memory, @ImplicitParameter ToolClass klass, ToolExtensor extensor) {
@@ -225,4 +266,6 @@ public class ToolClass extends ToolObject {
         klass.extensors.remove(extensor);
         return klass;
     }
+
+
 }

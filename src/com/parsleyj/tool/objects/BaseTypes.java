@@ -68,10 +68,10 @@ public class BaseTypes {
     public ToolExceptionClass C_INVALID_L_VALUE_EXCEPTION;
 
     // --- INTERFACES ---
+    public ToolInterface I_TYPE;
     public ToolInterface I_ITERABLE;
-
-
     public ToolInterface I_ITERATOR;
+
     public Map<Class<?>, ToolClass> NATIVE_CLASS_MAP;
 
     public List<ToolClass> getAllBaseClasses() {
@@ -120,7 +120,7 @@ public class BaseTypes {
     }
 
 
-    public void init(Memory m){
+    public void init(Memory m) {
         O_NULL = new ToolObject(m, null) {//TODO: special Null class: is or extends returns always true
             @Override
             public boolean isNull() {
@@ -163,27 +163,43 @@ public class BaseTypes {
         C_INVALID_BREAK_EXPRESSION_EXCEPTION = new ToolExceptionClass(m, "InvalidBreakExpressionException");
         C_INVALID_L_VALUE_EXCEPTION = new ToolExceptionClass(m, "InvalidLValueException");
 
+        I_TYPE = new ToolInterface(m, "Type", Collections.emptyList())
+                .addMethodDeclaration(m,
+                        ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                        "is",
+                        new FormalParameter[]{new FormalParameter("arg", C_OBJECT)});
+        I_TYPE.addMethodDeclaration(m,
+                ToolMethod.METHOD_CATEGORY_METHOD,
+                "getConvertibility",
+                new FormalParameter[]{new FormalParameter("from", I_TYPE)});
+        I_TYPE.addMethodDeclaration(m,
+                ToolMethod.METHOD_CATEGORY_METHOD,
+                "canBeUsedAs",
+                new FormalParameter[]{new FormalParameter("other", I_TYPE)});
+
         I_ITERABLE = new ToolInterface(m, "Iterable", Collections.emptyList())
-                .addMethodDeclaration(
-                        m,
+                .addMethodDeclaration(m,
                         ToolGetterMethod.METHOD_CATEGORY_GETTER,
                         "iterator",
                         new FormalParameter[]{});
 
         I_ITERATOR = new ToolInterface(m, "Iterator", Collections.emptyList())
-                .addMethodDeclaration(
-                        m,
+                .addMethodDeclaration(m,
                         ToolGetterMethod.METHOD_CATEGORY_GETTER,
                         "hasNext",
                         new FormalParameter[]{})
-                .addMethodDeclaration(
-                        m,
+                .addMethodDeclaration(m,
                         ToolGetterMethod.METHOD_CATEGORY_GETTER,
                         "next",
                         new FormalParameter[]{});
 
+
         C_CLASS.forceSetBelongingClass(C_CLASS);
         C_OBJECT.forceSetBelongingClass(C_CLASS);
+
+        C_CLASS.implementsInterface(I_TYPE);
+        C_INTERFACE.implementsInterface(I_TYPE);
+
         C_LIST.implementsInterface(I_ITERABLE);
         C_INTEGER_RANGE.implementsInterface(I_ITERABLE);
 
@@ -209,8 +225,6 @@ public class BaseTypes {
             e.printStackTrace();
         }
     }
-
-
 
 
     public void loadNativeMembers(Memory m, Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException, AmbiguousMethodDefinitionException {
@@ -252,8 +266,6 @@ public class BaseTypes {
 
 
 
-
-
     public void loadNativeMethods(Memory mem, Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException, AmbiguousMethodDefinitionException {
         for (Method m : nativeClass.getMethods()) {
             if (m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)) {
@@ -271,22 +283,20 @@ public class BaseTypes {
                 boolean hasMemoryParameter = false;
                 for (Parameter nativePar : nativePars) {
                     if (!nativePar.isAnnotationPresent(MemoryParameter.class) || !Memory.class.isAssignableFrom(nativePar.getType())) {
-                        if (ToolObject.class.isAssignableFrom(nativePar.getType())) {
-                            ToolClass baseType = NATIVE_CLASS_MAP.get(nativePar.getType());
-                            if (baseType == null) throw new NativeClassLoadFailedException();
 
-                            if (nativePar.isAnnotationPresent(ImplicitParameter.class)) {
-                                ImplicitParameter implicitParAnn = nativePar.getDeclaredAnnotation(ImplicitParameter.class);
-                                if (implicitParAnn.value().equals(Memory.SELF_IDENTIFIER))
-                                    hasSelfParameter = true;
-                                else implicitParameters.add(new FormalParameter(implicitParAnn.value(), baseType));
-                            } else {
-                                parameters.add(new FormalParameter(nativePar.getName(), baseType));
-                            }
+                        ToolClass baseType = NATIVE_CLASS_MAP.get(nativePar.getType());
+                        if (baseType == null) throw new NativeClassLoadFailedException();
+
+                        if (nativePar.isAnnotationPresent(ImplicitParameter.class)) {
+                            ImplicitParameter implicitParAnn = nativePar.getDeclaredAnnotation(ImplicitParameter.class);
+                            if (implicitParAnn.value().equals(Memory.SELF_IDENTIFIER))
+                                hasSelfParameter = true;
+                            else implicitParameters.add(new FormalParameter(implicitParAnn.value(), baseType));
                         } else {
-                            throw new NativeClassLoadFailedException();
+                            parameters.add(new FormalParameter(nativePar.getName(), baseType));
                         }
-                    }else{
+
+                    } else {
                         hasMemoryParameter = true;
                     }
                 }
@@ -337,7 +347,7 @@ public class BaseTypes {
                     } else {
                         toolClass.addInstanceMethod(newMethod);
                     }
-                    Lol.v("Added native method: "+ newMethod.getMethodCategory()+ " " + (isInstanceMethod ?
+                    Lol.v("Added native method: " + newMethod.getMethodCategory() + " " + (isInstanceMethod ?
                             newMethod.completeInstanceMethodName(toolClass) :
                             newMethod.completeClassMethodName(toolClass)));
 
