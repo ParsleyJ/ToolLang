@@ -7,8 +7,10 @@ import com.parsleyj.tool.objects.method.ToolMethodPrototype;
 import com.parsleyj.tool.objects.method.Visibility;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Created by Giuseppe on 15/05/16.
@@ -25,7 +27,6 @@ public class ToolInterface extends ToolObject {
         this.interfaceName = interfaceName;
         this.parentInterfaces = parentInterfaces;
     }
-
 
     public String getInterfaceName() {
         return interfaceName;
@@ -44,14 +45,13 @@ public class ToolInterface extends ToolObject {
     }
 
     public ToolInterface addMethodDeclaration(Memory m, String methodCategory, String name, FormalParameter[] formalParameters){
-        this.instanceMethods.add(new ToolMethod(
+        this.instanceMethods.add(new ToolMethodPrototype(
                 m,
                 methodCategory,
-                Visibility.Public,
                 name,
-                new FormalParameter[]{},
-                formalParameters,
-                memory -> memory.baseTypes().O_NULL
+                Arrays.asList(formalParameters).stream()
+                        .map(FormalParameter::getParameterType)
+                        .collect(Collectors.toList())
         ));
         return this;
     }
