@@ -3,7 +3,6 @@ package com.parsleyj.tool.objects;
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
@@ -15,13 +14,10 @@ import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
-import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.MapBuilder;
 import com.parsleyj.utils.PJ;
-import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -40,6 +36,7 @@ public class BaseTypes {
     public ToolClass C_INTERFACE;
     public ToolClass C_EXTENSOR;
     public ToolClass C_METHOD;
+    public ToolClass C_TUPLE;
     public ToolClass C_INTEGER;
     public ToolClass C_STRING;
     public ToolClass C_BOOLEAN;
@@ -66,7 +63,8 @@ public class BaseTypes {
     public ToolExceptionClass C_INDEX_OUT_OF_BOUNDS_EXCEPTION;
     public ToolExceptionClass C_NAME_NOT_FOUND_EXCEPTION;
     public ToolExceptionClass C_INVALID_DEFINITION_EXCEPTION;
-    public ToolExceptionClass C_INVALID_BREAK_EXPRESSION;
+    public ToolExceptionClass C_INVALID_BREAK_EXPRESSION_EXCEPTION;
+    public ToolExceptionClass C_INVALID_L_VALUE_EXCEPTION;
 
     // --- INTERFACES ---
     public ToolInterface I_ITERABLE;
@@ -82,6 +80,7 @@ public class BaseTypes {
                 C_INTERFACE,
                 C_EXTENSOR,
                 C_METHOD,
+                C_TUPLE,
                 C_INTEGER,
                 C_STRING,
                 C_BOOLEAN,
@@ -106,7 +105,8 @@ public class BaseTypes {
                 C_VISIBILITY_EXCEPTION,
                 C_NAME_NOT_FOUND_EXCEPTION,
                 C_INVALID_DEFINITION_EXCEPTION,
-                C_INVALID_BREAK_EXPRESSION
+                C_INVALID_BREAK_EXPRESSION_EXCEPTION,
+                C_INVALID_L_VALUE_EXCEPTION
         );
     }
 
@@ -131,6 +131,7 @@ public class BaseTypes {
         C_INTERFACE = new ToolClass(m, "Interface", C_OBJECT);
         C_EXTENSOR = new ToolClass(m, "Extensor", C_OBJECT);
         C_METHOD = new ToolClass(m, "Method", C_OBJECT);
+        C_TUPLE = new ToolClass(m, "Tuple", C_OBJECT);
         C_INTEGER = new ToolClass(m, "Integer", C_OBJECT);
         C_STRING = new ToolClass(m, "String", C_OBJECT);
         C_BOOLEAN = new ToolClass(m, "Boolean", C_OBJECT);
@@ -156,7 +157,8 @@ public class BaseTypes {
         C_INDEX_OUT_OF_BOUNDS_EXCEPTION = new ToolExceptionClass(m, "IndexOutOfBoundsException");
         C_NAME_NOT_FOUND_EXCEPTION = new ToolExceptionClass(m, "NameNotFoundException");
         C_INVALID_DEFINITION_EXCEPTION = new ToolExceptionClass(m, "InvalidDefinitionException");
-        C_INVALID_BREAK_EXPRESSION = new ToolExceptionClass(m, "InvalidBreakExpression");
+        C_INVALID_BREAK_EXPRESSION_EXCEPTION = new ToolExceptionClass(m, "InvalidBreakExpressionException");
+        C_INVALID_L_VALUE_EXCEPTION = new ToolExceptionClass(m, "InvalidLValueException");
 
         I_ITERABLE = new ToolInterface(m, "Iterable", Collections.emptyList())
                 .addMethodDeclaration(
@@ -188,6 +190,7 @@ public class BaseTypes {
                 .put(ToolInterface.class, C_INTERFACE)
                 .put(ToolExtensor.class, C_EXTENSOR)
                 .put(ToolMethod.class, C_METHOD)
+                .put(ToolTuple.class, C_TUPLE)
                 .put(ToolInteger.class, C_INTEGER)
                 .put(ToolString.class, C_STRING)
                 .put(ToolBoolean.class, C_BOOLEAN)

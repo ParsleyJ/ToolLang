@@ -6,12 +6,13 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.LValue;
+import com.parsleyj.tool.semantics.base.NamedLValue;
 
 /**
  * Created by Giuseppe on 22/05/16.
  * TODO: javadoc
  */
-public class DefinitionVariable implements LValue {
+public class DefinitionVariable implements NamedLValue {
 
     private String identifierString;
 
@@ -48,5 +49,10 @@ public class DefinitionVariable implements LValue {
     @Override
     public String toString() {
         return "local " + identifierString;
+    }
+
+    @Override
+    public String getIdentifierString() {
+        return identifierString;
     }
 }

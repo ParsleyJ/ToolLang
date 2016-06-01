@@ -8,6 +8,6 @@ import com.parsleyj.tool.memory.Memory;
  */
 public class InvalidBreakExpression extends ToolNativeException {
     public InvalidBreakExpression(Memory m, String msg) {
-        super(m.baseTypes().C_INVALID_BREAK_EXPRESSION.newExceptionInstance(msg));
+        super(m.baseTypes().C_INVALID_BREAK_EXPRESSION_EXCEPTION.newExceptionInstance(msg));
     }
 }

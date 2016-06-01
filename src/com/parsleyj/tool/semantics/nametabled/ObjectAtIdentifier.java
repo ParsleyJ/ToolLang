@@ -7,13 +7,14 @@ import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.LValue;
+import com.parsleyj.tool.semantics.base.NamedLValue;
 import com.parsleyj.tool.semantics.base.RValue;
 
 /**
  * Created by Giuseppe on 22/05/16.
  * TODO: javadoc
  */
-public class ObjectAtIdentifier implements LValue{
+public class ObjectAtIdentifier implements NamedLValue{
     private RValue leftExp;
     private Identifier ident;
 
@@ -50,5 +51,10 @@ public class ObjectAtIdentifier implements LValue{
     @Override
     public String toString() {
         return leftExp + "." + ident;
+    }
+
+    @Override
+    public String getIdentifierString() {
+        return ident.getIdentifierString();
     }
 }

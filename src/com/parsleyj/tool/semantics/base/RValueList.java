@@ -12,19 +12,20 @@ import java.util.ArrayList;
  * Created by Giuseppe on 04/04/16.
  * TODO: javadoc
  */
-public class CommaSeparatedExpressionList implements SemanticObject {
+public class RValueList implements SemanticObject {
+
     private ArrayList<RValue> unevaluatedList = new ArrayList<>();
 
-    public CommaSeparatedExpressionList(RValue unique){
+    public RValueList(RValue unique){
         unevaluatedList.add(unique);
     }
 
-    public CommaSeparatedExpressionList(RValue a, RValue b) {
+    public RValueList(RValue a, RValue b) {
         unevaluatedList.add(a);
         unevaluatedList.add(b);
     }
 
-    public CommaSeparatedExpressionList(CommaSeparatedExpressionList a, RValue b) {
+    public RValueList(RValueList a, RValue b) {
         unevaluatedList.addAll(a.getUnevaluatedList());
         unevaluatedList.add(b);
     }
@@ -36,9 +37,12 @@ public class CommaSeparatedExpressionList implements SemanticObject {
     public RValue[] getUnevaluatedArray(){
         return getUnevaluatedList().toArray(new RValue[unevaluatedList.size()]);
     }
+
     public ToolList generateToolList(Memory m) throws ToolNativeException {
         return new ToolList(m, generateListOfObjects(m));
     }
+
+    //todo public ToolTuple generateToolTuple(Memory m) throws ToolNativeException
 
     public ToolObject[] generateArrayOfObjects(Memory m) throws ToolNativeException {
         ArrayList<ToolObject> list = generateListOfObjects(m);

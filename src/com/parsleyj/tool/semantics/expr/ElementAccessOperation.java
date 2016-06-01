@@ -4,7 +4,7 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.semantics.base.CommaSeparatedExpressionList;
+import com.parsleyj.tool.semantics.base.RValueList;
 import com.parsleyj.tool.semantics.base.RValue;
 import com.parsleyj.tool.semantics.util.MethodCall;
 
@@ -15,16 +15,16 @@ import com.parsleyj.tool.semantics.util.MethodCall;
 public class ElementAccessOperation implements RValue {
 
     private RValue left;
-    private CommaSeparatedExpressionList indexes;
+    private RValueList indexes;
 
-    public ElementAccessOperation(RValue left, CommaSeparatedExpressionList indexes){
+    public ElementAccessOperation(RValue left, RValueList indexes){
         this.left = left;
         this.indexes = indexes;
     }
 
     public ElementAccessOperation(RValue left, RValue index, boolean singleElement){
         this.left = left;
-        this.indexes = new CommaSeparatedExpressionList(index);
+        this.indexes = new RValueList(index);
     }
 
     @Override

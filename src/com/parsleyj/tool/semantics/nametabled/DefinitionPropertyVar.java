@@ -5,12 +5,13 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.LValue;
+import com.parsleyj.tool.semantics.base.NamedLValue;
 
 /**
  * Created by Giuseppe on 27/05/16.
  * TODO: javadoc
  */
-public class DefinitionPropertyVar implements LValue {
+public class DefinitionPropertyVar implements NamedLValue {
 
     private String name;
 
@@ -32,5 +33,10 @@ public class DefinitionPropertyVar implements LValue {
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         throw new InvalidDefinitionException(memory, "Var property declaration cannot be used as r-value");
+    }
+
+    @Override
+    public String getIdentifierString() {
+        return name;
     }
 }

@@ -45,16 +45,21 @@ public class LocalIdentifier implements Identifier {
 
     @Override
     public void assign(ToolObject o, Memory m) throws ToolNativeException {
-        Memory.NameKind nk = m.getTopScope().getNameTable().get(identifierString);
-        if(nk == null){
+        Pair<Memory.NameKind, Memory.Scope> queryResult = m.recursivelyGetNameKind(identifierString);
+        if(queryResult == null || queryResult.getFirst() == null){
             m.updateReference(identifierString, o); //throws an error
-        }else switch(nk){
+        }else switch(queryResult.getFirst()){
             case Variable:
             case Method:
+            {
                 m.updateReference(identifierString, o); //probably throws an error when there is no variable
+                return;
+            }
             case Accessor:
-            case VariableAndAccessor:
+            case VariableAndAccessor:{
                 MethodCall.localSetter(identifierString, o).evaluate(m);
+                return;
+            }
             default:
         }
 
