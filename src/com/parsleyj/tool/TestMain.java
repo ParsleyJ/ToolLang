@@ -49,7 +49,7 @@ public class TestMain {
         while (true) {
             StringBuilder sb = new StringBuilder();
             if (MULTILINE) {
-                while (!sb.toString().endsWith("\n\n\n")) {
+                while (!sb.toString().endsWith("\n\n")) {
                     String l = sc.nextLine()+"\n";
                     sb.append(l);
                 }

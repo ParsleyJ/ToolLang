@@ -142,6 +142,7 @@ public class ToolGrammar {
         TokenCategoryDefinition atToken = new TokenCategoryDefinition("AT", "\\Q@\\E");
         TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
         TokenCategoryDefinition destructuralAssignmentOperatorToken = new TokenCategoryDefinition("DESTRUCTURAL_ASSIGNMENT_OPERATOR", "\\Q:=\\E");
+        TokenCategoryDefinition tagOperatorToken = new TokenCategoryDefinition("TAG_OPERATOR_SIGN", "\\Q|:\\E");
         TokenCategoryDefinition colonToken = new TokenCategoryDefinition("COLON", "\\Q:\\E");
         TokenCategoryDefinition commaToken = new TokenCategoryDefinition("COMMA", "\\Q,\\E");
         TokenCategoryDefinition slashToken = new TokenCategoryDefinition("SLASH", "\\Q/\\E");
@@ -150,7 +151,6 @@ public class ToolGrammar {
         TokenCategoryDefinition minusToken = new TokenCategoryDefinition("MINUS", "\\Q-\\E");
         TokenCategoryDefinition asteriskToken = new TokenCategoryDefinition("ASTERISK", "\\Q*\\E");
         TokenCategoryDefinition percentSignToken = new TokenCategoryDefinition("PERCENT_SIGN", "\\Q%\\E");
-        TokenCategoryDefinition dollarSignToken = new TokenCategoryDefinition("DOLLAR_SIGN", "\\Q$\\E");
         TokenCategoryDefinition getBlockDefinitionOperatorToken = new TokenCategoryDefinition("GET_BLOCK_DEFINITION_OPERATOR", "\\Q&\\E");
         TokenCategoryDefinition assignmentOperatorToken = new TokenCategoryDefinition("ASSIGNMENT_OPERATOR", "\\Q=\\E");
         TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
@@ -176,7 +176,8 @@ public class ToolGrammar {
                 identifierMultiPattern,
                 atToken, dotToken,
                 destructuralAssignmentOperatorToken,
-                colonToken, commaToken, dollarSignToken,
+                tagOperatorToken,
+                colonToken, commaToken,
                 exclamationPointToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
                 getBlockDefinitionOperatorToken,
@@ -449,7 +450,7 @@ public class ToolGrammar {
                 lExp, destructuralAssignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition taggedExpression = new SyntaxCaseDefinition(rExp, "taggedExpression",
                 (n, s) -> new TaggedExpression(s.convert(n.get(0)), s.convert(n.get(2))),
-                ident, dollarSignToken, rExp);
+                ident, tagOperatorToken, rExp);
 
         SyntaxCaseDefinition rExpListBase = new SyntaxCaseDefinition(rExpList, "rExpListBase",
                 new UBOConverterMethod<RValueList, RValue, RValue>(RValueList::new),
@@ -476,6 +477,7 @@ public class ToolGrammar {
         SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
                 rExp, semicolonToken, rExp);
+
         SyntaxCaseDefinition methodDefinition0 = new SyntaxCaseDefinition(rExp, "methodDefinition0",
                 (n, s) -> new DefinitionMethod(s.convert(n.get(1)), s.convert(n.get(5))),
                 defToken, ident, openRoundBracketToken, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
@@ -493,25 +495,25 @@ public class ToolGrammar {
                 defToken, ident, openRoundBracketToken, paramList, closedRoundBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition methodDefinitionEB0 = new SyntaxCaseDefinition(rExp, "methodDefinitionEB0",
                 (n, s) -> new DefinitionMethod(s.convert(n.get(1)), s.convert(n.get(5))),
-                defToken, ident, openRoundBracketToken, closedRoundBracketToken, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+                defToken, ident, openRoundBracketToken, closedRoundBracketToken, doToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition methodDefinitionEB1 = new SyntaxCaseDefinition(rExp, "methodDefinitionEB1",
                 (n, s) -> new DefinitionMethod(
                         s.convert(n.get(1)),
                         Collections.singletonList(s.convert(n.get(3))),
                         s.convert(n.get(6))),
-                defToken, ident, openRoundBracketToken, param, closedRoundBracketToken, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+                defToken, ident, openRoundBracketToken, param, closedRoundBracketToken, doToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition methodDefinitionEB2 = new SyntaxCaseDefinition(rExp, "methodDefinitionEB2",
                 (n, s) -> new DefinitionMethod(
                         s.convert(n.get(1)),
                         ((ParameterDefinitionList)s.convert(n.get(3))).getParameterDefinitions(),
                         s.convert(n.get(6))),
-                defToken, ident, openRoundBracketToken, paramList, closedRoundBracketToken, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+                defToken, ident, openRoundBracketToken, paramList, closedRoundBracketToken, doToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition getterDefinition = new SyntaxCaseDefinition(rExp, "getterDefinition",
                 (n, s) -> new DefinitionGetter(((Identifier) s.convert(n.get(1))).getIdentifierString(), s.convert(n.get(3))),
                 getterToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition getterDefinitionEB = new SyntaxCaseDefinition(rExp, "getterDefinitionEB",
                 (n, s) -> new DefinitionGetter(((Identifier) s.convert(n.get(1))).getIdentifierString(), s.convert(n.get(3))),
-                getterToken, ident, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+                getterToken, ident, doToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition setterDefinition = new SyntaxCaseDefinition(rExp, "setterDefinition",
                 (n, s) -> new DefinitionSetter(((Identifier) s.convert(n.get(1))).getIdentifierString(),
                         memory.baseTypes().C_OBJECT, s.convert(n.get(3))),
@@ -519,7 +521,7 @@ public class ToolGrammar {
         SyntaxCaseDefinition setterDefinitionEB = new SyntaxCaseDefinition(rExp, "setterDefinitionEB",
                 (n, s) -> new DefinitionSetter(((Identifier) s.convert(n.get(1))).getIdentifierString(),
                         memory.baseTypes().C_OBJECT, s.convert(n.get(3))),
-                setterToken, ident, assignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+                setterToken, ident, doToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition ctorDefinition0 = new SyntaxCaseDefinition(rExp, "ctorDefinition0",
                 (n, s) -> new DefinitionCtor(s.convert(n.get(2))),
                 ctorToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
@@ -550,6 +552,7 @@ public class ToolGrammar {
         SyntaxCaseDefinition logicalNotOperatorDefinition = new SyntaxCaseDefinition(rExp, "logicalNotOperatorDefinition",
                 (n, s) -> DefinitionOperator.unaryPrefix("!", s.convert(n.get(2)), s.convert(n.get(4))),
                 operatorToken, exclamationPointToken, rExp, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+
         SyntaxCaseDefinition intervalOperatorDefinition = new SyntaxCaseDefinition(rExp, "intervalOperatorDefinition",
                 (n, s) -> DefinitionOperator.binary(
                         s.convert(n.get(1)),
@@ -648,6 +651,13 @@ public class ToolGrammar {
                         s.convert(n.get(3)),
                         s.convert(n.get(5))),
                 operatorToken, rExp, orOperatorToken, rExp, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition destructuralGetterDefinition = new SyntaxCaseDefinition(rExp, "destructuralGetterDefinition",
+                (n, s) -> DefinitionOperator.binary(
+                        s.convert(n.get(2)),
+                        ":=",
+                        memory.baseTypes().C_INTEGER,
+                        s.convert(n.get(4))),
+                operatorToken, destructuralAssignmentOperatorToken, rExp, openCurlyBracketToken, rExp, closedCurlyBracketToken);
 
         SyntaxCaseDefinition classDefinitionA = new SyntaxCaseDefinition(rExp, "classDefinitionA",
                 (n, s) -> new DefinitionClass(
@@ -742,6 +752,7 @@ public class ToolGrammar {
                 equalsOperatorDefinition, notEqualsOperatorDefinition,
                 logicalAndOperatorDefinition,
                 logicalOrOperatorDefinition,
+                destructuralGetterDefinition,
 
                 classDefinitionA, classDefinitionB1, classDefinitionB2,
                 extensionDefinition, extensorDefinition,

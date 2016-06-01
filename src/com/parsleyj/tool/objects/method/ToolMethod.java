@@ -16,16 +16,13 @@ import java.util.List;
  * TODO: javadoc
  */
 
-public class ToolMethod extends ToolObject{
+public class ToolMethod extends ToolMethodPrototype{
 
     public static final String METHOD_CATEGORY_METHOD = "METHOD_CATEGORY_METHOD";
 
-    private String methodCategory;
     private Visibility visibility;
-    private String name;
     private List<ToolClass> implicitArgumentTypes = new ArrayList<>();
     private List<String> implicitArgumentNames = new ArrayList<>();
-    private List<ToolClass> argumentTypes = new ArrayList<>();
     private List<String> argumentNames = new ArrayList<>();
     private RValue condition;
     private RValue body;
@@ -38,7 +35,7 @@ public class ToolMethod extends ToolObject{
         this.visibility = visibility;
         this.name = name;
         for (FormalParameter parameter : parameters) {
-            this.argumentTypes.add(parameter.getParameterType());
+            this.getArgumentTypes().add(parameter.getParameterType());
             this.argumentNames.add(parameter.getParameterName());
         }
 
@@ -57,7 +54,7 @@ public class ToolMethod extends ToolObject{
         this.visibility = visibility;
         this.name = name;
         for (FormalParameter parameter : parameters) {
-            this.argumentTypes.add(parameter.getParameterType());
+            this.getArgumentTypes().add(parameter.getParameterType());
             this.argumentNames.add(parameter.getParameterName());
 
         }
@@ -85,22 +82,8 @@ public class ToolMethod extends ToolObject{
     }
 
 
-    public String getMethodCategory() {
-        return methodCategory;
-    }
-
     public RValue getBody() {
         return body;
-    }
-
-
-    public String getMethodName() {
-        return name;
-    }
-
-
-    public List<ToolClass> getArgumentTypes() {
-        return argumentTypes;
     }
 
 
@@ -117,36 +100,37 @@ public class ToolMethod extends ToolObject{
     }
 
 
+    @Override
     public Visibility getVisibility() {
         return visibility;
     }
 
     public String completeInstanceMethodName(ToolClass self){//TODO: change for categories
-        StringBuilder sb = new StringBuilder("<"+self.getClassName()+">."+name+"(");
+        StringBuilder sb = new StringBuilder("<"+self.getClassName()+">."+ getMethodName() +"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");
         return sb.toString();
     }
 
     public String completeClassMethodName(ToolClass self){//TODO: change for categories
-        StringBuilder sb = new StringBuilder(self.getClassName()+"."+name+"(");
+        StringBuilder sb = new StringBuilder(self.getClassName()+"."+ getMethodName() +"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");
         return sb.toString();
     }
 
     public String completeFunctionName(){//TODO: change for categories
-        StringBuilder sb = new StringBuilder(name+"(");
+        StringBuilder sb = new StringBuilder(getMethodName() +"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");
         return sb.toString();
     }
 
     private void addParameterListToStringBuilder(StringBuilder sb){
-        for (int i = 0; i < argumentTypes.size(); i++) {
-            ToolClass argumentType = argumentTypes.get(i);
+        for (int i = 0; i < getArgumentTypes().size(); i++) {
+            ToolClass argumentType = getArgumentTypes().get(i);
             sb.append("<").append(argumentType.getClassName()).append(">");
-            if(i < argumentTypes.size()-1) sb.append(", ");
+            if(i < getArgumentTypes().size()-1) sb.append(", ");
         }
     }
 

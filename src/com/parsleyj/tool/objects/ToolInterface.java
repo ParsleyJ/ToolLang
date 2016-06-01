@@ -3,6 +3,7 @@ package com.parsleyj.tool.objects;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.ToolMethodPrototype;
 import com.parsleyj.tool.objects.method.Visibility;
 
 import java.util.ArrayList;
@@ -17,14 +18,13 @@ public class ToolInterface extends ToolObject {
 
     private final String interfaceName;
     private final List<ToolInterface> parentInterfaces;
-    private List<ToolMethod> instanceMethods = new ArrayList<>();
+    private List<ToolMethodPrototype> instanceMethods = new ArrayList<>();
 
     public ToolInterface(Memory m, String interfaceName, List<ToolInterface> parentInterfaces) {
         super(m, m.baseTypes().C_INTERFACE);
         this.interfaceName = interfaceName;
         this.parentInterfaces = parentInterfaces;
     }
-
 
 
     public String getInterfaceName() {
@@ -35,7 +35,7 @@ public class ToolInterface extends ToolObject {
         return parentInterfaces;
     }
 
-    public List<ToolMethod> getDeclaredInstanceMethods() {
+    public List<ToolMethodPrototype> getDeclaredInstanceMethods() {
         return instanceMethods;
     }
 
@@ -67,8 +67,8 @@ public class ToolInterface extends ToolObject {
         return false;
     }
 
-    public List<ToolMethod> getInstanceMethods(){
-        List<ToolMethod> result = new ArrayList<>();
+    public List<ToolMethodPrototype> getInstanceMethods(){
+        List<ToolMethodPrototype> result = new ArrayList<>();
         result.addAll(instanceMethods);
         for(ToolInterface ti: parentInterfaces){
             result.addAll(ti.getInstanceMethods());

@@ -11,6 +11,7 @@ import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.ToolMethodPrototype;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.semantics.util.MethodCall;
 
@@ -192,7 +193,7 @@ public class ToolClass extends ToolObject {
 
     public boolean implicitImplements(ToolInterface toolInterface){
         MethodTable callables = generateInstanceCallableMethodTable();
-        for(ToolMethod m: toolInterface.getInstanceMethods()){
+        for(ToolMethodPrototype m: toolInterface.getInstanceMethods()){
             if(!callables.contains(m.getMethodCategory(), m.getMethodName(), m.getArgumentTypes())) return false;
         }
         return true;
