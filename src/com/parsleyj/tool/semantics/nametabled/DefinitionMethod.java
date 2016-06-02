@@ -3,7 +3,6 @@ package com.parsleyj.tool.semantics.nametabled;
 import com.parsleyj.tool.exceptions.NameAlreadyUsedException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.method.FormalParameter;
@@ -63,16 +62,20 @@ public class DefinitionMethod implements RValue {
         for (ParameterDefinition param : params) {
             formalParameters.add(param.defineParameter(memory));
         }
-        ToolMethod method = new ToolMethod(
-                memory,
-                Visibility.Public,
-                name,
-                new FormalParameter[]{},
-                formalParameters.toArray(new FormalParameter[formalParameters.size()]),
-                new ToolBoolean(memory, true),
-                body);
+        ToolMethod method = createMethod(memory, name, formalParameters, body);
         method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
+    }
+
+    public static ToolMethod createMethod(Memory memory, String name, List<FormalParameter> formalParameters, RValue body) {
+        return new ToolMethod(
+                    memory,
+                    Visibility.Public,
+                    name,
+                    new FormalParameter[]{},
+                    formalParameters.toArray(new FormalParameter[formalParameters.size()]),
+                    new ToolBoolean(memory, true),
+                    body);
     }
 }

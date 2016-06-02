@@ -75,7 +75,14 @@ public class DefinitionOperator implements RValue {
 
 
     public static ToolMethod createAndAddBinaryOperatorMethod(Memory memory, ToolOperatorMethod.Mode mode, String operatorSym, FormalParameter argParam, RValue body) throws ToolNativeException {
-        ToolMethod method = new ToolMethod(
+        ToolMethod method = createBinaryOperator(memory, mode, operatorSym, argParam, body);
+        method.putDefinitionScope(memory.getCurrentFrameStack());
+        memory.getTopScope().addMethod(method);
+        return method;
+    }
+
+    public static ToolMethod createBinaryOperator(Memory memory, ToolOperatorMethod.Mode mode, String operatorSym, FormalParameter argParam, RValue body) {
+        return new ToolMethod(
                 memory,
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 Visibility.Public,
@@ -84,9 +91,6 @@ public class DefinitionOperator implements RValue {
                 new FormalParameter[]{argParam},
                 new ToolBoolean(memory, true),
                 body);
-        method.putDefinitionScope(memory.getCurrentFrameStack());
-        memory.getTopScope().addMethod(method);
-        return method;
     }
 
     public static ToolMethod createAndAddUnaryOperatorMethod(Memory memory, ToolOperatorMethod.Mode mode, String operatorSym, RValue body) throws ToolNativeException {
@@ -98,9 +102,11 @@ public class DefinitionOperator implements RValue {
                 new FormalParameter[]{},
                 new FormalParameter[]{},
                 new ToolBoolean(memory, true),
-                body);
+                body
+        );
         method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
     }
+
 }
