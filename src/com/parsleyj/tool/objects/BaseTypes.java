@@ -12,6 +12,7 @@ import com.parsleyj.tool.objects.exception.ToolException;
 import com.parsleyj.tool.objects.exception.ToolExceptionClass;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.utils.Lol;
@@ -174,6 +175,10 @@ public class BaseTypes {
                 new FormalParameter[]{new FormalParameter("from", I_TYPE)});
         I_TYPE.addMethodDeclaration(m,
                 ToolMethod.METHOD_CATEGORY_METHOD,
+                "getConvertibility",
+                new FormalParameter[]{new FormalParameter("from", C_OBJECT)});
+        I_TYPE.addMethodDeclaration(m,
+                ToolMethod.METHOD_CATEGORY_METHOD,
                 "canBeUsedAs",
                 new FormalParameter[]{new FormalParameter("other", I_TYPE)});
 
@@ -198,6 +203,75 @@ public class BaseTypes {
         C_OBJECT.forceSetBelongingClass(C_CLASS);
 
         C_CLASS.implementsInterface(I_TYPE);
+
+        try {
+            C_CLASS.addInstanceMethod(new ToolMethod(m, ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, Visibility.Public,
+                    ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, "is"),
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter(Memory.ARG_IDENTIFIER, C_OBJECT)},
+                    mem -> new ToolBoolean(
+                            mem,
+                            ((ToolType)mem.getSelfObject()).isOperator(mem.getObjectByIdentifier(Memory.ARG_IDENTIFIER)))));
+            C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
+                    "canBeUsedAs",
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter("other", I_TYPE)},
+                    mem -> new ToolBoolean(
+                            mem,
+                            ((ToolType) mem.getSelfObject()).canBeUsedAs((ToolType)mem.getObjectByIdentifier("other")))));
+            C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
+                    "getConvertibility",
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter("from", I_TYPE)},
+                    mem -> new ToolInteger(
+                            mem,
+                            ((ToolType) mem.getSelfObject()).getConvertibility((ToolType) mem.getObjectByIdentifier("from"))
+                    )));
+            C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
+                    "getConvertibility",
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter("from", C_OBJECT)},
+                    mem -> new ToolInteger(
+                            mem,
+                            ((ToolType) mem.getSelfObject()).getConvertibility((ToolObject) mem.getObjectByIdentifier("from"))
+                    )));
+
+            C_INTERFACE.addInstanceMethod(new ToolMethod(m, ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, Visibility.Public,
+                    ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, "is"),
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter(Memory.ARG_IDENTIFIER, C_OBJECT)},
+                    mem -> new ToolBoolean(
+                            mem,
+                            ((ToolType)mem.getSelfObject()).isOperator(mem.getObjectByIdentifier(Memory.ARG_IDENTIFIER)))));
+            C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
+                    "canBeUsedAs",
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter("other", I_TYPE)},
+                    mem -> new ToolBoolean(
+                            mem,
+                            ((ToolType) mem.getSelfObject()).canBeUsedAs((ToolType)mem.getObjectByIdentifier("other")))));
+            C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
+                    "getConvertibility",
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter("from", I_TYPE)},
+                    mem -> new ToolInteger(
+                            mem,
+                            ((ToolType) mem.getSelfObject()).getConvertibility((ToolType)mem.getObjectByIdentifier("from"))
+                    )));
+            C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
+                    "getConvertibility",
+                    new FormalParameter[]{},
+                    new FormalParameter[]{new FormalParameter("from", C_OBJECT)},
+                    mem -> new ToolInteger(
+                            mem,
+                            ((ToolType) mem.getSelfObject()).getConvertibility((ToolObject) mem.getObjectByIdentifier("from"))
+                    )));
+
+
+        } catch (AmbiguousMethodDefinitionException e) {
+            e.printStackTrace();
+        }
+
         C_INTERFACE.implementsInterface(I_TYPE);
 
         C_LIST.implementsInterface(I_ITERABLE);
@@ -321,14 +395,14 @@ public class BaseTypes {
                                 implicitPars.add(memory.getSelfObject());
                                 for (FormalParameter par : implicitParameters) {
                                     ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
-                                    if (x.getBelongingClass().isOrExtends(par.getParameterType())) {
+                                    if (par.getParameterType().isOperator(x)) {
                                         implicitPars.add(x);
                                     } else
                                         throw new BadMethodCallException(mem, "Something went wrong while attempting to call a native method"); //TODO specify what method
                                 }
                                 for (FormalParameter par : parameters) {
                                     ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
-                                    if (x.getBelongingClass().isOrExtends(par.getParameterType())) {
+                                    if (par.getParameterType().isOperator(x)) {
                                         actualPars.add(x);
                                     } else
                                         throw new BadMethodCallException(mem, "Something went wrong while attempting to call a native method"); //TODO specify what method

@@ -2,9 +2,7 @@ package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.method.FormalParameter;
-import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.ToolMethodPrototype;
-import com.parsleyj.tool.objects.method.Visibility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +14,7 @@ import java.util.stream.Collectors;
  * Created by Giuseppe on 15/05/16.
  * TODO: javadoc
  */
-public class ToolInterface extends ToolObject {
+public class ToolInterface extends ToolObject implements ToolType {
 
     private final String interfaceName;
     private final List<ToolInterface> parentInterfaces;
@@ -76,4 +74,66 @@ public class ToolInterface extends ToolObject {
         return result;
     }
 
+    private int interfaceConvertibility(ToolInterface to){
+        ToolInterface from = this;
+
+        if(Objects.equals(this.getId(), from.getId())) return 0;
+
+        for(ToolInterface parent: parentInterfaces){
+            if(parent.isOrExtends(to)) {
+                int parentConv = parent.interfaceConvertibility(to);
+                return parentConv+1<0?Integer.MAX_VALUE : parentConv+1;
+            }
+        }
+
+        return Integer.MAX_VALUE;
+    }
+
+    private int getExplicitConvertibility(ToolType from){
+        if(from instanceof ToolClass){
+            int min = Integer.MAX_VALUE;
+            ToolClass klass = (ToolClass) from;
+            for(ToolInterface i : klass.getExplicitDeclaredInterfaces()){
+                min = Math.min(min, getExplicitConvertibility(i));
+            }
+            if(min == Integer.MAX_VALUE || min < 0) return Integer.MAX_VALUE;
+            return min + 1;
+        }else if(from instanceof ToolInterface){
+            return ((ToolInterface) from).interfaceConvertibility(this);
+        }else return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public String getTypeName() {
+        return interfaceName;
+    }
+
+    @Override
+    public boolean isOperator(ToolObject o) {
+        return o.respondsToInterface(this);
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    @Override
+    public boolean canBeUsedAs(ToolType other) {
+        if(other instanceof ToolInterface){
+            return this.isOrExtends((ToolInterface) other);
+        }else return false;
+    }
+
+    @Override
+    public int getConvertibility(ToolObject from) {
+        if(from.getBelongingClass().implementsInterface(this)){
+            return getExplicitConvertibility(from.getBelongingClass());
+        }
+        if(from.respondsToInterface(this)){
+            return Integer.MAX_VALUE-10000-this.instanceMethods.size()*10;
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public int getConvertibility(ToolType from) {
+        return getExplicitConvertibility(from);
+    }
 }

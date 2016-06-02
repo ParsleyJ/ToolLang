@@ -4,6 +4,7 @@ import com.parsleyj.tool.exceptions.*;
 import com.parsleyj.tool.objects.BaseTypes;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.ToolType;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
@@ -293,18 +294,18 @@ public class Memory implements ConfigurationElement {
         this.callFrames.getLast().getStack().removeLast();
     }
 
-    public Triple<ArrayDeque<Scope>, ToolMethod, ToolObject> resolveFunction(String category, String name, List<ToolClass> argumentsTypes) throws ToolNativeException {
+    public Triple<ArrayDeque<Scope>, ToolMethod, ToolObject> resolveFunction(String category, String name, List<ToolObject> arguments) throws ToolNativeException {
         Iterator<Scope> icf = callFrames.getLast().getStack().descendingIterator();
         while (icf.hasNext()) {
             Scope sc = icf.next();
             try {
-                ToolMethod tm = sc.getMethods().resolve(null, category, name, argumentsTypes);
+                ToolMethod tm = sc.getMethods().resolve(null, category, name, arguments);
                 return new Triple<>(tm.getDefinitionScope(), tm, tm.getOwnerObject());
             } catch (MethodNotFoundException mnf) {
                 //ignore and try in previous scope, during next iteration
             }
         }
-        throw new MethodNotFoundException(this, MethodNotFoundException.getDefaultMessage(category, null, name, argumentsTypes));
+        throw new MethodNotFoundException(this, MethodNotFoundException.getDefaultMessage(category, null, name, arguments));
     }
 
     public boolean privateAccessTo(ToolObject o) throws ReferenceNotFoundException {

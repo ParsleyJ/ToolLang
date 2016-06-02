@@ -253,6 +253,41 @@ public class ToolGrammar {
                         ((RValueList) s.convert(n.get(2))).getUnevaluatedArray()),
                 ident, openRoundBracketToken, rExpList, closedRoundBracketToken);
 
+        SyntaxCaseDefinition localDotIdentifier = new SyntaxCaseDefinition(lExp, "localDotIdentifier",
+                (n, s) -> new LocalDotIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                dotToken, ident).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition localDotCall0 = new SyntaxCaseDefinition(rExp, "localDotCall0",
+                (n, s) -> new LocalDotCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
+                dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition localDotCall1 = new SyntaxCaseDefinition(rExp, "localDotCall1",
+                (n, s) -> new LocalDotCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        new RValue[]{s.convert(n.get(3))}),
+                dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition localDotCall2 = new SyntaxCaseDefinition(rExp, "localDotCall2",
+                (n, s) -> new LocalDotCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        ((RValueList) s.convert(n.get(3))).getUnevaluatedArray()),
+                dotToken, ident, openRoundBracketToken, rExpList, closedRoundBracketToken);
+
+        SyntaxCaseDefinition localAtIdentifier = new SyntaxCaseDefinition(lExp, "localAtIdentifier",
+                (n, s) -> new LocalAtIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                atToken, ident).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition localAtCall0 = new SyntaxCaseDefinition(rExp, "localAtCall0",
+                (n, s) -> new LocalAtCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
+                atToken, ident, openRoundBracketToken, closedRoundBracketToken);
+        SyntaxCaseDefinition localAtCall1 = new SyntaxCaseDefinition(rExp, "localAtCall1",
+                (n, s) -> new LocalAtCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        new RValue[]{s.convert(n.get(3))}),
+                atToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
+        SyntaxCaseDefinition localAtCall2 = new SyntaxCaseDefinition(rExp, "localAtCall2",
+                (n, s) -> new LocalAtCall(
+                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
+                        ((RValueList) s.convert(n.get(3))).getUnevaluatedArray()),
+                atToken, ident, openRoundBracketToken, rExpList, closedRoundBracketToken);
+
+
         SyntaxCaseDefinition objectDotIdentifier = new SyntaxCaseDefinition(lExp, "objectDotIdentifier",
                 (n, s) -> new ObjectDotIdentifier(s.convert(n.get(0)), ((Identifier) s.convert(n.get(2))).getIdentifierString()),
                 rExp, dotToken, ident);
@@ -324,39 +359,6 @@ public class ToolGrammar {
                 },
                 rExp, atToken, ident, openRoundBracketToken, rExpList, closedRoundBracketToken);
 
-        SyntaxCaseDefinition localDotIdentifier = new SyntaxCaseDefinition(lExp, "localDotIdentifier",
-                (n, s) -> new LocalDotIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                dotToken, ident).parsingDirection(Associativity.RightToLeft);
-        SyntaxCaseDefinition localDotCall0 = new SyntaxCaseDefinition(rExp, "localDotCall0",
-                (n, s) -> new LocalDotCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
-                dotToken, ident, openRoundBracketToken, closedRoundBracketToken);
-        SyntaxCaseDefinition localDotCall1 = new SyntaxCaseDefinition(rExp, "localDotCall1",
-                (n, s) -> new LocalDotCall(
-                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
-                        new RValue[]{s.convert(n.get(3))}),
-                dotToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
-        SyntaxCaseDefinition localDotCall2 = new SyntaxCaseDefinition(rExp, "localDotCall2",
-                (n, s) -> new LocalDotCall(
-                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
-                        ((RValueList) s.convert(n.get(3))).getUnevaluatedArray()),
-                dotToken, ident, openRoundBracketToken, rExpList, closedRoundBracketToken);
-
-        SyntaxCaseDefinition localAtIdentifier = new SyntaxCaseDefinition(lExp, "localAtIdentifier",
-                (n, s) -> new LocalAtIdentifier(((Identifier) s.convert(n.get(1))).getIdentifierString()),
-                atToken, ident).parsingDirection(Associativity.RightToLeft);
-        SyntaxCaseDefinition localAtCall0 = new SyntaxCaseDefinition(rExp, "localAtCall0",
-                (n, s) -> new LocalAtCall(((Identifier) s.convert(n.get(1))).getIdentifierString(), new RValue[]{}),
-                atToken, ident, openRoundBracketToken, closedRoundBracketToken);
-        SyntaxCaseDefinition localAtCall1 = new SyntaxCaseDefinition(rExp, "localAtCall1",
-                (n, s) -> new LocalAtCall(
-                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
-                        new RValue[]{s.convert(n.get(3))}),
-                atToken, ident, openRoundBracketToken, rExp, closedRoundBracketToken);
-        SyntaxCaseDefinition localAtCall2 = new SyntaxCaseDefinition(rExp, "localAtCall2",
-                (n, s) -> new LocalAtCall(
-                        ((Identifier) s.convert(n.get(1))).getIdentifierString(),
-                        ((RValueList) s.convert(n.get(3))).getUnevaluatedArray()),
-                atToken, ident, openRoundBracketToken, rExpList, closedRoundBracketToken);
 
         SyntaxCaseDefinition arrayLiteral0 = new SyntaxCaseDefinition(rExp, "arrayLiteral0",
                 (n, s) -> (RValue) m -> new ToolList(m, new ArrayList<>()),
@@ -693,18 +695,20 @@ public class ToolGrammar {
                 thisReference, identifier,
                 expressionBetweenRoundBrackets, expressionBetweenCurlyBrackets,
                 rValueListBetweenBrackets,
-                lValueListBetweenBrackets1, lValueListBetweenBrackets2,
+                lValueListBetweenBrackets1,
+                lValueListBetweenBrackets2,
                 parameterDeclaration,
 
                 localCall0, localCall1, localCall2,
-                objectDotIdentifier,
-                objectDotCall0, objectDotCall1, objectDotCall2,
-                objectAtIdentifier,
-                objectAtCall0, objectAtCall1, objectAtCall2,
                 localDotIdentifier,
                 localDotCall0, localDotCall1, localDotCall2,
                 localAtIdentifier,
                 localAtCall0, localAtCall1, localAtCall2,
+                objectDotIdentifier,
+                objectDotCall0, objectDotCall1, objectDotCall2,
+                objectAtIdentifier,
+                objectAtCall0, objectAtCall1, objectAtCall2,
+
                 localDefinitionVariable, valDefinitionProperty, varDefinitionProperty,
 
                 arrayLiteral0, arrayLiteral1, arrayLiteral2,

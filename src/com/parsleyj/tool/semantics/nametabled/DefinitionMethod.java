@@ -57,6 +57,7 @@ public class DefinitionMethod implements RValue {
         }
     }
 
+
     public static ToolMethod createAndAddMethod(Memory memory, String name, List<ParameterDefinition> params, RValue body) throws ToolNativeException{
         List<FormalParameter> formalParameters = new ArrayList<>();
         for (ParameterDefinition param : params) {

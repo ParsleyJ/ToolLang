@@ -7,6 +7,7 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.ToolType;
 import com.parsleyj.utils.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,7 +61,7 @@ public class MethodTable {
         return false;
     }
 
-    public List<ToolMethod> getResolvedMethods(String category, String name, List<ToolClass> argumentsTypes) {
+    public List<ToolMethod> getResolvedMethods(String category, String name, List<ToolObject> arguments) {
         //step1: get all candidates (correct names, visible from call point(?))
         List<ToolMethod> candidates = getCandidates(category, name);
 
@@ -68,17 +69,52 @@ public class MethodTable {
                 a viable function is a function that has types and number of arguments
                 compatible with the the call. */
         //      Compatible means it can be converted (following some specific rules) in the other type
-        List<ToolMethod> viables = getViableMethods(candidates, argumentsTypes);
-
+        List<ToolMethod> viables = getViableMethods(candidates, arguments);
 
         //step3: choose the best function among the viable ones. cases:
         if (viables.size() <= 1) //2) there are 0 or 1 viable functions: return them
             return viables;
 
         else { //3) there is more than one function: a rank system must be used and the first places are returned:
-            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables, argumentsTypes);
+            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables, (pt, i) -> pt.getConvertibility(arguments.get(i)));
             return rankedMethods.get(0).getSecond();
         }
+    }
+
+    private List<ToolMethod> getViableMethodsByTypes(List<ToolMethod> candidates, List<ToolType> argumentTypes){
+        ArrayList<ToolMethod> result = new ArrayList<>();
+        for (ToolMethod candidate : candidates) {
+            //todo check for special parameter definitions (defaults, varargs...)
+            if (candidate.getArgumentTypes().size() != argumentTypes.size())
+                continue;
+            boolean isViable = true;
+            for (int i = 0; i < argumentTypes.size(); i++) {
+                ToolType argumentType = argumentTypes.get(i);
+                if (!argumentType.canBeUsedAs(candidate.getArgumentTypes().get(i))) {
+                    isViable = false;
+                    break;
+                }
+            }
+            if (isViable) result.add(candidate);
+        }
+        return result;
+
+    }
+
+    private List<ToolMethod> getResolvedMethodsByTypes(String category, String name, List<ToolType> argumentTypes) {
+        List<ToolMethod> viables = getViableMethodsByTypes(getCandidates(category, name), argumentTypes);
+        if(viables.size() <= 1)
+            return viables;
+        else{
+            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables, (pt, i) -> pt.getConvertibility(argumentTypes.get(i)));
+            return rankedMethods.get(0).getSecond();
+        }
+    }
+
+
+    @FunctionalInterface
+    interface OverloadResolutionParameterCriteria {
+        int getPoints(ToolType formalParameterType, int parameterIndex);
     }
 
 
@@ -87,13 +123,12 @@ public class MethodTable {
             ToolObject caller,
             String category,
             String name,
-            List<ToolClass> argumentsTypes) throws ToolNativeException {
+            List<ToolObject> arguments) throws ToolNativeException {
 
-        List<ToolMethod> rankedMethods = getResolvedMethods(category, name, argumentsTypes);
+        List<ToolMethod> rankedMethods = getResolvedMethods(category, name, arguments);
         //3.1) there is one method at first place: that's the one!
-
         if(rankedMethods.isEmpty()) { //1) there are no viable functions: throw MethodNotFoundException
-            throw new MethodNotFoundException(mem, MethodNotFoundException.getDefaultMessage(category, caller, name, argumentsTypes));
+            throw new MethodNotFoundException(mem, MethodNotFoundException.getDefaultMessage(category, caller, name, arguments));
         }
 
         if (rankedMethods.size() == 1) {
@@ -101,10 +136,10 @@ public class MethodTable {
 
         } else { //3.2) there are more than one method at first place: throw AmbiguousMethodCallException
             StringBuilder sb = new StringBuilder("Multiple method candidates found for call: " + name + "(");
-            for (int i = 0; i < argumentsTypes.size(); i++) {
-                ToolClass tc = argumentsTypes.get(i);
-                sb.append(tc.getClassName());
-                if (i != argumentsTypes.size() - 1) sb.append(",");
+            for (int i = 0; i < arguments.size(); i++) {
+                ToolObject toolObject = arguments.get(i);
+                sb.append(toolObject);
+                if (i != arguments.size() - 1) sb.append(",");
             }
             sb.append("):\n");
             for (ToolMethod tm : rankedMethods) {
@@ -116,14 +151,15 @@ public class MethodTable {
     }
 
 
-    private List<Pair<Integer, List<ToolMethod>>> getRankedMethods(List<ToolMethod> candidates, List<ToolClass> argumentTypes) {
+    private List<Pair<Integer, List<ToolMethod>>> getRankedMethods(List<ToolMethod> candidates, OverloadResolutionParameterCriteria criteria) {
         List<Pair<Integer, List<ToolMethod>>> result = new ArrayList<>();
         for (ToolMethod cand : candidates) {
             int total = 0;
-            List<ToolClass> argumentTypes1 = cand.getArgumentTypes();
+            List<ToolType> argumentTypes1 = cand.getArgumentTypes();
             for (int i = 0; i < argumentTypes1.size(); i++) {
-                ToolClass candArgType = argumentTypes1.get(i);
-                total += candArgType.getConvertibility(argumentTypes.get(i));
+                ToolType candArgType = argumentTypes1.get(i);
+                int candParConvertibility = criteria.getPoints(candArgType, i);
+                total = (total+candParConvertibility<0)?(Integer.MAX_VALUE):(total+candParConvertibility);
             }
             int place = 0;
             boolean newPlace = true;
@@ -152,16 +188,16 @@ public class MethodTable {
         return result;
     }
 
-    private List<ToolMethod> getViableMethods(List<ToolMethod> candidates, List<ToolClass> argumentTypes) {
+    private List<ToolMethod> getViableMethods(List<ToolMethod> candidates, List<ToolObject> arguments) {
         ArrayList<ToolMethod> result = new ArrayList<>();
         for (ToolMethod candidate : candidates) {
-            //todo check for special parameter definitions
-            if (candidate.getArgumentTypes().size() != argumentTypes.size())
+            //todo check for special parameter definitions (defaults, varargs...)
+            if (candidate.getArgumentTypes().size() != arguments.size())
                 continue;
             boolean isViable = true;
-            for (int i = 0; i < argumentTypes.size(); i++) {
-                ToolClass argumentType = argumentTypes.get(i);
-                if (!argumentType.canBeConvertedTo(candidate.getArgumentTypes().get(i))) {
+            for (int i = 0; i < arguments.size(); i++) {
+                ToolObject argument = arguments.get(i);
+                if (!candidate.getArgumentTypes().get(i).isOperator(argument)) {
                     isViable = false;
                     break;
                 }
@@ -186,8 +222,8 @@ public class MethodTable {
         return methods.size();
     }
 
-    public boolean contains(String category, String name, List<ToolClass> argumentsTypes) {
-        return !getResolvedMethods(category, name, argumentsTypes).isEmpty();
+    public boolean contains(String category, String name, List<ToolType> argumentsTypes) {
+        return !getResolvedMethodsByTypes(category, name, argumentsTypes).isEmpty();
     }
 
     public List<ToolMethod> getAll() {

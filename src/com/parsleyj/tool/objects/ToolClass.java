@@ -8,8 +8,6 @@ import com.parsleyj.tool.memory.Reference;
 import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
-import com.parsleyj.tool.objects.basetypes.ToolBoolean;
-import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
@@ -23,7 +21,7 @@ import java.util.*;
  * Created by Giuseppe on 01/04/16.
  * TODO: javadoc
  */
-public class ToolClass extends ToolObject implements TypeHelperInterface {
+public class ToolClass extends ToolObject implements ToolType {
     //TODO inheritance members/methods visibility + inheritance ctors
     private final String className;
     private final ToolClass parentClass;
@@ -123,7 +121,8 @@ public class ToolClass extends ToolObject implements TypeHelperInterface {
         return false;
     }
 
-    public int getConvertibility(ToolClass toBeConverted){
+    public int getClassConvertibility(ToolClass toBeConverted){
+        if(!toBeConverted.canBeConvertedTo(this)) return Integer.MAX_VALUE;
         ToolClass tmp = toBeConverted;
         int points = 0;
         while (this != tmp || !Objects.equals(this.getId(), tmp.getId())){
@@ -207,13 +206,18 @@ public class ToolClass extends ToolObject implements TypeHelperInterface {
     }
 
     @Override
-    public boolean is(ToolObject o) {
+    public String getTypeName() {
+        return className;
+    }
+
+    @Override
+    public boolean isOperator(ToolObject o) {
         return o.getBelongingClass().isOrExtends(this);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
-    public boolean canBeUsedAs(TypeHelperInterface other) {
+    public boolean canBeUsedAs(ToolType other) {
         if(other instanceof ToolClass){
             return this.isOrExtends((ToolClass) other);
         }else if(other instanceof ToolInterface){
@@ -222,28 +226,17 @@ public class ToolClass extends ToolObject implements TypeHelperInterface {
     }
 
     @Override
-    public int getConvertibility(TypeHelperInterface from) {
-        if(from instanceof ToolClass){
-            return this.getConvertibility((ToolClass) from);
-        }else return Integer.MAX_VALUE;
+    public int getConvertibility(ToolType from) {
+        if(from instanceof ToolClass)
+            return this.getClassConvertibility((ToolClass) from);
+        else return Integer.MAX_VALUE;
     }
 
-    @NativeInstanceMethod(value = "is", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolBoolean is(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolObject o){
-        return new ToolBoolean(memory, self.is(o));
+    @Override
+    public int getConvertibility(ToolObject from) {
+        return this.getClassConvertibility(from.getBelongingClass());
     }
 
-    //TODO: These must be moved to default definition (not via native wrapping)
-    @NativeInstanceMethod(value = "canBeUsedAs")
-    public static ToolBoolean canBeUsedAs(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, TypeHelperInterface other){
-        return new ToolBoolean(memory, self.canBeUsedAs(other));
-    }
-
-    //TODO: These must be moved to default definition (not via native wrapping)
-    @NativeInstanceMethod(value = "getConvertibility")
-    public static ToolInteger getConvertibility(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, TypeHelperInterface from){
-        return new ToolInteger(memory, self.getConvertibility(from));
-    }
 
     @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
     public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg) throws ToolNativeException {

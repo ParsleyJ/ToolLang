@@ -1,6 +1,7 @@
 package com.parsleyj.tool.objects.method;
 
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolType;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
@@ -21,7 +22,7 @@ public class ToolMethod extends ToolMethodPrototype{
     public static final String METHOD_CATEGORY_METHOD = "METHOD_CATEGORY_METHOD";
 
     private Visibility visibility;
-    private List<ToolClass> implicitArgumentTypes = new ArrayList<>();
+    private List<ToolType> implicitArgumentTypes = new ArrayList<>();
     private List<String> implicitArgumentNames = new ArrayList<>();
     private List<String> argumentNames = new ArrayList<>();
     private RValue condition;
@@ -91,7 +92,7 @@ public class ToolMethod extends ToolMethodPrototype{
         return argumentNames;
     }
 
-    public List<ToolClass> getImplicitArgumentTypes() {
+    public List<ToolType> getImplicitArgumentTypes() {
         return implicitArgumentTypes;
     }
 
@@ -128,8 +129,8 @@ public class ToolMethod extends ToolMethodPrototype{
 
     private void addParameterListToStringBuilder(StringBuilder sb){
         for (int i = 0; i < getArgumentTypes().size(); i++) {
-            ToolClass argumentType = getArgumentTypes().get(i);
-            sb.append("<").append(argumentType.getClassName()).append(">");
+            ToolType argumentType = getArgumentTypes().get(i);
+            sb.append("<").append(argumentType.getTypeName()).append(">");
             if(i < getArgumentTypes().size()-1) sb.append(", ");
         }
     }

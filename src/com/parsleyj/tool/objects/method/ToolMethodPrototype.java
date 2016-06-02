@@ -3,6 +3,7 @@ package com.parsleyj.tool.objects.method;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.ToolType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +14,11 @@ import java.util.List;
  */
 public class ToolMethodPrototype extends ToolObject {
 
-    protected List<ToolClass> argumentTypes = new ArrayList<>();
+    protected List<ToolType> argumentTypes = new ArrayList<>();
     protected String methodCategory;
     protected String name;
 
-    public ToolMethodPrototype(Memory m, String category, String name, List<ToolClass> argumentTypes) {
+    public ToolMethodPrototype(Memory m, String category, String name, List<ToolType> argumentTypes) {
         super(m, m.baseTypes().C_METHOD_PROTOTYPE);
         this.argumentTypes.addAll(argumentTypes);
         this.methodCategory = category;
@@ -38,7 +39,7 @@ public class ToolMethodPrototype extends ToolObject {
         return name;
     }
 
-    public List<ToolClass> getArgumentTypes() {
+    public List<ToolType> getArgumentTypes() {
         return argumentTypes;
     }
 

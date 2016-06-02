@@ -4,6 +4,7 @@ import com.parsleyj.tool.exceptions.*;
 import com.parsleyj.tool.memory.*;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.ToolMethodPrototype;
 import com.parsleyj.tool.semantics.util.MethodCall;
 import com.parsleyj.tool.semantics.base.RValue;
 
@@ -129,6 +130,15 @@ public class ToolObject implements RValue {
      */
     public void onDestroy(Memory memory){
         //does nothing here
+    }
+
+    public boolean respondsToInterface(ToolInterface toolInterface) {
+        if(this.getBelongingClass().explicitImplements(toolInterface)) return true;
+        MethodTable callables = generateCallableMethodTable();
+        for(ToolMethodPrototype m: toolInterface.getInstanceMethods()){
+            if(!callables.contains(m.getMethodCategory(), m.getMethodName(), m.getArgumentTypes())) return false;
+        }
+        return true;
     }
 
 
