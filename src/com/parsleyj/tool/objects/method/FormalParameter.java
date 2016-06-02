@@ -1,5 +1,6 @@
 package com.parsleyj.tool.objects.method;
 
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolInterface;
 import com.parsleyj.tool.objects.ToolType;
@@ -14,10 +15,9 @@ public class FormalParameter {
 
     public enum Mode{
         ByValue,
-        ByReference;
+        ByReference
     }
     private String parameterName;
-
     private ToolType parameterType;
     private Mode mode = Mode.ByReference;
     public FormalParameter(String parameterName, ToolType parameterType) {
@@ -46,6 +46,12 @@ public class FormalParameter {
 
     @Override
     public String toString() {
-        return "<*Parameter: "+(parameterType == null? "$nulltype$" : parameterType.getTypeName())+" "+parameterName+"*>";
+        String typeName;
+        try {
+            typeName = parameterType.getTypeName();
+        } catch (ToolNativeException e) {
+            throw new RuntimeException(e);
+        }
+        return "<*Parameter: "+(parameterType == null? "$nulltype$" : typeName)+" "+parameterName+"*>";
     }
 }

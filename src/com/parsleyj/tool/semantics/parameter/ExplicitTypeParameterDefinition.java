@@ -3,9 +3,7 @@ package com.parsleyj.tool.semantics.parameter;
 import com.parsleyj.tool.exceptions.InvalidTypeException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.ToolClass;
-import com.parsleyj.tool.objects.ToolInterface;
-import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.ParameterDefinition;
@@ -32,12 +30,14 @@ public class ExplicitTypeParameterDefinition implements ParameterDefinition {
     }
 
     @NotNull
-    public static FormalParameter getFormalParameter(Memory memory, RValue typeExpression, String name) throws ToolNativeException {
+    public static FormalParameter getFormalParameter(Memory memory,
+                                                     RValue typeExpression,
+                                                     String name) throws ToolNativeException {
         ToolObject type = typeExpression.evaluate(memory);
-        if(type.getBelongingClass().isOrExtends(memory.baseTypes().C_CLASS)) {
-            return new FormalParameter(name, (ToolClass) type);
-        }else if(type.getBelongingClass().isOrExtends(memory.baseTypes().C_INTERFACE)){
-            return new FormalParameter(name, (ToolInterface) type);
+        if (type instanceof ToolType){
+            return new FormalParameter(name, (ToolType) type);
+        }else if(type.respondsToInterface(memory.baseTypes().I_TYPE)) {
+            return new FormalParameter(name, new ToolTypeAdapter(memory, type));
         }else{
             throw new InvalidTypeException(memory, "'"+typeExpression+"' is not a valid parameter type");
         }

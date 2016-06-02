@@ -1,5 +1,6 @@
 package com.parsleyj.tool.objects;
 
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethodPrototype;
@@ -109,7 +110,7 @@ public class ToolInterface extends ToolObject implements ToolType {
     }
 
     @Override
-    public boolean isOperator(ToolObject o) {
+    public boolean isOperator(ToolObject o) throws ToolNativeException {
         return o.respondsToInterface(this);
     }
 
@@ -122,7 +123,7 @@ public class ToolInterface extends ToolObject implements ToolType {
     }
 
     @Override
-    public int getConvertibility(ToolObject from) {
+    public int getObjectConvertibility(ToolObject from) throws ToolNativeException {
         if(from.getBelongingClass().implementsInterface(this)){
             return getExplicitConvertibility(from.getBelongingClass());
         }

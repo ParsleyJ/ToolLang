@@ -52,7 +52,6 @@ public class MethodCall implements RValue {
     }
 
     public static MethodCall ctor(ToolObject newInstance,
-                                  ToolClass klass,
                                   RValue[] parameters,
                                   MethodTable ctorTable){
         return new MethodCall(

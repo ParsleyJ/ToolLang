@@ -132,7 +132,7 @@ public class ToolObject implements RValue {
         //does nothing here
     }
 
-    public boolean respondsToInterface(ToolInterface toolInterface) {
+    public boolean respondsToInterface(ToolInterface toolInterface) throws ToolNativeException {
         if(this.getBelongingClass().explicitImplements(toolInterface)) return true;
         MethodTable callables = generateCallableMethodTable();
         for(ToolMethodPrototype m: toolInterface.getInstanceMethods()){

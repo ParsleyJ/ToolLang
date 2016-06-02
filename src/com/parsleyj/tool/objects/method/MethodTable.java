@@ -5,7 +5,6 @@ import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.ToolType;
 import com.parsleyj.utils.Pair;
@@ -61,7 +60,7 @@ public class MethodTable {
         return false;
     }
 
-    public List<ToolMethod> getResolvedMethods(String category, String name, List<ToolObject> arguments) {
+    public List<ToolMethod> getResolvedMethods(String category, String name, List<ToolObject> arguments) throws ToolNativeException {
         //step1: get all candidates (correct names, visible from call point(?))
         List<ToolMethod> candidates = getCandidates(category, name);
 
@@ -76,12 +75,12 @@ public class MethodTable {
             return viables;
 
         else { //3) there is more than one function: a rank system must be used and the first places are returned:
-            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables, (pt, i) -> pt.getConvertibility(arguments.get(i)));
+            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables, (pt, i) -> pt.getObjectConvertibility(arguments.get(i)));
             return rankedMethods.get(0).getSecond();
         }
     }
 
-    private List<ToolMethod> getViableMethodsByTypes(List<ToolMethod> candidates, List<ToolType> argumentTypes){
+    private List<ToolMethod> getViableMethodsByTypes(List<ToolMethod> candidates, List<ToolType> argumentTypes) throws ToolNativeException {
         ArrayList<ToolMethod> result = new ArrayList<>();
         for (ToolMethod candidate : candidates) {
             //todo check for special parameter definitions (defaults, varargs...)
@@ -101,12 +100,15 @@ public class MethodTable {
 
     }
 
-    private List<ToolMethod> getResolvedMethodsByTypes(String category, String name, List<ToolType> argumentTypes) {
+    private List<ToolMethod> getResolvedMethodsByTypes(String category,
+                                                       String name,
+                                                       List<ToolType> argumentTypes) throws ToolNativeException {
         List<ToolMethod> viables = getViableMethodsByTypes(getCandidates(category, name), argumentTypes);
         if(viables.size() <= 1)
             return viables;
         else{
-            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables, (pt, i) -> pt.getConvertibility(argumentTypes.get(i)));
+            List<Pair<Integer, List<ToolMethod>>> rankedMethods = getRankedMethods(viables,
+                    (pt, i) -> pt.getConvertibility(argumentTypes.get(i)));
             return rankedMethods.get(0).getSecond();
         }
     }
@@ -114,7 +116,7 @@ public class MethodTable {
 
     @FunctionalInterface
     interface OverloadResolutionParameterCriteria {
-        int getPoints(ToolType formalParameterType, int parameterIndex);
+        int getPoints(ToolType formalParameterType, int parameterIndex) throws ToolNativeException;
     }
 
 
@@ -128,7 +130,8 @@ public class MethodTable {
         List<ToolMethod> rankedMethods = getResolvedMethods(category, name, arguments);
         //3.1) there is one method at first place: that's the one!
         if(rankedMethods.isEmpty()) { //1) there are no viable functions: throw MethodNotFoundException
-            throw new MethodNotFoundException(mem, MethodNotFoundException.getDefaultMessage(category, caller, name, arguments));
+            throw new MethodNotFoundException(mem,
+                    MethodNotFoundException.getDefaultMessage(category, caller, name, arguments));
         }
 
         if (rankedMethods.size() == 1) {
@@ -151,7 +154,10 @@ public class MethodTable {
     }
 
 
-    private List<Pair<Integer, List<ToolMethod>>> getRankedMethods(List<ToolMethod> candidates, OverloadResolutionParameterCriteria criteria) {
+    private List<Pair<Integer, List<ToolMethod>>> getRankedMethods(
+            List<ToolMethod> candidates,
+            OverloadResolutionParameterCriteria criteria) throws ToolNativeException {
+
         List<Pair<Integer, List<ToolMethod>>> result = new ArrayList<>();
         for (ToolMethod cand : candidates) {
             int total = 0;
@@ -188,7 +194,7 @@ public class MethodTable {
         return result;
     }
 
-    private List<ToolMethod> getViableMethods(List<ToolMethod> candidates, List<ToolObject> arguments) {
+    private List<ToolMethod> getViableMethods(List<ToolMethod> candidates, List<ToolObject> arguments) throws ToolNativeException {
         ArrayList<ToolMethod> result = new ArrayList<>();
         for (ToolMethod candidate : candidates) {
             //todo check for special parameter definitions (defaults, varargs...)
@@ -222,7 +228,7 @@ public class MethodTable {
         return methods.size();
     }
 
-    public boolean contains(String category, String name, List<ToolType> argumentsTypes) {
+    public boolean contains(String category, String name, List<ToolType> argumentsTypes) throws ToolNativeException {
         return !getResolvedMethodsByTypes(category, name, argumentsTypes).isEmpty();
     }
 

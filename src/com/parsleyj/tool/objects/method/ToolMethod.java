@@ -1,5 +1,6 @@
 package com.parsleyj.tool.objects.method;
 
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolType;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
@@ -106,28 +107,28 @@ public class ToolMethod extends ToolMethodPrototype{
         return visibility;
     }
 
-    public String completeInstanceMethodName(ToolClass self){//TODO: change for categories
+    public String completeInstanceMethodName(ToolClass self) throws ToolNativeException {//TODO: change for categories
         StringBuilder sb = new StringBuilder("<"+self.getClassName()+">."+ getMethodName() +"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");
         return sb.toString();
     }
 
-    public String completeClassMethodName(ToolClass self){//TODO: change for categories
+    public String completeClassMethodName(ToolClass self) throws ToolNativeException {//TODO: change for categories
         StringBuilder sb = new StringBuilder(self.getClassName()+"."+ getMethodName() +"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");
         return sb.toString();
     }
 
-    public String completeFunctionName(){//TODO: change for categories
+    public String completeFunctionName() throws ToolNativeException {//TODO: change for categories
         StringBuilder sb = new StringBuilder(getMethodName() +"(");
         addParameterListToStringBuilder(sb);
         sb.append(")");
         return sb.toString();
     }
 
-    private void addParameterListToStringBuilder(StringBuilder sb){
+    private void addParameterListToStringBuilder(StringBuilder sb) throws ToolNativeException {
         for (int i = 0; i < getArgumentTypes().size(); i++) {
             ToolType argumentType = getArgumentTypes().get(i);
             sb.append("<").append(argumentType.getTypeName()).append(">");

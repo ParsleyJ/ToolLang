@@ -182,7 +182,7 @@ public class ToolClass extends ToolObject implements ToolType {
         this.explicitInterfaces = Arrays.asList(explicitInterfaces);
     }
 
-    public boolean implementsInterface(ToolInterface toolInterface) {
+    public boolean implementsInterface(ToolInterface toolInterface) throws ToolNativeException {
         return explicitImplements(toolInterface) || implicitImplements(toolInterface);
     }
 
@@ -193,7 +193,7 @@ public class ToolClass extends ToolObject implements ToolType {
         return this.getParentClass() != null && this.getParentClass() != this && this.getParentClass().explicitImplements(toolInterface);
     }
 
-    public boolean implicitImplements(ToolInterface toolInterface){
+    public boolean implicitImplements(ToolInterface toolInterface) throws ToolNativeException {
         MethodTable callables = generateInstanceCallableMethodTable();
         for(ToolMethodPrototype m: toolInterface.getInstanceMethods()){
             if(!callables.contains(m.getMethodCategory(), m.getMethodName(), m.getArgumentTypes())) return false;
@@ -217,7 +217,7 @@ public class ToolClass extends ToolObject implements ToolType {
 
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
-    public boolean canBeUsedAs(ToolType other) {
+    public boolean canBeUsedAs(ToolType other) throws ToolNativeException {
         if(other instanceof ToolClass){
             return this.isOrExtends((ToolClass) other);
         }else if(other instanceof ToolInterface){
@@ -233,7 +233,7 @@ public class ToolClass extends ToolObject implements ToolType {
     }
 
     @Override
-    public int getConvertibility(ToolObject from) {
+    public int getObjectConvertibility(ToolObject from) {
         return this.getClassConvertibility(from.getBelongingClass());
     }
 
@@ -244,7 +244,7 @@ public class ToolClass extends ToolObject implements ToolType {
             return self.newInstance(memory);
         }else{
             ToolObject newInstance = self.newInstance(memory);
-            return MethodCall.ctor(newInstance, self, arg.getToolObjects().toArray(new ToolObject[arg.getToolObjects().size()]), self.ctors).evaluate(memory);
+            return MethodCall.ctor(newInstance, arg.getToolObjects().toArray(new ToolObject[arg.getToolObjects().size()]), self.ctors).evaluate(memory);
         }
     }
 
