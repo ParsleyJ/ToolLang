@@ -216,21 +216,18 @@ public class BaseTypes {
             try {
                 C_CLASS.addInstanceMethod(new ToolMethod(m, ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, Visibility.Public,
                         ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, "is"),
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter(Memory.ARG_IDENTIFIER, C_OBJECT)},
                         mem -> new ToolBoolean(
                                 mem,
                                 ((ToolType) mem.getSelfObject()).isOperator(mem.getObjectByIdentifier(Memory.ARG_IDENTIFIER)))));
                 C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
                         "canBeUsedAs",
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter("other", I_TYPE)},
                         mem -> new ToolBoolean(
                                 mem,
                                 ((ToolType) mem.getSelfObject()).canBeUsedAs((ToolType) mem.getObjectByIdentifier("other")))));
                 C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
                         "getConvertibility",
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter("from", I_TYPE)},
                         mem -> new ToolInteger(
                                 mem,
@@ -238,7 +235,6 @@ public class BaseTypes {
                         )));
                 C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
                         "getObjectConvertibility",
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter("from", C_OBJECT)},
                         mem -> new ToolInteger(
                                 mem,
@@ -247,7 +243,6 @@ public class BaseTypes {
                 C_CLASS.addInstanceMethod(new ToolMethod(m, ToolGetterMethod.METHOD_CATEGORY_GETTER, Visibility.Public,
                         "name",
                         new FormalParameter[]{},
-                        new FormalParameter[]{},
                         mem -> new ToolString(
                                 mem,
                                 ((ToolType) mem.getSelfObject()).getTypeName())
@@ -255,21 +250,18 @@ public class BaseTypes {
 
                 C_INTERFACE.addInstanceMethod(new ToolMethod(m, ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, Visibility.Public,
                         ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, "is"),
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter(Memory.ARG_IDENTIFIER, C_OBJECT)},
                         mem -> new ToolBoolean(
                                 mem,
                                 ((ToolType) mem.getSelfObject()).isOperator(mem.getObjectByIdentifier(Memory.ARG_IDENTIFIER)))));
                 C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
                         "canBeUsedAs",
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter("other", I_TYPE)},
                         mem -> new ToolBoolean(
                                 mem,
                                 ((ToolType) mem.getSelfObject()).canBeUsedAs((ToolType) mem.getObjectByIdentifier("other")))));
                 C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
                         " getConvertibility",
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter("from", I_TYPE)},
                         mem -> new ToolInteger(
                                 mem,
@@ -277,7 +269,6 @@ public class BaseTypes {
                         )));
                 C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
                         "getObjectConvertibility",
-                        new FormalParameter[]{},
                         new FormalParameter[]{new FormalParameter("from", C_OBJECT)},
                         mem -> new ToolInteger(
                                 mem,
@@ -285,7 +276,6 @@ public class BaseTypes {
                         )));
                 C_INTERFACE.addInstanceMethod(new ToolMethod(m, ToolGetterMethod.METHOD_CATEGORY_GETTER, Visibility.Public,
                         "name",
-                        new FormalParameter[]{},
                         new FormalParameter[]{},
                         mem -> new ToolString(
                                 mem,
@@ -412,7 +402,6 @@ public class BaseTypes {
                                             isInstanceMethod ? instanceAnn.mode() : classAnn.mode(),
                                             isInstanceMethod ? instanceAnn.value() : classAnn.value())
                                     ) : (isInstanceMethod ? instanceAnn.value() : classAnn.value()),
-                            implicitParameters.toArray(new FormalParameter[implicitParameters.size()]),
                             parameters.toArray(new FormalParameter[parameters.size()]),
                             memory -> {
                                 List<ToolObject> actualPars = new ArrayList<>();

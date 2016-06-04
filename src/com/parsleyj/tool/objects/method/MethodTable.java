@@ -154,7 +154,7 @@ public class MethodTable {
     }
 
 
-    private List<Pair<Integer, List<ToolMethod>>> getRankedMethods(
+    private static List<Pair<Integer, List<ToolMethod>>> getRankedMethods(
             List<ToolMethod> candidates,
             OverloadResolutionParameterCriteria criteria) throws ToolNativeException {
 
@@ -194,7 +194,7 @@ public class MethodTable {
         return result;
     }
 
-    private List<ToolMethod> getViableMethods(List<ToolMethod> candidates, List<ToolObject> arguments) throws ToolNativeException {
+    private static List<ToolMethod> getViableMethods(List<ToolMethod> candidates, List<ToolObject> arguments) throws ToolNativeException {
         ArrayList<ToolMethod> result = new ArrayList<>();
         for (ToolMethod candidate : candidates) {
             //todo check for special parameter definitions (defaults, varargs...)

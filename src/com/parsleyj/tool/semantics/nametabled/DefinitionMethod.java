@@ -73,8 +73,7 @@ public class DefinitionMethod implements RValue {
                     memory,
                     Visibility.Public,
                     name,
-                    new FormalParameter[]{},
-                    formalParameters.toArray(new FormalParameter[formalParameters.size()]),
+                formalParameters.toArray(new FormalParameter[formalParameters.size()]),
                     new ToolBoolean(memory, true),
                     body);
     }

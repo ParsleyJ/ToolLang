@@ -87,7 +87,6 @@ public class DefinitionOperator implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 Visibility.Public,
                 ToolOperatorMethod.getOperatorMethodName(mode, operatorSym),
-                new FormalParameter[]{},
                 new FormalParameter[]{argParam},
                 new ToolBoolean(memory, true),
                 body);
@@ -99,7 +98,6 @@ public class DefinitionOperator implements RValue {
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
                 Visibility.Public,
                 ToolOperatorMethod.getOperatorMethodName(mode, operatorSym),
-                new FormalParameter[]{},
                 new FormalParameter[]{},
                 new ToolBoolean(memory, true),
                 body

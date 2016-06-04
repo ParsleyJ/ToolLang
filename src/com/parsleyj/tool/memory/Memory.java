@@ -32,18 +32,13 @@ public class Memory implements ConfigurationElement {
         private ArrayDeque<Scope> stack;
         private ToolObject owner;
 
-        public CallFrame(Memory belongingMemory, ToolObject owner) {
-            this.owner = owner;
-            stack = new ArrayDeque<>();
-            stack.add(owner.getMembersScope());
-            stack.add(new Scope(belongingMemory, Scope.ScopeType.MethodCall));
-
-        }
 
         public CallFrame(Memory belongingMemory, ToolObject owner, ArrayDeque<Scope> definitionScope) {
             this.owner = owner;
             stack = new ArrayDeque<>();
-            stack.addAll(definitionScope);
+            if(definitionScope.isEmpty()){
+                stack.add(owner.getMembersScope());
+            }else stack.addAll(definitionScope);
             stack.add(new Scope(belongingMemory, Scope.ScopeType.MethodCall));
         }
 
@@ -192,9 +187,6 @@ public class Memory implements ConfigurationElement {
         callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.Regular));
     }
 
-    public void pushCallFrame(ToolObject owner) {
-        callFrames.add(new CallFrame(this, owner));
-    }
 
     public void pushCallFrame(ToolObject owner, ArrayDeque<Scope> definitionScope) {
         callFrames.add(new CallFrame(this, owner, definitionScope));

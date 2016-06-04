@@ -55,9 +55,8 @@ public class DefinitionSetter implements RValue {
                 Visibility.Public,
                 name,
                 new FormalParameter[]{
-                        new FormalParameter("arg", argType)
+                        new FormalParameter(Memory.ARG_IDENTIFIER, argType)
                 },
-                new FormalParameter[]{},
                 new ToolBoolean(memory, true),
                 body);
         method.putDefinitionScope(memory.getCurrentFrameStack());

@@ -51,7 +51,6 @@ public class DefinitionGetter implements RValue{
                 Visibility.Public,
                 name,
                 new FormalParameter[]{},
-                new FormalParameter[]{},
                 new ToolBoolean(memory, true),
                 body);
     }

@@ -2,14 +2,12 @@ package com.parsleyj.tool.semantics.nametabled;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.objects.method.special.ToolCtorMethod;
-import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.ParameterDefinition;
 import com.parsleyj.tool.semantics.base.RValue;
 import com.parsleyj.tool.semantics.flowcontrol.SequentialComposition;
@@ -51,7 +49,6 @@ public class DefinitionCtor implements RValue {
                 ToolCtorMethod.METHOD_CATEGORY_CONSTRUCTOR,
                 Visibility.Public,
                 ToolCtorMethod.getCtorName(),
-                new FormalParameter[]{},
                 formalParameters.toArray(new FormalParameter[formalParameters.size()]),
                 condition,
                 new SequentialComposition(body, Memory::getSelfObject));
