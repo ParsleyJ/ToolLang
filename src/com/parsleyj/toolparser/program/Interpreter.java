@@ -27,6 +27,8 @@ public class Interpreter {
     private List<TokenCategory> tokenCategories;
     private SemanticsConverter semanticsConverter;
     private boolean printDebugMessages = false;
+    private Parser parser;
+    private Tokenizer tokenizer;
 
     /**
      * TODO: doc
@@ -69,6 +71,11 @@ public class Interpreter {
         }
     }
 
+    public void initParser(SyntaxClass rootClass){
+        this.tokenizer = new Tokenizer(patterns);
+        this.parser = new RecursiveParser(grammar, rootClass);
+    }
+
     /**
      * Generates the {@link Program} object with the semantics of the input string program,
      * by tokenizing it, parsing it and converting the parse tree.
@@ -77,8 +84,7 @@ public class Interpreter {
      * @param executionMethod the method used to let the program make a computational execute.
      * @return the Program object.
      */
-    public Program interpret(String name, String inputProgram, SyntaxClass rootClass, final ProgramExecutionMethod executionMethod){
-        Tokenizer tokenizer = new Tokenizer(patterns); //TODO: move in init method
+    public Program interpret(String name, String inputProgram, final ProgramExecutionMethod executionMethod){
         List<Token> tokenList = tokenizer.tokenize(inputProgram);
 
         if(printDebugMessages){//TODO use lol class
@@ -91,7 +97,6 @@ public class Interpreter {
             });
         }
 
-        Parser parser = new RecursiveParser(grammar, rootClass); //TODO: move in init method
         ParseTreeNode tree;
         try{
             tree = parser.parse(tokenList);

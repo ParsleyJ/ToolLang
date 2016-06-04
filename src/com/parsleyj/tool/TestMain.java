@@ -46,6 +46,7 @@ public class TestMain {
         }
         Interpreter interp = ToolGrammar.getDefaultInterpreter(memory);
         interp.setPrintDebugMessages(PRINT_DEBUG);
+        interp.initParser(ToolGrammar.rExp);
         while (true) {
             StringBuilder sb = new StringBuilder();
             if (MULTILINE) {
@@ -61,7 +62,7 @@ public class TestMain {
             if (programString.equals("exit")) break;
 
             try {
-                Program prog = interp.interpret("testParsed", programString, ToolGrammar.rExp, (p, c) -> {
+                Program prog = interp.interpret("testParsed", programString, (p, c) -> {
                     RValue e = (RValue) p.getRootSemanticObject();
                     try {
                         ToolObject to = e.evaluate((Memory) c.getConfigurationElement(memName));

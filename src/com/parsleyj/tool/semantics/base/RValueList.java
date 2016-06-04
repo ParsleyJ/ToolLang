@@ -42,7 +42,6 @@ public class RValueList implements SemanticObject {
         return new ToolList(m, generateListOfObjects(m));
     }
 
-    //todo public ToolTuple generateToolTuple(Memory m) throws ToolNativeException
 
     public ToolObject[] generateArrayOfObjects(Memory m) throws ToolNativeException {
         ArrayList<ToolObject> list = generateListOfObjects(m);

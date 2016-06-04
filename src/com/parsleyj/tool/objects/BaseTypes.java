@@ -461,6 +461,7 @@ public class BaseTypes {
     }
 
     //TODO: convert native java objects
+    //TODO: convert native java interfaces
 
     public static class NativeClassLoadFailedException extends Exception {
         public NativeClassLoadFailedException() {

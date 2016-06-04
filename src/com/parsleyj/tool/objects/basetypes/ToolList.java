@@ -105,7 +105,6 @@ public class ToolList extends ToolObject {
         return new ToolList(m, newL);
     }
 
-    //FIXME REFERENCE COUNTING OF ELEMENTS!!!!!!
     //TODO addAll(collection)
     //TODO removeAt(index)
     //TODO remove(obj)
