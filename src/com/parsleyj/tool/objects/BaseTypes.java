@@ -38,6 +38,7 @@ public class BaseTypes {
     public ToolClass C_INTERFACE;
     public ToolClass C_EXTENSOR;
     public ToolClass C_METHOD_PROTOTYPE;
+    public ToolClass C_METHOD_SET;
     public ToolClass C_METHOD;
     public ToolClass C_TUPLE;
     public ToolClass C_INTEGER;
@@ -84,6 +85,7 @@ public class BaseTypes {
                 C_INTERFACE,
                 C_EXTENSOR,
                 C_METHOD_PROTOTYPE,
+                C_METHOD_SET,
                 C_METHOD,
                 C_TUPLE,
                 C_INTEGER,
@@ -138,6 +140,7 @@ public class BaseTypes {
             C_INTERFACE = new ToolClass(m, "Interface", C_OBJECT);
             C_EXTENSOR = new ToolClass(m, "Extensor", C_OBJECT);
             C_METHOD_PROTOTYPE = new ToolClass(m, "MethodPrototype", C_OBJECT);
+            C_METHOD_SET = new ToolClass(m, "MethodSet", C_METHOD_PROTOTYPE);
             C_METHOD = new ToolClass(m, "Method", C_METHOD_PROTOTYPE);
             C_TUPLE = new ToolClass(m, "Tuple", C_OBJECT);
             C_INTEGER = new ToolClass(m, "Integer", C_OBJECT);

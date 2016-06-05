@@ -27,8 +27,14 @@ public class LocalDotIdentifier implements NamedLValue {
 
     @Override
     public ToolObject evaluate(Memory m) throws ToolNativeException {
-        MethodCall getterCall = MethodCall.localGetter(identifierString);
-        return getterCall.evaluate(m);
+        switch (m.getTopScope().getNameTable().get(identifierString)) {
+            case Method:
+                throw new UnsupportedOperationException("OverloadedMethodSet for scoped functions still not implemented"); //TODO implement
+            default:
+                MethodCall getterCall = MethodCall.localGetter(identifierString);
+                return getterCall.evaluate(m);
+
+        }
     }
 
     @Override
@@ -40,4 +46,5 @@ public class LocalDotIdentifier implements NamedLValue {
     public String getIdentifierString() {
         return identifierString;
     }
+
 }

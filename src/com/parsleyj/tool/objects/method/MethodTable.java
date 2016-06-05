@@ -153,6 +153,25 @@ public class MethodTable {
 
     }
 
+    public ToolMethod resolveByTypes(
+            ToolObject caller,
+            String category,
+            String name,
+            List<ToolType> argumentsTypes) throws ToolNativeException {
+        List<ToolMethod> rankedMethods = getResolvedMethodsByTypes(category, name, argumentsTypes);
+
+        if(rankedMethods.isEmpty()) {
+            //todo throw an error
+        }
+
+        if (rankedMethods.size() == 1) {
+            return rankedMethods.get(0);
+        } else {
+            throw new AmbiguousMethodCallException(mem, "Multiple methods found"); //todo specify
+        }
+    }
+
+
 
     private static List<Pair<Integer, List<ToolMethod>>> getRankedMethods(
             List<ToolMethod> candidates,

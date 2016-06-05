@@ -3,6 +3,7 @@ package com.parsleyj.tool.semantics.nametabled;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.method.ToolMethodSet;
 import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.LValue;
 import com.parsleyj.tool.semantics.base.NamedLValue;
@@ -22,10 +23,6 @@ public class ObjectDotIdentifier implements NamedLValue {
         this.ident = ident;
     }
 
-    public RValue getUnevaluatedExpression() {
-        return leftExp;
-    }
-
 
     @Override
     public void assign(ToolObject o, Memory m) throws ToolNativeException {
@@ -37,8 +34,13 @@ public class ObjectDotIdentifier implements NamedLValue {
     @Override
     public ToolObject evaluate(Memory m) throws ToolNativeException {
         ToolObject leftExpObject = leftExp.evaluate(m);
-        MethodCall getterCall = MethodCall.getter(leftExpObject, ident);
-        return getterCall.evaluate(m);
+        switch (leftExpObject.getMembersScope().getNameTable().get(ident)){
+            case Method:
+                return new ToolMethodSet(m, leftExpObject, ident);
+            default:
+                MethodCall getterCall = MethodCall.getter(leftExpObject, ident);
+                return getterCall.evaluate(m);
+        }
     }
 
     @Override
