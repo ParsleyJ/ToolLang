@@ -6,6 +6,7 @@ import com.parsleyj.tool.exceptions.MethodNotFoundException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
+import com.parsleyj.tool.objects.ToolOptional;
 import com.parsleyj.tool.objects.ToolType;
 import com.parsleyj.utils.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -153,19 +154,18 @@ public class MethodTable {
 
     }
 
-    public ToolMethod resolveByTypes(
-            ToolObject caller,
+    public ToolOptional<ToolMethod> resolveByTypes(
             String category,
             String name,
             List<ToolType> argumentsTypes) throws ToolNativeException {
         List<ToolMethod> rankedMethods = getResolvedMethodsByTypes(category, name, argumentsTypes);
 
         if(rankedMethods.isEmpty()) {
-            //todo throw an error
+            return new ToolOptional<>(mem);
         }
 
         if (rankedMethods.size() == 1) {
-            return rankedMethods.get(0);
+            return new ToolOptional<>(mem, rankedMethods.get(0));
         } else {
             throw new AmbiguousMethodCallException(mem, "Multiple methods found"); //todo specify
         }

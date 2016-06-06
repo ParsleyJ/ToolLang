@@ -47,6 +47,7 @@ public class BaseTypes {
     public ToolClass C_LIST;
     public ToolClass C_INTEGER_RANGE;
     public ToolClass C_EXCEPTION;
+    public ToolClass C_OPTIONAL;
 
     // --- EXCEPTIONS ---
     public ToolExceptionClass C_REFERENCE_ALREADY_EXISTS_EXCEPTION;
@@ -57,6 +58,7 @@ public class BaseTypes {
     public ToolExceptionClass C_AMBIGUOUS_METHOD_DEFINITION_EXCEPTION;
     public ToolExceptionClass C_METHOD_NOT_FOUND_EXCEPTION;
     public ToolExceptionClass C_CALL_ON_NULL_EXCEPTION;
+    public ToolExceptionClass C_NULL_VALUE_EXCEPTION;
     public ToolExceptionClass C_ARITHMETIC_EXCEPTION;
     public ToolExceptionClass C_INVALID_INDEX_TYPE_EXCEPTION;
     public ToolExceptionClass C_INVALID_INDEX_LIST_EXCEPTION;
@@ -94,6 +96,7 @@ public class BaseTypes {
                 C_LIST,
                 C_INTEGER_RANGE,
                 C_EXCEPTION,
+                C_OPTIONAL,
 
                 C_REFERENCE_ALREADY_EXISTS_EXCEPTION,
                 C_REFERENCE_NOT_FOUND_EXCEPTION,
@@ -102,6 +105,7 @@ public class BaseTypes {
                 C_AMBIGUOUS_METHOD_CALL_EXCEPTION,
                 C_METHOD_NOT_FOUND_EXCEPTION,
                 C_CALL_ON_NULL_EXCEPTION,
+                C_NULL_VALUE_EXCEPTION,
                 C_ARITHMETIC_EXCEPTION,
                 C_INVALID_INDEX_TYPE_EXCEPTION,
                 C_INVALID_INDEX_LIST_EXCEPTION,
@@ -128,12 +132,7 @@ public class BaseTypes {
 
     public void init(Memory m) {
         try {
-            O_NULL = new ToolObject(m, null) {//TODO: special Null class: is or extends returns always true
-                @Override
-                public boolean isNull() {
-                    return true;
-                }
-            };
+            O_NULL = new ToolNull(m);
 
             C_OBJECT = new ToolClass(m, "Object", null);
             C_CLASS = new ToolClass(m, "Class", C_OBJECT);
@@ -149,6 +148,7 @@ public class BaseTypes {
             C_LIST = new ToolClass(m, "List", C_OBJECT);
             C_INTEGER_RANGE = new ToolClass(m, "IntegerRange", C_OBJECT);
             C_EXCEPTION = new ToolClass(m, "Exception", C_OBJECT);
+            C_OPTIONAL = new ToolClass(m, "Optional", C_OBJECT);
 
             C_REFERENCE_ALREADY_EXISTS_EXCEPTION = new ToolExceptionClass(m, "ReferenceAlreadyExistsException");
             C_REFERENCE_NOT_FOUND_EXCEPTION = new ToolExceptionClass(m, "ReferenceNotFoundException");
@@ -158,6 +158,7 @@ public class BaseTypes {
             C_AMBIGUOUS_METHOD_DEFINITION_EXCEPTION = new ToolExceptionClass(m, "AmbiguousMethodDefinitionException");
             C_METHOD_NOT_FOUND_EXCEPTION = new ToolExceptionClass(m, "MethodNotFoundException");
             C_CALL_ON_NULL_EXCEPTION = new ToolExceptionClass(m, "CallOnNullException");
+            C_NULL_VALUE_EXCEPTION = new ToolExceptionClass(m, "NullValueException");
             C_ARITHMETIC_EXCEPTION = new ToolExceptionClass(m, "ArithmeticException");
             C_INVALID_INDEX_TYPE_EXCEPTION = new ToolExceptionClass(m, "InvalidIndexTypeException");
             C_INVALID_INDEX_LIST_EXCEPTION = new ToolExceptionClass(m, "InvalidIndexListException");
