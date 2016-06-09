@@ -27,7 +27,7 @@ public class TestMain {
         String memName = "M";
         Memory memory = new Memory(memName);
         ToolObject firstObject = new ToolObject(memory, null);//TODO: change with the correct "global" object
-        memory.pushCallFrame(firstObject);
+        memory.pushCallFrame(firstObject, new ArrayDeque<>());
         memory.init();
         firstObject.forceSetBelongingClass(memory.baseTypes().C_OBJECT);
         memory.pushScope();

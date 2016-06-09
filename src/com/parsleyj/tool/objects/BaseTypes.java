@@ -31,6 +31,8 @@ import java.util.*;
  */
 public class BaseTypes {
 
+    public final NativeAlgorithms nativeAlgorithms = new NativeAlgorithms();
+
     public ToolObject O_NULL;
     // --- BASE CLASSES ---
     public ToolClass C_OBJECT;
