@@ -3,6 +3,7 @@ package com.parsleyj.tool.objects;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.method.FormalParameter;
+import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.ToolMethodPrototype;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class ToolInterface extends ToolObject implements ToolType {
     private final String interfaceName;
     private final List<ToolInterface> parentInterfaces;
     private List<ToolMethodPrototype> instanceMethods = new ArrayList<>();
+    private List<ToolMethod> defaultInstanceMethods = new ArrayList<>();
 
     public ToolInterface(Memory m, String interfaceName, List<ToolInterface> parentInterfaces) {
         super(m, m.baseTypes().C_INTERFACE);
@@ -53,6 +55,15 @@ public class ToolInterface extends ToolObject implements ToolType {
                         .collect(Collectors.toList())
         ));
         return this;
+    }
+
+    public ToolInterface addDefaultMethod(ToolMethod method){
+        this.defaultInstanceMethods.add(method);
+        return this;
+    }
+
+    public List<ToolMethod> getDefaultInstanceMethods(){
+        return defaultInstanceMethods;
     }
 
     public boolean isOrExtends(ToolInterface ti){

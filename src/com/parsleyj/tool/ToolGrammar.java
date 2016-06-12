@@ -372,12 +372,19 @@ public class ToolGrammar {
                     return cselist.generateToolList(m);
                 },
                 openSquareBracketToken, rExpList, closedSquareBracketToken);
+
         SyntaxCaseDefinition elementAccessOperation1 = new SyntaxCaseDefinition(rExp, "elementAccessOperation1",
                 (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2)), true),
                 rExp, openSquareBracketToken, rExp, closedSquareBracketToken);
         SyntaxCaseDefinition elementAccessOperation2 = new SyntaxCaseDefinition(rExp, "elementAccessOperation2",
                 (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, openSquareBracketToken, rExpList, closedSquareBracketToken);
+        SyntaxCaseDefinition typeAccessOperation1 = new SyntaxCaseDefinition(rExp, "typeAccessOperation1",
+                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2)), true),
+                rExp, lessOperatorToken, rExp, greaterOperatorToken);
+        SyntaxCaseDefinition typeAccessOperation2 = new SyntaxCaseDefinition(rExp, "typeAccessOperation2",
+                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
+                rExp, lessOperatorToken, rExpList, greaterOperatorToken);
 
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
                 (n, s) -> MethodCall.prefixOperator("-", s.convert(n.get(1))),
@@ -548,6 +555,13 @@ public class ToolGrammar {
                         s.convert(n.get(3)),
                         s.convert(n.get(6))),
                 operatorToken, rExp, openSquareBracketToken, rExp, closedSquareBracketToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+        SyntaxCaseDefinition typeAccessOperatorDefinition = new SyntaxCaseDefinition(rExp, "typeAccessOperatorDefinition",
+                (n, s) -> DefinitionOperator.binaryParametric(
+                        s.convert(n.get(1)),
+                        "<>",
+                        s.convert(n.get(3)),
+                        s.convert(n.get(6))),
+                operatorToken, rExp, lessOperatorToken, rExp, greaterOperatorToken, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition unaryMinusOperatorDefinition = new SyntaxCaseDefinition(rExp, "unaryMinusOperatorDefinition",
                 (n, s) -> DefinitionOperator.unaryPrefix("-", s.convert(n.get(2)), s.convert(n.get(4))),
                 operatorToken, minusToken, rExp, openCurlyBracketToken, rExp, closedCurlyBracketToken);
@@ -714,6 +728,7 @@ public class ToolGrammar {
                 arrayLiteral0, arrayLiteral1, arrayLiteral2,
 
                 elementAccessOperation1, elementAccessOperation2,
+                typeAccessOperation1, typeAccessOperation2,
                 unaryMinusOperation,
                 logicalNotOperation,
                 intervalOperation,
@@ -746,6 +761,7 @@ public class ToolGrammar {
 
                 functorCallOperatorDefinition,
                 elementAccessOperatorDefinition,
+                typeAccessOperatorDefinition,
                 unaryMinusOperatorDefinition,
                 logicalNotOperatorDefinition,
                 intervalOperatorDefinition,

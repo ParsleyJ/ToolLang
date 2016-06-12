@@ -29,9 +29,11 @@ public class ToolMethodSet extends ToolObject {
         this.name = name;
     }
 
+
+
     @NativeInstanceMethod(value = "<>", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolOptional<ToolMethod> resolveByTypes(@MemoryParameter Memory memory,
+    public static ToolOptional resolveByTypes(@MemoryParameter Memory memory,
                                             @ImplicitParameter ToolMethodSet self,
                                             ToolList typeList) throws ToolNativeException {
         //TODO: use is + <> operators on typeList to check if is list of Typesx

@@ -16,10 +16,10 @@ import com.parsleyj.tool.objects.types.TypeAdapter;
  * Created by Giuseppe on 06/06/16.
  * TODO: javadoc
  */
-public class ToolOptional<T extends ToolObject> extends ToolObject{
+public class ToolOptional extends ToolObject{
     private final ToolObject object;
 
-    public ToolOptional(Memory m, T object){
+    public ToolOptional(Memory m, ToolObject object){
         super(m, m.baseTypes().C_OPTIONAL);
         this.object = object;
     }

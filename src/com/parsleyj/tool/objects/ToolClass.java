@@ -238,26 +238,40 @@ public class ToolClass extends ToolObject implements ToolType {
     }
 
 
-    @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg) throws ToolNativeException {
+    @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.BinaryParametric)
+    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg)
+            throws ToolNativeException {
         if(arg.getToolObjects().isEmpty() && self.getCtors().isEmpty()){
             return self.newInstance(memory);
         }else{
             ToolObject newInstance = self.newInstance(memory);
-            return MethodCall.ctor(newInstance, arg.getToolObjects().toArray(new ToolObject[arg.getToolObjects().size()]), self.ctors).evaluate(memory);
+            return MethodCall.ctor(newInstance, arg.getToolObjects().toArray(
+                    new ToolObject[arg.getToolObjects().size()]), self.ctors).evaluate(memory);
         }
     }
 
     @NativeInstanceMethod(value = "putExtensor")
-    public static ToolObject putExtensor(@MemoryParameter Memory memory, @ImplicitParameter ToolClass klass, ToolExtensor extensor) {
+    public static ToolObject putExtensor(@MemoryParameter Memory memory,
+                                         @ImplicitParameter ToolClass klass,
+                                         ToolExtensor extensor) {
         klass.extensors.add(extensor);
         return klass;
     }
 
     @NativeInstanceMethod(value = "removeExtensor")
-    public static ToolObject removeExtensor(@MemoryParameter Memory memory, @ImplicitParameter ToolClass klass, ToolExtensor extensor) {
+    public static ToolObject removeExtensor(@MemoryParameter Memory memory,
+                                            @ImplicitParameter ToolClass klass,
+                                            ToolExtensor extensor) {
         klass.extensors.remove(extensor);
         return klass;
+    }
+
+    @NativeInstanceMethod(value = "?", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.Suffix)
+    public static ToolObject optionalType(@MemoryParameter Memory memory,
+                                            @ImplicitParameter ToolClass klassSelf){
+        return new ToolOptional.ParameterizedOptionalType(memory, memory.baseTypes().C_OPTIONAL, klassSelf);
     }
 
 

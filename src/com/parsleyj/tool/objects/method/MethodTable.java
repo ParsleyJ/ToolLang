@@ -154,18 +154,18 @@ public class MethodTable {
 
     }
 
-    public ToolOptional<ToolMethod> resolveByTypes(
+    public ToolOptional resolveByTypes(
             String category,
             String name,
             List<ToolType> argumentsTypes) throws ToolNativeException {
         List<ToolMethod> rankedMethods = getResolvedMethodsByTypes(category, name, argumentsTypes);
 
         if(rankedMethods.isEmpty()) {
-            return new ToolOptional<>(mem);
+            return new ToolOptional(mem);
         }
 
         if (rankedMethods.size() == 1) {
-            return new ToolOptional<>(mem, rankedMethods.get(0));
+            return new ToolOptional(mem, rankedMethods.get(0));
         } else {
             throw new AmbiguousMethodCallException(mem, "Multiple methods found"); //todo specify
         }
