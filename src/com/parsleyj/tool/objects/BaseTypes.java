@@ -23,6 +23,7 @@ import com.parsleyj.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
@@ -387,10 +388,17 @@ public class BaseTypes {
         if (!ToolObject.class.isAssignableFrom(m.getReturnType())) //it must return a ToolObject or derivate
             throw new NativeClassLoadFailedException();
 
+        if(!(m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)))
+            throw new NativeClassLoadFailedException("tried to load a not-annotated native method");
+
 
         NativeClassMethod classAnn = m.getDeclaredAnnotation(NativeClassMethod.class);
         NativeInstanceMethod instanceAnn = m.getDeclaredAnnotation(NativeInstanceMethod.class);
         boolean isInstanceMethod = instanceAnn != null;
+
+        if(isInstanceMethod && Modifier.isStatic(m.getModifiers()) || !isInstanceMethod && !Modifier.isStatic(m.getModifiers()))
+            throw new NativeClassLoadFailedException("tried to load a method annotated with wrong staticity");
+
         Parameter[] nativePars = m.getParameters();
         List<FormalParameter> parameters = new ArrayList<>();
         List<FormalParameter> implicitParameters = new ArrayList<>();
