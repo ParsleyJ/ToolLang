@@ -168,7 +168,7 @@ public class ToolMethod extends ToolMethodPrototype{
 
 
     /*public static ToolObject callOperator(@MemoryParameter Memory memory,
-                                            @ImplicitParameter ToolMethod self,
+                                            @SelfParameter ToolMethod self,
                                             ToolList parameters){
         return self.call(memory, new ArrayList<>(), parameters.getToolObjects(), self.definitionScope, self, )
         //FIXME: problem: forcing a call on a resolved method does not push information about the owner object

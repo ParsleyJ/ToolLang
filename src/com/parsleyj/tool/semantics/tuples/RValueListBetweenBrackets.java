@@ -4,10 +4,6 @@ import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.ToolTuple;
-import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
-import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
-import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
-import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.semantics.base.RValue;
 import com.parsleyj.tool.semantics.base.RValueList;
 

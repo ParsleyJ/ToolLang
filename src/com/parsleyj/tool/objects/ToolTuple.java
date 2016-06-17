@@ -2,7 +2,7 @@ package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
@@ -30,14 +30,14 @@ public class ToolTuple extends ToolObject {
 
     @NativeInstanceMethod(value = ":=", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.Binary)
-    public static ToolObject destGetter(@MemoryParameter Memory memory, @ImplicitParameter ToolTuple self, ToolInteger arg){
-        return self.objects.get(arg.getIntegerValue());
+    public ToolObject destGetter(@MemoryParameter Memory memory, ToolInteger arg){
+        return this.objects.get(arg.getIntegerValue());
     }
 
     @NativeClassMethod(value = "<>", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)
     public static ToolObject parametrizeType(@MemoryParameter Memory memory,
-                                             @ImplicitParameter ToolClass selfTupleClass,
+                                             @SelfParameter ToolClass selfTupleClass,
                                              ToolType subType){
         return new ParametrizedTupleType(memory, subType);
     }

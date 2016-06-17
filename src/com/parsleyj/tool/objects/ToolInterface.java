@@ -57,6 +57,11 @@ public class ToolInterface extends ToolObject implements ToolType {
         return this;
     }
 
+    public ToolInterface addMethodDeclaration(ToolMethodPrototype prototype){
+        this.instanceMethods.add(prototype);
+        return this;
+    }
+
     public ToolInterface addDefaultMethod(ToolMethod method){
         this.defaultInstanceMethods.add(method);
         return this;

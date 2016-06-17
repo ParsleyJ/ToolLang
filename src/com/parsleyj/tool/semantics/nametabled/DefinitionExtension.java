@@ -27,8 +27,8 @@ public class DefinitionExtension implements RValue{
         if (!klass.getBelongingClass().isOrExtends(memory.baseTypes().C_CLASS)) {
             throw new InvalidTypeException(memory, "'"+klassExpression+"' is not a valid class");
         }
-        ToolClass.putExtensor(memory, (ToolClass) klass, extensor);
-        memory.getTopScope().addOnPopAction(m -> ToolClass.removeExtensor(m, (ToolClass) klass, extensor));
+        ((ToolClass) klass).putExtensor(memory, extensor);
+        memory.getTopScope().addOnPopAction(m -> ((ToolClass) klass).removeExtensor(m, extensor));
         return extensor;
     }
 }

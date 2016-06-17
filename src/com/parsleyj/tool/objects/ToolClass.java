@@ -5,7 +5,7 @@ import com.parsleyj.tool.exceptions.ReferenceAlreadyExistsException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.memory.Reference;
-import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.basetypes.ToolList;
@@ -240,38 +240,35 @@ public class ToolClass extends ToolObject implements ToolType {
 
     @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject roundBrackets(@MemoryParameter Memory memory, @ImplicitParameter ToolClass self, ToolList arg)
+    public ToolObject roundBrackets(@MemoryParameter Memory memory, ToolList arg)
             throws ToolNativeException {
-        if(arg.getToolObjects().isEmpty() && self.getCtors().isEmpty()){
-            return self.newInstance(memory);
+        if(arg.getToolObjects().isEmpty() && this.getCtors().isEmpty()){
+            return this.newInstance(memory);
         }else{
-            ToolObject newInstance = self.newInstance(memory);
+            ToolObject newInstance = this.newInstance(memory);
             return MethodCall.ctor(newInstance, arg.getToolObjects().toArray(
-                    new ToolObject[arg.getToolObjects().size()]), self.ctors).evaluate(memory);
+                    new ToolObject[arg.getToolObjects().size()]), this.ctors).evaluate(memory);
         }
     }
 
     @NativeInstanceMethod(value = "putExtensor")
-    public static ToolObject putExtensor(@MemoryParameter Memory memory,
-                                         @ImplicitParameter ToolClass klass,
+    public ToolObject putExtensor(@MemoryParameter Memory memory,
                                          ToolExtensor extensor) {
-        klass.extensors.add(extensor);
-        return klass;
+        this.extensors.add(extensor);
+        return this;
     }
 
     @NativeInstanceMethod(value = "removeExtensor")
-    public static ToolObject removeExtensor(@MemoryParameter Memory memory,
-                                            @ImplicitParameter ToolClass klass,
+    public ToolObject removeExtensor(@MemoryParameter Memory memory,
                                             ToolExtensor extensor) {
-        klass.extensors.remove(extensor);
-        return klass;
+        this.extensors.remove(extensor);
+        return this;
     }
 
     @NativeInstanceMethod(value = "?", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.Suffix)
-    public static ToolObject optionalType(@MemoryParameter Memory memory,
-                                            @ImplicitParameter ToolClass klassSelf){
-        return new ToolOptional.ParameterizedOptionalType(memory, memory.baseTypes().C_OPTIONAL, klassSelf);
+    public ToolObject optionalType(@MemoryParameter Memory memory){
+        return new ToolOptional.ParameterizedOptionalType(memory, memory.baseTypes().C_OPTIONAL, this);
     }
 
 

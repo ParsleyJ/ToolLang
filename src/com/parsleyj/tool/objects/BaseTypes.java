@@ -4,8 +4,7 @@ import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
-import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.basetypes.*;
@@ -13,6 +12,7 @@ import com.parsleyj.tool.objects.exception.ToolException;
 import com.parsleyj.tool.objects.exception.ToolExceptionClass;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.ToolMethodPrototype;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
@@ -333,7 +333,7 @@ public class BaseTypes {
         }
     }
 
-    private void loadNativeInterface(Memory m, Class<?> nativeInterface, ToolInterface toolInterface) throws NativeClassLoadFailedException {
+    private void loadNativeInterface(Memory m, Class<?> nativeInterface, ToolInterface toolInterface) throws NativeClassLoadFailedException, ToolNativeException {
         loadNativeInterfaceMethods(m, nativeInterface, toolInterface);
     }
 
@@ -344,7 +344,8 @@ public class BaseTypes {
     }
 
 
-    public void loadNativeInterfaceMethods(Memory mem, Class<?> nativeInterface, ToolInterface toolInterface) throws NativeClassLoadFailedException {
+    public void loadNativeInterfaceMethods(Memory mem, Class<?> nativeInterface, ToolInterface toolInterface)
+            throws NativeClassLoadFailedException, ToolNativeException {
         if (!nativeInterface.isInterface())
             throw new NativeClassLoadFailedException(nativeInterface.getName() + " is not a Java interface.");
 
@@ -355,16 +356,20 @@ public class BaseTypes {
                     ToolMethod newMethod = toolMethodBooleanPair.getFirst();
                     Boolean isInstanceMethod = toolMethodBooleanPair.getSecond();
                     if(!isInstanceMethod){
-                        //TODO: change from static to instance native methods
+                        toolInterface.addMethod(newMethod);
+                    }else{
+                        toolInterface.addDefaultMethod(newMethod);
                     }
                 } else {
-
+                    ToolMethodPrototype methodPrototype = loadInterfaceAbstractNativeMethod(mem, m);
+                    toolInterface.addMethodDeclaration(methodPrototype);
                 }
             }
         }
     }
 
-    public void loadNativeMethods(Memory mem, Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException, ToolNativeException {
+    public void loadNativeMethods(Memory mem, Class<?> nativeClass, ToolClass toolClass)
+            throws NativeClassLoadFailedException, ToolNativeException {
         for (Method m : nativeClass.getDeclaredMethods()) {
             if (m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)) {
                 Pair<ToolMethod, Boolean> toolMethodBooleanPair = loadNativeMethod(mem, m);
@@ -384,6 +389,40 @@ public class BaseTypes {
         }
     }
 
+    public ToolMethodPrototype loadInterfaceAbstractNativeMethod(Memory mem, Method m) throws NativeClassLoadFailedException {
+        if (!ToolObject.class.isAssignableFrom(m.getReturnType())) //it must return a ToolObject or derivate
+            throw new NativeClassLoadFailedException();
+
+        if(m.isAnnotationPresent(NativeClassMethod.class))
+            throw new NativeClassLoadFailedException(
+                    "an interface abstract method cannot be annotated as NativeClassMethod");
+
+        if(!m.isAnnotationPresent(NativeClassMethod.class))
+            throw new NativeClassLoadFailedException("tried to load a not-annotated native abstract method");
+
+        NativeInstanceMethod instanceAnn = m.getDeclaredAnnotation(NativeInstanceMethod.class);
+        List<Parameter> nativeParameters = PJ.list(m.getParameters());
+
+        if(nativeParameters.isEmpty() || !Memory.class.isAssignableFrom(nativeParameters.get(0).getType()))
+            throw new NativeClassLoadFailedException("first parameter of converted method must always be of type Memory");
+
+        List<ToolType> parTypes = new ArrayList<>();
+        for(int i = 1; i < nativeParameters.size(); ++i){
+            Parameter nativePar = nativeParameters.get(i);
+            Class nativeParType = nativePar.getType();
+            ToolType baseType = getBaseType(nativeParType);
+            parTypes.add(baseType);
+        }
+
+        return new ToolMethodPrototype(mem,
+                instanceAnn.category(),
+                (instanceAnn.category()).equals(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR) ?
+                        (ToolOperatorMethod.getOperatorMethodName(instanceAnn.mode(), instanceAnn.value())) :
+                        (instanceAnn.value().equals("")?m.getName():instanceAnn.value()),
+                parTypes);
+
+    }
+
     public Pair<ToolMethod, Boolean> loadNativeMethod(Memory mem, Method m) throws NativeClassLoadFailedException {
         if (!ToolObject.class.isAssignableFrom(m.getReturnType())) //it must return a ToolObject or derivate
             throw new NativeClassLoadFailedException();
@@ -397,79 +436,83 @@ public class BaseTypes {
         boolean isInstanceMethod = instanceAnn != null;
 
         if(isInstanceMethod && Modifier.isStatic(m.getModifiers()) || !isInstanceMethod && !Modifier.isStatic(m.getModifiers()))
-            throw new NativeClassLoadFailedException("tried to load a method annotated with wrong staticity");
+            throw new NativeClassLoadFailedException("tried to load a method annotated with wrong staticity: "+m.getName());
 
-        Parameter[] nativePars = m.getParameters();
+
+        List<Parameter> nativeParameters = PJ.list(m.getParameters());
+        if(nativeParameters.isEmpty() || !Memory.class.isAssignableFrom(nativeParameters.get(0).getType()))
+            throw new NativeClassLoadFailedException("first parameter of converted method must always be of type Memory");
+
+        if(!isInstanceMethod && (!(nativeParameters.size() >= 2) ||
+                !nativeParameters.get(1).isAnnotationPresent(SelfParameter.class)))
+            throw new NativeClassLoadFailedException("when method is static, second parameter must be the self object");
+
+        int effectiveParsIndexStart = isInstanceMethod ? 1 : 2;
+
         List<FormalParameter> parameters = new ArrayList<>();
-        List<FormalParameter> implicitParameters = new ArrayList<>();
-        boolean hasSelfParameter = false;
-        boolean hasMemoryParameter = false;
-        for (Parameter nativePar : nativePars) {
-            if (!nativePar.isAnnotationPresent(MemoryParameter.class) || !Memory.class.isAssignableFrom(nativePar.getType())) {
-
-                ToolClass baseType = NATIVE_CLASS_MAP.get(nativePar.getType());
-                if (baseType == null) throw new NativeClassLoadFailedException(
-                        "Something went wrong while loading native method: " + m.getName());
-
-                if (nativePar.isAnnotationPresent(ImplicitParameter.class)) {
-                    ImplicitParameter implicitParAnn = nativePar.getDeclaredAnnotation(ImplicitParameter.class);
-                    if (implicitParAnn.value().equals(Memory.SELF_IDENTIFIER))
-                        hasSelfParameter = true;
-                    else implicitParameters.add(new FormalParameter(implicitParAnn.value(), baseType));
-                } else {
-                    parameters.add(new FormalParameter(nativePar.getName(), baseType));
-                }
-
-            } else {
-                hasMemoryParameter = true;
-            }
+        for(int i = effectiveParsIndexStart; i < nativeParameters.size(); ++i){
+            Parameter nativePar = nativeParameters.get(i);
+            Class nativeParType = nativePar.getType();
+            ToolType baseType = getBaseType(nativeParType);
+            parameters.add(new FormalParameter(nativePar.getName(), baseType));
         }
-        if (!hasSelfParameter) throw new NativeClassLoadFailedException();
 
-
-        boolean finalHasMemoryParameter = hasMemoryParameter;
         ToolMethod newMethod = new ToolMethod(
                 mem,
                 isInstanceMethod ? instanceAnn.category() : classAnn.category(),
                 isInstanceMethod ? instanceAnn.visibility() : classAnn.visibility(),
-                (isInstanceMethod ? instanceAnn.category() : classAnn.category()).equals(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR) ?
+                (isInstanceMethod ? instanceAnn.category() : classAnn.category()).equals(
+                        ToolOperatorMethod.METHOD_CATEGORY_OPERATOR) ?
                         (ToolOperatorMethod.getOperatorMethodName(
                                 isInstanceMethod ? instanceAnn.mode() : classAnn.mode(),
                                 isInstanceMethod ? instanceAnn.value() : classAnn.value())
-                        ) : (isInstanceMethod ? instanceAnn.value() : classAnn.value()),
+                        ) : (isInstanceMethod ?
+                                (instanceAnn.value().equals("")?m.getName():instanceAnn.value())
+                                : classAnn.value().equals("")?m.getName():classAnn.value()),
                 parameters.toArray(new FormalParameter[parameters.size()]),
                 memory -> {
                     List<ToolObject> actualPars = new ArrayList<>();
-                    List<ToolObject> implicitPars = new ArrayList<>();
-                    implicitPars.add(memory.getSelfObject());
-                    for (FormalParameter par : implicitParameters) {
+                    for(FormalParameter par : parameters){
                         ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
-                        if (par.getParameterType().isOperator(x)) {
-                            implicitPars.add(x);
-                        } else
-                            throw new BadMethodCallException(mem, "Something went wrong while attempting to call a native method"); //TODO specify what method
-                    }
-                    for (FormalParameter par : parameters) {
-                        ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
-                        if (par.getParameterType().isOperator(x)) {
+                        if(par.getParameterType().isOperator(x)) {
                             actualPars.add(x);
-                        } else
-                            throw new BadMethodCallException(mem, "Something went wrong while attempting to call a native method"); //TODO specify what method
+                        }else throw new BadMethodCallException(mem,
+                                "Something went wrong while attempting to call a native method"); //TODO specify what method
                     }
                     try {
-                        if (finalHasMemoryParameter)
-                            return (ToolObject) m.invoke(null, PJ.tempConcat(Collections.singletonList(memory), PJ.tempConcatFlex(implicitPars, actualPars)).toArray(new Object[implicitPars.size() + actualPars.size() + 1]));
-                        else
-                            return (ToolObject) m.invoke(null, PJ.tempConcatFlex(implicitPars, actualPars).toArray(new Object[implicitPars.size() + actualPars.size()]));
-                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        if(isInstanceMethod) {
+                            List<Object> actualNativePars = new ArrayList<>();
+                            actualNativePars.add(memory);
+                            actualNativePars.addAll(actualPars);
+                            Lol.v("calling native method named '"+m.getName()+"' with no. of parameters: "+actualNativePars.size());
+                            return (ToolObject) m.invoke(memory.getSelfObject(), actualNativePars.toArray(new Object[actualNativePars.size()]));
+                        }else{
+                            List<Object> actualNativePars = new ArrayList<>();
+                            actualNativePars.add(memory);
+                            actualNativePars.add(memory.getSelfObject());
+                            actualNativePars.addAll(actualPars);
+                            return (ToolObject) m.invoke(null, actualNativePars.toArray(new Object[actualNativePars.size()]));
+                        }
+                    }catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException("InvokeFailed");
                     }
                 });
         return new Pair<>(newMethod, isInstanceMethod);
     }
 
+    public ToolType getBaseType(Class<?> nativeClass) throws NativeClassLoadFailedException {
+        ToolType baseType;
+        if(!nativeClass.isInterface()){
+            baseType = NATIVE_CLASS_MAP.get(nativeClass);
+        }else{
+            baseType = NATIVE_INTERFACE_MAP.get(nativeClass);
+        }
+        if(baseType == null) throw new NativeClassLoadFailedException(
+                "no corresponding base type found for: "+nativeClass.getName());
+        return baseType;
+    }
+
     //TODO: convert native java objects
-    //TODO: convert native java interfaces
 
     public static class NativeClassLoadFailedException extends Exception {
         public NativeClassLoadFailedException() {

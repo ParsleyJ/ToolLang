@@ -8,7 +8,7 @@ import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
-import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.semantics.nametabled.DefinitionGetter;
@@ -46,16 +46,16 @@ public class ToolList extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "[]", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject _elementAt_(@MemoryParameter Memory m, @ImplicitParameter ToolList self, ToolList indexes) throws ToolNativeException {
+    public ToolObject _elementAt_(@MemoryParameter Memory m, ToolList indexes) throws ToolNativeException {
         if (!allIndexesAreIntegersOrRanges(m, indexes)) throw new InvalidIndexTypeException(m, "All index elements have to be instances of Integer or IntegerRange.");
         if(indexes.toolObjects.isEmpty()) throw new InvalidIndexListException(m, "At least one index is needed.");
         List<ToolObject> resultList = new ArrayList<>();
         for(ToolObject ind: indexes.toolObjects){
             if(ind.getBelongingClass().isOrExtends(m.baseTypes().C_INTEGER))
-                resultList.add(elementAtWithBackIndexes(m, self, ((ToolInteger) ind).getIntegerValue()));
+                resultList.add(elementAtWithBackIndexes(m, this, ((ToolInteger) ind).getIntegerValue()));
             else{
                 for(Integer i : (ToolIntegerRange) ind){
-                    resultList.add(elementAtWithBackIndexes(m, self, i));
+                    resultList.add(elementAtWithBackIndexes(m, this, i));
                 }
             }
         }
@@ -65,18 +65,18 @@ public class ToolList extends ToolObject {
     }
 
     @NativeInstanceMethod(value = "indexes", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolIntegerRange indexes(@MemoryParameter Memory m, @ImplicitParameter ToolList selfList)throws ToolNativeException{
-        return new ToolIntegerRange(m, 0, selfList.getToolObjects().size()-1);
+    public ToolIntegerRange indexes(@MemoryParameter Memory m)throws ToolNativeException{
+        return new ToolIntegerRange(m, 0, this.getToolObjects().size()-1);
     }
 
     @NativeInstanceMethod(value = "size", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolInteger size(@MemoryParameter Memory m, @ImplicitParameter ToolList selfList) throws ToolNativeException{
-        return new ToolInteger(m, selfList.getToolObjects().size());
+    public ToolInteger size(@MemoryParameter Memory m ) throws ToolNativeException{
+        return new ToolInteger(m, this.getToolObjects().size());
     }
 
 
     @NativeInstanceMethod(value = "iterator", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolObject iterator(@MemoryParameter Memory memory0, @ImplicitParameter ToolList selfList) throws ToolNativeException {
+    public ToolObject iterator(@MemoryParameter Memory memory0) throws ToolNativeException {
         ToolObject result = new ToolObject(memory0);
 
         result.newMember("index", new ToolInteger(memory0, 0));
@@ -84,7 +84,7 @@ public class ToolList extends ToolObject {
         result.addMethod(DefinitionGetter.createGetter(memory0, "hasNext", memory -> {
             ToolObject selfIterator = memory.getSelfObject();
             ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
-            return new ToolBoolean(memory, index.getIntegerValue()<selfList.toolObjects.size());
+            return new ToolBoolean(memory, index.getIntegerValue()<this.toolObjects.size());
         }));
 
         result.addMethod(DefinitionGetter.createGetter(memory0, "next", memory -> { //TODO: add index out of bounds check
@@ -92,16 +92,16 @@ public class ToolList extends ToolObject {
             ToolInteger index = (ToolInteger) selfIterator.getReferenceMember("index").getValue();
             Integer oldIndex = index.getIntegerValue();
             index.setIntegerValue(index.getIntegerValue()+1);
-            return selfList.toolObjects.get(oldIndex);
+            return this.toolObjects.get(oldIndex);
         }));
 
         return result;
     }
 
     @NativeInstanceMethod(value = "reverse", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolList reverse(@MemoryParameter Memory m, @ImplicitParameter ToolList self){
+    public ToolList reverse(@MemoryParameter Memory m){
         List<ToolObject> newL = new ArrayList<>();
-        self.toolObjects.forEach(to -> newL.add(0, to));
+        this.toolObjects.forEach(to -> newL.add(0, to));
         return new ToolList(m, newL);
     }
 
@@ -113,61 +113,61 @@ public class ToolList extends ToolObject {
     //TODO get(index)
 
     @NativeInstanceMethod(value = "add")
-    public static ToolList add(@ImplicitParameter ToolList self, ToolObject argument){
-        self.getToolObjects().add(argument);
-        return self;
+    public ToolList add(@MemoryParameter Memory memory0, ToolObject argument){
+        this.getToolObjects().add(argument);
+        return this;
     }
 
     @NativeInstanceMethod(value = "add")
-    public static ToolList add(@ImplicitParameter ToolList self, ToolInteger index, ToolObject argument){
-        self.getToolObjects().add(index.getIntegerValue(), argument);
-        return self;
+    public ToolList add(@MemoryParameter Memory memory0, ToolInteger index, ToolObject argument){
+        this.getToolObjects().add(index.getIntegerValue(), argument);
+        return this;
     }
 
     @NativeInstanceMethod(value = "addLast")
-    public static ToolList addLast(@ImplicitParameter ToolList self, ToolObject argument){
-        self.getToolObjects().add(argument);
-        return self;
+    public ToolList addLast(@MemoryParameter Memory memory0, ToolObject argument){
+        this.getToolObjects().add(argument);
+        return this;
     }
 
     @NativeInstanceMethod(value = "addFirst")
-    public static ToolList addFirst(@ImplicitParameter ToolList self, ToolObject argument){
-        self.getToolObjects().add(0, argument);
-        return self;
+    public ToolList addFirst(@MemoryParameter Memory memory0, ToolObject argument){
+        this.getToolObjects().add(0, argument);
+        return this;
     }
 
     @NativeInstanceMethod(value = "remove")
-    public static ToolList remove(@ImplicitParameter ToolList self, ToolInteger index){
-        self.getToolObjects().remove(index.getIntegerValue().intValue());
-        return self;
+    public ToolList remove(@MemoryParameter Memory memory0, ToolInteger index){
+        this.getToolObjects().remove(index.getIntegerValue().intValue());
+        return this;
     }
 
     @NativeInstanceMethod(value = "removeLast")
-    public static ToolList removeLast(@ImplicitParameter ToolList self){
-        self.getToolObjects().remove(self.getToolObjects().size()-1);
-        return self;
+    public ToolList removeLast(@MemoryParameter Memory memory0){
+        this.getToolObjects().remove(this.getToolObjects().size()-1);
+        return this;
     }
 
     @NativeInstanceMethod(value = "removeFirst")
-    public static ToolList removeFirst(@ImplicitParameter ToolList self){
-        self.getToolObjects().remove(0);
-        return self;
+    public ToolList removeFirst(@MemoryParameter Memory memory0){
+        this.getToolObjects().remove(0);
+        return this;
     }
 
     @NativeInstanceMethod(value = "removeAll")
-    public static ToolList removeAll(@ImplicitParameter ToolList self){
-        self.getToolObjects().clear();
-        return self;
+    public ToolList removeAll(@MemoryParameter Memory memory0){
+        this.getToolObjects().clear();
+        return this;
     }
 
     @NativeInstanceMethod(value = "last", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolObject last(@ImplicitParameter ToolList self){
-        return self.getToolObjects().get(self.getToolObjects().size()-1);
+    public ToolObject last(@MemoryParameter Memory memory0){
+        return this.getToolObjects().get(this.getToolObjects().size()-1);
     }
 
     @NativeInstanceMethod(value = "first", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolObject first(@ImplicitParameter ToolList self){
-        return self.getToolObjects().get(0);
+    public ToolObject first(@MemoryParameter Memory memory0){
+        return this.getToolObjects().get(0);
     }
 
     private static ToolObject elementAtWithBackIndexes(Memory m, ToolList list, int index) throws ToolNativeException {

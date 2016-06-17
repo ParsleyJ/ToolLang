@@ -3,7 +3,7 @@ package com.parsleyj.tool.objects;
 import com.parsleyj.tool.exceptions.NullValueException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
-import com.parsleyj.tool.objects.annotations.methods.ImplicitParameter;
+import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
@@ -34,21 +34,19 @@ public class ToolOptional extends ToolObject{
     }
 
     @NativeInstanceMethod(value = "isNull", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolBoolean isNull(@MemoryParameter Memory memory,
-                                     @ImplicitParameter ToolOptional self){
-        return new ToolBoolean(memory, self.object.isNull());
+    public ToolBoolean isNull(@MemoryParameter Memory memory){
+        return new ToolBoolean(memory, this.object.isNull());
     }
 
     @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)
-    public static ToolObject roundBrackets(@MemoryParameter Memory memory,
-                                   @ImplicitParameter ToolOptional self) throws NullValueException {
-        return value(memory, self);
+    public ToolObject roundBrackets(@MemoryParameter Memory memory) throws NullValueException {
+        return value(memory, this);
     }
 
     @NativeInstanceMethod(value = "value", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
-    public static ToolObject value(@MemoryParameter Memory memory,
-                                           @ImplicitParameter ToolOptional self) throws NullValueException {
+    public ToolObject value(@MemoryParameter Memory memory,
+                                           @SelfParameter ToolOptional self) throws NullValueException {
         if(self.object.isNull()){
             throw new NullValueException(memory, "");
         }
@@ -58,7 +56,7 @@ public class ToolOptional extends ToolObject{
     @NativeClassMethod(value = "<>", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)
     public static ToolObject parametrizeType(@MemoryParameter Memory memory,
-                                             @ImplicitParameter ToolClass optionalSelfClass,
+                                             @SelfParameter ToolClass optionalSelfClass,
                                              ToolType typeArg) throws ToolNativeException{
         return new ParameterizedOptionalType(memory, optionalSelfClass, typeArg);
 
