@@ -237,6 +237,12 @@ public class ToolClass extends ToolObject implements ToolType {
         return this.getClassConvertibility(from.getBelongingClass());
     }
 
+    @Override
+    public MethodTable generateCallableMethodTable() {
+        if(this == memory.baseTypes().C_CLASS && this.getBelongingClass() == this){
+            return instanceMethods.extend(super.generateCallableMethodTable());
+        }else return super.generateCallableMethodTable();
+    }
 
     @NativeInstanceMethod(value = "()", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)

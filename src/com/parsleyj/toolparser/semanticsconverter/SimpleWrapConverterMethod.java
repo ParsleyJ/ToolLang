@@ -1,4 +1,4 @@
-package com.parsleyj.utils;
+package com.parsleyj.toolparser.semanticsconverter;
 
 import com.parsleyj.toolparser.parser.ParseTreeNode;
 import com.parsleyj.toolparser.semanticsconverter.CaseConverterMethod;

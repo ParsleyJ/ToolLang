@@ -21,7 +21,7 @@ import com.parsleyj.toolparser.semanticsconverter.CBOConverterMethod;
 import com.parsleyj.toolparser.semanticsconverter.TokenConverter;
 import com.parsleyj.toolparser.semanticsconverter.UBOConverterMethod;
 import com.parsleyj.toolparser.tokenizer.TokenCategory;
-import com.parsleyj.utils.SimpleWrapConverterMethod;
+import com.parsleyj.toolparser.semanticsconverter.SimpleWrapConverterMethod;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +78,7 @@ public class ToolGrammar {
         TokenCategoryDefinition varToken = new TokenCategoryDefinition("VAR_KEYWORD", "\\Qvar\\E");
         TokenCategoryDefinition thisToken = new TokenCategoryDefinition("THIS_KEYWORD", "\\Qthis\\E",
                 (g) -> (RValue) Memory::getSelfObject);
+        TokenCategoryDefinition isToken = new TokenCategoryDefinition("IS_OPERATOR", "\\Qis\\E");
         TokenCategoryDefinition classToken = new TokenCategoryDefinition("CLASS_KEYWORD", "\\Qclass\\E");
         TokenCategoryDefinition identifierToken = new TokenCategoryDefinition("IDENTIFIER", "[_a-zA-Z][_a-zA-Z0-9]*",
                 LocalIdentifier::new);
@@ -91,6 +92,7 @@ public class ToolGrammar {
                         localToken, valToken, varToken,
                         classToken, extensionToken, extensorToken,
                         thisToken,
+                        isToken,
                         identifierToken);
             }
 
@@ -123,6 +125,7 @@ public class ToolGrammar {
                     case "extension": return extensionToken;
                     case "extensor": return extensorToken;
                     case "this": return thisToken;
+                    case "is": return isToken;
                     default: return identifierToken;
                 }
             }
@@ -136,6 +139,7 @@ public class ToolGrammar {
                         localToken, valToken, varToken,
                         classToken, extensionToken, extensorToken,
                         thisToken,
+                        isToken,
                         identifierToken);
             }
         };
@@ -422,6 +426,9 @@ public class ToolGrammar {
         SyntaxCaseDefinition equalLessOperation = new SyntaxCaseDefinition(rExp, "equalLessOperation",
                 new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "<=", b)),
                 rExp, equalLessOperatorToken, rExp);
+        SyntaxCaseDefinition isOperation = new SyntaxCaseDefinition(rExp, "isOperation",
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperatorReverse(a, "is", b)),
+                rExp, isToken, rExp);
         SyntaxCaseDefinition equalsOperation = new SyntaxCaseDefinition(rExp, "equalsOperation",
                 new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "==", b)),
                 rExp, equalsOperatorToken, rExp);
@@ -736,6 +743,7 @@ public class ToolGrammar {
                 minusOperation, plusOperation,
                 greaterOperation, equalGreaterOperation,
                 lessOperation, equalLessOperation,
+                isOperation,
                 equalsOperation, notEqualsOperation,
                 logicalAndOperation,
                 logicalOrOperation,

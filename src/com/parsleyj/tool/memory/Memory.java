@@ -1,10 +1,7 @@
 package com.parsleyj.tool.memory;
 
 import com.parsleyj.tool.exceptions.*;
-import com.parsleyj.tool.objects.BaseTypes;
-import com.parsleyj.tool.objects.ToolClass;
-import com.parsleyj.tool.objects.ToolObject;
-import com.parsleyj.tool.objects.ToolType;
+import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
@@ -238,6 +235,11 @@ public class Memory implements ConfigurationElement {
         return newLocalReference(c.getClassName(), c);
     }
 
+    public Reference newLocalReference(ToolInterface i) throws ReferenceAlreadyExistsException {
+        return newLocalReference(i.getInterfaceName(), i);
+    }
+
+
     public Reference updateReference(String identifier, ToolObject o) throws ReferenceNotFoundException {
         Reference r = getReferenceByIdentifier(identifier);
         updateReference(r, o);
@@ -308,8 +310,20 @@ public class Memory implements ConfigurationElement {
         return getSelfObject().getBelongingClass().isOrExtends(o.getBelongingClass());
     }
 
-    public void loadBaseClasses() {
+    public void loadBaseObjects() {
         loadClasses(baseTypes.getAllBaseClasses());
+        loadInterfaces(baseTypes.getAllBaseInterfaces());
+    }
+
+    private void loadInterfaces(List<ToolInterface> allBaseInterfaces) {
+        for(ToolInterface i : allBaseInterfaces){
+            try{
+                getTopScope().getNameTable().put(i.getInterfaceName(), NameKind.Variable);
+                this.newLocalReference(i);
+            } catch (ReferenceAlreadyExistsException e) {
+                e.printStackTrace(); //in theory, these interfaces are the first added when the memory is initialized
+            }
+        }
     }
 
     public void loadClass(ToolClass baseClass) throws ReferenceAlreadyExistsException {
@@ -323,7 +337,7 @@ public class Memory implements ConfigurationElement {
                 getTopScope().getNameTable().put(c.getClassName(), NameKind.Variable);
                 this.newLocalReference(c);
             } catch (ReferenceAlreadyExistsException e) {
-                e.printStackTrace(); //in theory, these class are the first added when the memory is initialized
+                e.printStackTrace(); //in theory, these classes are the first added when the memory is initialized
             }
         }
     }

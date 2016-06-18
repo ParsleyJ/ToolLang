@@ -129,6 +129,7 @@ public class BaseTypes {
 
     public List<ToolInterface> getAllBaseInterfaces() {
         return Arrays.asList(
+                I_TYPE,
                 I_ITERABLE,
                 I_ITERATOR
         );
@@ -220,8 +221,8 @@ public class BaseTypes {
             C_CLASS.forceSetBelongingClass(C_CLASS);
             C_OBJECT.forceSetBelongingClass(C_CLASS);
 
-            C_CLASS.implementsInterface(I_TYPE);
-
+            C_CLASS.setExplicitInterfaces(I_TYPE);
+            C_INTERFACE.setExplicitInterfaces(I_TYPE);
             try {
                 C_CLASS.addInstanceMethod(new ToolMethod(m, ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, Visibility.Public,
                         ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, "is"),
@@ -333,12 +334,14 @@ public class BaseTypes {
         }
     }
 
-    private void loadNativeInterface(Memory m, Class<?> nativeInterface, ToolInterface toolInterface) throws NativeClassLoadFailedException, ToolNativeException {
+    private void loadNativeInterface(Memory m, Class<?> nativeInterface, ToolInterface toolInterface)
+            throws NativeClassLoadFailedException, ToolNativeException {
         loadNativeInterfaceMethods(m, nativeInterface, toolInterface);
     }
 
 
-    public void loadNativeClass(Memory m, Class<?> nativeClass, ToolClass toolClass) throws NativeClassLoadFailedException, ToolNativeException {
+    public void loadNativeClass(Memory m, Class<?> nativeClass, ToolClass toolClass)
+            throws NativeClassLoadFailedException, ToolNativeException {
         loadNativeMethods(m, nativeClass, toolClass);
         //loadNativeFields(nativeClass, toolClass);
     }
@@ -485,7 +488,8 @@ public class BaseTypes {
                             actualNativePars.add(memory);
                             actualNativePars.addAll(actualPars);
                             Lol.v("calling native method named '"+m.getName()+"' with no. of parameters: "+actualNativePars.size());
-                            return (ToolObject) m.invoke(memory.getSelfObject(), actualNativePars.toArray(new Object[actualNativePars.size()]));
+                            return (ToolObject) m.invoke(memory.getSelfObject(),
+                                    actualNativePars.toArray(new Object[actualNativePars.size()]));
                         }else{
                             List<Object> actualNativePars = new ArrayList<>();
                             actualNativePars.add(memory);

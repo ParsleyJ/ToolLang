@@ -98,6 +98,14 @@ public class MethodCall implements RValue {
                 new RValue[]{argExpression});
     }
 
+    public static MethodCall binaryOperatorReverse(RValue argExpression, String operatorSym, RValue selfExpression){
+        return new MethodCall(
+                ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                selfExpression,
+                ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, operatorSym),
+                new RValue[]{argExpression});
+    }
+
     public static MethodCall prefixOperator(String operatorSym, RValue selfExpression){
         return new MethodCall(
                 ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,

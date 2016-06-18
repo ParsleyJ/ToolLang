@@ -31,7 +31,7 @@ public class TestMain {
         memory.init();
         firstObject.forceSetBelongingClass(memory.baseTypes().C_OBJECT);
         memory.pushScope();
-        memory.loadBaseClasses();
+        memory.loadBaseObjects();
         try {
             new DefinitionMethod(
                     new LocalIdentifier("print"),
