@@ -2,6 +2,7 @@ package com.parsleyj.tool.semantics.base;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolTuple;
 import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
@@ -56,4 +57,11 @@ public class RValueList implements SemanticObject {
         return list;
     }
 
+    public ToolTuple generateToolTuple(Memory mem) throws ToolNativeException{
+        ArrayList<ToolObject> objects = new ArrayList<>();
+        for (RValue rValue : unevaluatedList) {
+            objects.add(rValue.evaluate(mem));
+        }
+        return new ToolTuple(mem, objects);
+    }
 }

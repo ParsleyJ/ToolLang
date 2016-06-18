@@ -384,10 +384,11 @@ public class ToolGrammar {
                 (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
                 rExp, openSquareBracketToken, rExpList, closedSquareBracketToken);
         SyntaxCaseDefinition typeAccessOperation1 = new SyntaxCaseDefinition(rExp, "typeAccessOperation1",
-                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2)), true),
+                (n, s) -> MethodCall.binaryParametricOperator(s.convert(n.get(0)), "<", s.convert(n.get(2)), ">"),
                 rExp, lessOperatorToken, rExp, greaterOperatorToken);
         SyntaxCaseDefinition typeAccessOperation2 = new SyntaxCaseDefinition(rExp, "typeAccessOperation2",
-                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
+                (n, s) -> (RValue) mem -> MethodCall.binaryParametricOperator(
+                        s.convert(n.get(0)), "<", ((RValueList) s.convert(n.get(2))).generateToolTuple(mem), ">").evaluate(memory),
                 rExp, lessOperatorToken, rExpList, greaterOperatorToken);
 
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",

@@ -134,6 +134,7 @@ public class MethodCall implements RValue {
         );
     }
 
+
     public static MethodCall getter(RValue selfExpression, String name){
         return new MethodCall(
                 ToolGetterMethod.METHOD_CATEGORY_GETTER,
