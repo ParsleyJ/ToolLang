@@ -13,7 +13,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NativeInstanceMethod{
-    String value();
+    String value() default "";
     Visibility visibility() default Visibility.Public;
     String category() default ToolMethod.METHOD_CATEGORY_METHOD;
     ToolOperatorMethod.Mode mode() default ToolOperatorMethod.Mode.Binary;

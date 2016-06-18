@@ -4,6 +4,7 @@ import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
@@ -84,6 +85,7 @@ public class BaseTypes {
 
     public Map<Class<?>, ToolClass> NATIVE_CLASS_MAP;
     public Map<Class<?>, ToolInterface> NATIVE_INTERFACE_MAP;
+    public Map<Class, NativeConverter> CONVERTER_MAP;
 
     public List<ToolClass> getAllBaseClasses() {
         return Arrays.asList(
@@ -198,7 +200,7 @@ public class BaseTypes {
                     new FormalParameter[]{new FormalParameter("other", I_TYPE)});
             I_TYPE.addMethodDeclaration(m,
                     ToolGetterMethod.METHOD_CATEGORY_GETTER,
-                    "name",
+                    "typeName",
                     new FormalParameter[]{});
 
             I_ITERABLE = new ToolInterface(m, "Iterable", Collections.emptyList())
@@ -223,81 +225,6 @@ public class BaseTypes {
 
             C_CLASS.setExplicitInterfaces(I_TYPE);
             C_INTERFACE.setExplicitInterfaces(I_TYPE);
-            try {
-                C_CLASS.addInstanceMethod(new ToolMethod(m, ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, Visibility.Public,
-                        ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, "is"),
-                        new FormalParameter[]{new FormalParameter(Memory.ARG_IDENTIFIER, C_OBJECT)},
-                        mem -> new ToolBoolean(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).isOperator(mem.getObjectByIdentifier(Memory.ARG_IDENTIFIER)))));
-                C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
-                        "canBeUsedAs",
-                        new FormalParameter[]{new FormalParameter("other", I_TYPE)},
-                        mem -> new ToolBoolean(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).canBeUsedAs((ToolType) mem.getObjectByIdentifier("other")))));
-                C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
-                        "getConvertibility",
-                        new FormalParameter[]{new FormalParameter("from", I_TYPE)},
-                        mem -> new ToolInteger(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).getConvertibility((ToolType) mem.getObjectByIdentifier("from"))
-                        )));
-                C_CLASS.addInstanceMethod(new ToolMethod(m, Visibility.Public,
-                        "getObjectConvertibility",
-                        new FormalParameter[]{new FormalParameter("from", C_OBJECT)},
-                        mem -> new ToolInteger(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).getObjectConvertibility((ToolObject) mem.getObjectByIdentifier("from"))
-                        )));
-                C_CLASS.addInstanceMethod(new ToolMethod(m, ToolGetterMethod.METHOD_CATEGORY_GETTER, Visibility.Public,
-                        "name",
-                        new FormalParameter[]{},
-                        mem -> new ToolString(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).getTypeName())
-                ));
-
-                C_INTERFACE.addInstanceMethod(new ToolMethod(m, ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, Visibility.Public,
-                        ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Binary, "is"),
-                        new FormalParameter[]{new FormalParameter(Memory.ARG_IDENTIFIER, C_OBJECT)},
-                        mem -> new ToolBoolean(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).isOperator(mem.getObjectByIdentifier(Memory.ARG_IDENTIFIER)))));
-                C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
-                        "canBeUsedAs",
-                        new FormalParameter[]{new FormalParameter("other", I_TYPE)},
-                        mem -> new ToolBoolean(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).canBeUsedAs((ToolType) mem.getObjectByIdentifier("other")))));
-                C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
-                        " getConvertibility",
-                        new FormalParameter[]{new FormalParameter("from", I_TYPE)},
-                        mem -> new ToolInteger(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).getConvertibility((ToolType) mem.getObjectByIdentifier("from"))
-                        )));
-                C_INTERFACE.addInstanceMethod(new ToolMethod(m, Visibility.Public,
-                        "getObjectConvertibility",
-                        new FormalParameter[]{new FormalParameter("from", C_OBJECT)},
-                        mem -> new ToolInteger(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).getObjectConvertibility((ToolObject) mem.getObjectByIdentifier("from"))
-                        )));
-                C_INTERFACE.addInstanceMethod(new ToolMethod(m, ToolGetterMethod.METHOD_CATEGORY_GETTER, Visibility.Public,
-                        "name",
-                        new FormalParameter[]{},
-                        mem -> new ToolString(
-                                mem,
-                                ((ToolType) mem.getSelfObject()).getTypeName())
-                ));
-
-
-            } catch (AmbiguousMethodDefinitionException e) {
-                e.printStackTrace();
-            }
-
-            C_INTERFACE.implementsInterface(I_TYPE);
 
             C_LIST.implementsInterface(I_ITERABLE);
             C_INTEGER_RANGE.implementsInterface(I_ITERABLE);
@@ -319,6 +246,14 @@ public class BaseTypes {
 
             NATIVE_INTERFACE_MAP = new MapBuilder<Class<?>, ToolInterface>()
                     .put(ToolType.class, I_TYPE)
+                    .get();
+
+            CONVERTER_MAP = new MapBuilder<Class, NativeConverter>()
+                    .put(Integer.TYPE, new NativeConverter<Integer>(x -> new ToolInteger(m, x)))
+                    .put(Integer.class, new NativeConverter<Integer>(x -> new ToolInteger(m, x)))
+                    .put(String.class, new NativeConverter<String>(x -> new ToolString(m, x)))
+                    .put(Boolean.TYPE, new NativeConverter<Boolean>(x -> new ToolBoolean(m, x)))
+                    .put(Boolean.class, new NativeConverter<Boolean>(x -> new ToolBoolean(m, x)))
                     .get();
 
             for (Map.Entry<Class<?>, ToolClass> e : NATIVE_CLASS_MAP.entrySet()) {
@@ -358,9 +293,9 @@ public class BaseTypes {
                     Pair<ToolMethod, Boolean> toolMethodBooleanPair = loadNativeMethod(mem, m);
                     ToolMethod newMethod = toolMethodBooleanPair.getFirst();
                     Boolean isInstanceMethod = toolMethodBooleanPair.getSecond();
-                    if(!isInstanceMethod){
+                    if (!isInstanceMethod) {
                         toolInterface.addMethod(newMethod);
-                    }else{
+                    } else {
                         toolInterface.addDefaultMethod(newMethod);
                     }
                 } else {
@@ -393,24 +328,29 @@ public class BaseTypes {
     }
 
     public ToolMethodPrototype loadInterfaceAbstractNativeMethod(Memory mem, Method m) throws NativeClassLoadFailedException {
-        if (!ToolObject.class.isAssignableFrom(m.getReturnType())) //it must return a ToolObject or derivate
-            throw new NativeClassLoadFailedException();
+        //NativeConverter nc = null;
+        if (!ToolObject.class.isAssignableFrom(m.getReturnType())) { //it must return a ToolObject or derivate
+            if (!CONVERTER_MAP.containsKey(m.getReturnType())) throw new NativeClassLoadFailedException(
+                    "Invalid native method return type");
+            //nc = CONVERTER_MAP.get(m.getReturnType());
+        }
 
-        if(m.isAnnotationPresent(NativeClassMethod.class))
+        if (m.isAnnotationPresent(NativeClassMethod.class))
             throw new NativeClassLoadFailedException(
                     "an interface abstract method cannot be annotated as NativeClassMethod");
 
-        if(!m.isAnnotationPresent(NativeClassMethod.class))
+        if (!m.isAnnotationPresent(NativeClassMethod.class))
             throw new NativeClassLoadFailedException("tried to load a not-annotated native abstract method");
 
         NativeInstanceMethod instanceAnn = m.getDeclaredAnnotation(NativeInstanceMethod.class);
         List<Parameter> nativeParameters = PJ.list(m.getParameters());
 
-        if(nativeParameters.isEmpty() || !Memory.class.isAssignableFrom(nativeParameters.get(0).getType()))
-            throw new NativeClassLoadFailedException("first parameter of converted method must always be of type Memory");
+        final boolean hasMemoryParameter = !nativeParameters.isEmpty()
+                && nativeParameters.get(0).getDeclaredAnnotation(MemoryParameter.class) != null
+                && Memory.class.isAssignableFrom(nativeParameters.get(0).getType());
 
         List<ToolType> parTypes = new ArrayList<>();
-        for(int i = 1; i < nativeParameters.size(); ++i){
+        for (int i = hasMemoryParameter?1:0; i < nativeParameters.size(); ++i) {
             Parameter nativePar = nativeParameters.get(i);
             Class nativeParType = nativePar.getType();
             ToolType baseType = getBaseType(nativeParType);
@@ -421,16 +361,20 @@ public class BaseTypes {
                 instanceAnn.category(),
                 (instanceAnn.category()).equals(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR) ?
                         (ToolOperatorMethod.getOperatorMethodName(instanceAnn.mode(), instanceAnn.value())) :
-                        (instanceAnn.value().equals("")?m.getName():instanceAnn.value()),
+                        (instanceAnn.value().equals("") ? m.getName() : instanceAnn.value()),
                 parTypes);
 
     }
 
     public Pair<ToolMethod, Boolean> loadNativeMethod(Memory mem, Method m) throws NativeClassLoadFailedException {
-        if (!ToolObject.class.isAssignableFrom(m.getReturnType())) //it must return a ToolObject or derivate
-            throw new NativeClassLoadFailedException();
+        NativeConverter nc = null;
+        if (!ToolObject.class.isAssignableFrom(m.getReturnType())) { //it must return a ToolObject or derivate
+            if (!CONVERTER_MAP.containsKey(m.getReturnType())) throw new NativeClassLoadFailedException(
+                    "Invalid native method return type");
+            nc = CONVERTER_MAP.get(m.getReturnType());
+        }
 
-        if(!(m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)))
+        if (!(m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)))
             throw new NativeClassLoadFailedException("tried to load a not-annotated native method");
 
 
@@ -438,28 +382,30 @@ public class BaseTypes {
         NativeInstanceMethod instanceAnn = m.getDeclaredAnnotation(NativeInstanceMethod.class);
         boolean isInstanceMethod = instanceAnn != null;
 
-        if(isInstanceMethod && Modifier.isStatic(m.getModifiers()) || !isInstanceMethod && !Modifier.isStatic(m.getModifiers()))
-            throw new NativeClassLoadFailedException("tried to load a method annotated with wrong staticity: "+m.getName());
+        if (isInstanceMethod && Modifier.isStatic(m.getModifiers()) || !isInstanceMethod && !Modifier.isStatic(m.getModifiers()))
+            throw new NativeClassLoadFailedException("tried to load a method annotated with wrong staticity: " + m.getName());
 
 
         List<Parameter> nativeParameters = PJ.list(m.getParameters());
-        if(nativeParameters.isEmpty() || !Memory.class.isAssignableFrom(nativeParameters.get(0).getType()))
-            throw new NativeClassLoadFailedException("first parameter of converted method must always be of type Memory");
+        final boolean hasMemoryParameter = !nativeParameters.isEmpty()
+                && nativeParameters.get(0).getDeclaredAnnotation(MemoryParameter.class) != null
+                && Memory.class.isAssignableFrom(nativeParameters.get(0).getType());
 
-        if(!isInstanceMethod && (!(nativeParameters.size() >= 2) ||
+        if (!isInstanceMethod && (!(nativeParameters.size() >= 2) ||
                 !nativeParameters.get(1).isAnnotationPresent(SelfParameter.class)))
             throw new NativeClassLoadFailedException("when method is static, second parameter must be the self object");
 
-        int effectiveParsIndexStart = isInstanceMethod ? 1 : 2;
+        int effectiveParsIndexStart = (isInstanceMethod ? 0 : 1) + (hasMemoryParameter ? 1 : 0);
 
         List<FormalParameter> parameters = new ArrayList<>();
-        for(int i = effectiveParsIndexStart; i < nativeParameters.size(); ++i){
+        for (int i = effectiveParsIndexStart; i < nativeParameters.size(); ++i) {
             Parameter nativePar = nativeParameters.get(i);
             Class nativeParType = nativePar.getType();
             ToolType baseType = getBaseType(nativeParType);
             parameters.add(new FormalParameter(nativePar.getName(), baseType));
         }
 
+        NativeConverter finalNc = nc;
         ToolMethod newMethod = new ToolMethod(
                 mem,
                 isInstanceMethod ? instanceAnn.category() : classAnn.category(),
@@ -470,34 +416,29 @@ public class BaseTypes {
                                 isInstanceMethod ? instanceAnn.mode() : classAnn.mode(),
                                 isInstanceMethod ? instanceAnn.value() : classAnn.value())
                         ) : (isInstanceMethod ?
-                                (instanceAnn.value().equals("")?m.getName():instanceAnn.value())
-                                : classAnn.value().equals("")?m.getName():classAnn.value()),
+                        (instanceAnn.value().equals("") ? m.getName() : instanceAnn.value())
+                        : classAnn.value().equals("") ? m.getName() : classAnn.value()),
                 parameters.toArray(new FormalParameter[parameters.size()]),
                 memory -> {
                     List<ToolObject> actualPars = new ArrayList<>();
-                    for(FormalParameter par : parameters){
+                    for (FormalParameter par : parameters) {
                         ToolObject x = memory.getObjectByIdentifier(par.getParameterName());
-                        if(par.getParameterType().isOperator(x)) {
+                        if (par.getParameterType().isOperator(x)) {
                             actualPars.add(x);
-                        }else throw new BadMethodCallException(mem,
+                        } else throw new BadMethodCallException(mem,
                                 "Something went wrong while attempting to call a native method"); //TODO specify what method
                     }
                     try {
-                        if(isInstanceMethod) {
-                            List<Object> actualNativePars = new ArrayList<>();
-                            actualNativePars.add(memory);
-                            actualNativePars.addAll(actualPars);
-                            Lol.v("calling native method named '"+m.getName()+"' with no. of parameters: "+actualNativePars.size());
-                            return (ToolObject) m.invoke(memory.getSelfObject(),
-                                    actualNativePars.toArray(new Object[actualNativePars.size()]));
-                        }else{
-                            List<Object> actualNativePars = new ArrayList<>();
-                            actualNativePars.add(memory);
-                            actualNativePars.add(memory.getSelfObject());
-                            actualNativePars.addAll(actualPars);
-                            return (ToolObject) m.invoke(null, actualNativePars.toArray(new Object[actualNativePars.size()]));
-                        }
-                    }catch (IllegalAccessException | InvocationTargetException e) {
+                        List<Object> actualNativePars = new ArrayList<>();
+                        if(hasMemoryParameter) actualNativePars.add(memory);
+                        if(!isInstanceMethod) actualNativePars.add(memory.getSelfObject());
+                        actualNativePars.addAll(actualPars);
+                        Object resultObject = isInstanceMethod ?
+                                    m.invoke(memory.getSelfObject(), actualNativePars.toArray(new Object[actualNativePars.size()])):
+                                    m.invoke(null, actualNativePars.toArray(new Object[actualNativePars.size()]));
+                        if(finalNc == null) return (ToolObject) resultObject;
+                        else return finalNc.convert(resultObject);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException("InvokeFailed");
                     }
                 });
@@ -506,13 +447,13 @@ public class BaseTypes {
 
     public ToolType getBaseType(Class<?> nativeClass) throws NativeClassLoadFailedException {
         ToolType baseType;
-        if(!nativeClass.isInterface()){
+        if (!nativeClass.isInterface()) {
             baseType = NATIVE_CLASS_MAP.get(nativeClass);
-        }else{
+        } else {
             baseType = NATIVE_INTERFACE_MAP.get(nativeClass);
         }
-        if(baseType == null) throw new NativeClassLoadFailedException(
-                "no corresponding base type found for: "+nativeClass.getName());
+        if (baseType == null) throw new NativeClassLoadFailedException(
+                "no corresponding base type found for: " + nativeClass.getName());
         return baseType;
     }
 

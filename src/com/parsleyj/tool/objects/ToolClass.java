@@ -12,6 +12,7 @@ import com.parsleyj.tool.objects.basetypes.ToolList;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.ToolMethodPrototype;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.semantics.util.MethodCall;
 
@@ -206,17 +207,21 @@ public class ToolClass extends ToolObject implements ToolType {
     }
 
     @Override
+    @NativeInstanceMethod(value = "typeName", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
     public String getTypeName() {
         return className;
     }
 
     @Override
+    @NativeInstanceMethod(value = "is", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.Binary)
     public boolean isOperator(ToolObject o) {
         return o.getBelongingClass().isOrExtends(this);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
+    @NativeInstanceMethod
     public boolean canBeUsedAs(ToolType other) throws ToolNativeException {
         if(other instanceof ToolClass){
             return this.isOrExtends((ToolClass) other);
@@ -226,6 +231,7 @@ public class ToolClass extends ToolObject implements ToolType {
     }
 
     @Override
+    @NativeInstanceMethod
     public int getConvertibility(ToolType from) {
         if(from instanceof ToolClass)
             return this.getClassConvertibility((ToolClass) from);
@@ -233,6 +239,7 @@ public class ToolClass extends ToolObject implements ToolType {
     }
 
     @Override
+    @NativeInstanceMethod
     public int getObjectConvertibility(ToolObject from) {
         return this.getClassConvertibility(from.getBelongingClass());
     }

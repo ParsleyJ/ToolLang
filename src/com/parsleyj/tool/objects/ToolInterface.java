@@ -2,9 +2,12 @@ package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.method.FormalParameter;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.ToolMethodPrototype;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,17 +124,21 @@ public class ToolInterface extends ToolObject implements ToolType {
     }
 
     @Override
+    @NativeInstanceMethod(value = "typeName", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
     public String getTypeName() {
         return interfaceName;
     }
 
     @Override
+    @NativeInstanceMethod(value = "is", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.Binary)
     public boolean isOperator(ToolObject o) throws ToolNativeException {
         return o.respondsToInterface(this);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
+    @NativeInstanceMethod
     public boolean canBeUsedAs(ToolType other) {
         if(other instanceof ToolInterface){
             return this.isOrExtends((ToolInterface) other);
@@ -139,6 +146,7 @@ public class ToolInterface extends ToolObject implements ToolType {
     }
 
     @Override
+    @NativeInstanceMethod
     public int getObjectConvertibility(ToolObject from) throws ToolNativeException {
         if(from.getBelongingClass().implementsInterface(this)){
             return getExplicitConvertibility(from.getBelongingClass());
@@ -150,6 +158,7 @@ public class ToolInterface extends ToolObject implements ToolType {
     }
 
     @Override
+    @NativeInstanceMethod
     public int getConvertibility(ToolType from) {
         return getExplicitConvertibility(from);
     }
