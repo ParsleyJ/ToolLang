@@ -32,7 +32,8 @@ public class DefinitionClass implements RValue{
 
     public static void assertInClassDefinition(Memory memory) throws InvalidDefinitionException {
         if (memory.getTopScope().getScopeType() != Memory.Scope.ScopeType.ClassDefinition)
-            throw new InvalidDefinitionException(memory, "Operator or Ctor definitions can only be in a class/extension definition scope.");
+            throw new InvalidDefinitionException(memory,
+                    "Operator or Ctor definitions can only be in a class/extension definition scope.");
     }
 
     @Override
@@ -58,7 +59,6 @@ public class DefinitionClass implements RValue{
             }
         }
 
-
         ToolClass klass = new ToolClass(memory,
                 name, parentClass,
                 interfaces.toArray(new ToolInterface[interfaces.size()]));
@@ -73,7 +73,12 @@ public class DefinitionClass implements RValue{
         }
         klass.setNameTable(new HashMap<>(memory.getTopScope().getNameTable()));
         memory.popScope();
-        //FIXME: check if class actually implements methods declared in explicitly implemented interfaces
+        for (ToolInterface anInterface : interfaces) {
+            if(!klass.implicitImplements(anInterface))
+                throw new InvalidDefinitionException(memory,
+                        "Class with name: '"+parentClass.getTypeName()+"' does not implement explicitly " +
+                                "declared interface '"+anInterface.getTypeName()+"'");
+        }
         memory.loadClass(klass);
         return klass;
     }
