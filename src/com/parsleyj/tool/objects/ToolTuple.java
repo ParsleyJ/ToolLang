@@ -7,9 +7,14 @@ import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
+import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.objects.types.TypeAdapter;
+import com.parsleyj.tool.semantics.base.ParameterDefinition;
+import com.parsleyj.utils.Pair;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -38,8 +43,16 @@ public class ToolTuple extends ToolObject {
             mode = ToolOperatorMethod.Mode.BinaryParametric)
     public static ToolObject parametrizeType(@MemoryParameter Memory memory,
                                              @SelfParameter ToolClass selfTupleClass,
-                                             ToolType subType){
-        return new ParametrizedTupleType(memory, subType);
+                                             ToolType subType) throws ToolNativeException{
+        ToolObject result = new ParametrizedTupleType(memory, subType);
+        for(Method m : ParametrizedTupleType.class.getMethods()){
+            if(m.isAnnotationPresent(NativeInstanceMethod.class)) {
+                Pair<ToolMethod, Boolean> resultPair = memory.baseTypes().loadNativeMethod(memory, m);
+                result.addMethod(resultPair.getFirst());
+            }
+        }
+        return result;
+
     }
 
     public static class ParametrizedTupleType extends TypeAdapter {
@@ -57,11 +70,14 @@ public class ToolTuple extends ToolObject {
         }
 
         @Override
+        @NativeInstanceMethod(value = "typeName", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
         public String getTypeName() throws ToolNativeException {
             return tupleClass.getTypeName() + "<" + parameterType.getTypeName() + ">";
         }
 
         @Override
+        @NativeInstanceMethod(value = "is", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                mode = ToolOperatorMethod.Mode.Binary)
         public boolean isOperator(ToolObject o) throws ToolNativeException {
             if(!memory.baseTypes().C_TUPLE.isOperator(o)) return false;
             ToolTuple tuple = (ToolTuple) o;
@@ -72,6 +88,7 @@ public class ToolTuple extends ToolObject {
         }
 
         @Override
+        @NativeInstanceMethod
         public boolean canBeUsedAs(ToolType other) throws ToolNativeException {
             if(tupleClass.canBeUsedAs(other)) return true;
             if(other.canBeUsedAs(tupleClass)) {
@@ -84,6 +101,7 @@ public class ToolTuple extends ToolObject {
         }
 
         @Override
+        @NativeInstanceMethod
         public int getObjectConvertibility(ToolObject from) throws ToolNativeException {
             int total = memory.baseTypes().C_TUPLE.getObjectConvertibility(from);
             if(from instanceof ToolTuple){
@@ -94,6 +112,7 @@ public class ToolTuple extends ToolObject {
         }
 
         @Override
+        @NativeInstanceMethod
         public int getConvertibility(ToolType from) throws ToolNativeException {
             int total = tupleClass.getConvertibility(from);
 

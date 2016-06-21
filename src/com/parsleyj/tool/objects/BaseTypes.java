@@ -77,6 +77,7 @@ public class BaseTypes {
     public ToolExceptionClass C_INVALID_BREAK_EXPRESSION_EXCEPTION;
     public ToolExceptionClass C_INVALID_L_VALUE_EXCEPTION;
     public ToolExceptionClass C_BAD_RETURNED_VALUE_EXCEPTION;
+    public ToolExceptionClass C_NATIVE_CLASS_LOAD_FAILED_EXCEPTION;
 
     // --- INTERFACES ---
     public ToolInterface I_TYPE;
@@ -125,7 +126,8 @@ public class BaseTypes {
                 C_INVALID_DEFINITION_EXCEPTION,
                 C_INVALID_BREAK_EXPRESSION_EXCEPTION,
                 C_INVALID_L_VALUE_EXCEPTION,
-                C_BAD_RETURNED_VALUE_EXCEPTION
+                C_BAD_RETURNED_VALUE_EXCEPTION,
+                C_NATIVE_CLASS_LOAD_FAILED_EXCEPTION
         );
     }
 
@@ -180,6 +182,7 @@ public class BaseTypes {
             C_INVALID_BREAK_EXPRESSION_EXCEPTION = new ToolExceptionClass(m, "InvalidBreakExpressionException");
             C_INVALID_L_VALUE_EXCEPTION = new ToolExceptionClass(m, "InvalidLValueException");
             C_BAD_RETURNED_VALUE_EXCEPTION = new ToolExceptionClass(m, "BadReturnedValueException");
+            C_NATIVE_CLASS_LOAD_FAILED_EXCEPTION = new ToolExceptionClass(m, "NativeClassLoadFailedException");
 
             I_TYPE = new ToolInterface(m, "Type", Collections.emptyList())
                     .addMethodDeclaration(m,
@@ -263,7 +266,7 @@ public class BaseTypes {
             for (Map.Entry<Class<?>, ToolInterface> e : NATIVE_INTERFACE_MAP.entrySet()) {
                 loadNativeInterface(m, e.getKey(), e.getValue());
             }
-        } catch (NativeClassLoadFailedException | ToolNativeException e) {
+        } catch (ToolNativeException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -285,7 +288,8 @@ public class BaseTypes {
     public void loadNativeInterfaceMethods(Memory mem, Class<?> nativeInterface, ToolInterface toolInterface)
             throws NativeClassLoadFailedException, ToolNativeException {
         if (!nativeInterface.isInterface())
-            throw new NativeClassLoadFailedException(nativeInterface.getName() + " is not a Java interface.");
+            throw new NativeClassLoadFailedException(mem,
+                    nativeInterface.getName() + " is not a Java interface.");
 
         for (Method m : nativeInterface.getDeclaredMethods()) {
             if (m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)) {
@@ -331,16 +335,16 @@ public class BaseTypes {
         //NativeConverter nc = null;
         if (!ToolObject.class.isAssignableFrom(m.getReturnType())) { //it must return a ToolObject or derivate
             if (!CONVERTER_MAP.containsKey(m.getReturnType())) throw new NativeClassLoadFailedException(
-                    "Invalid native method return type");
+                    mem, "Invalid native method return type");
             //nc = CONVERTER_MAP.get(m.getReturnType());
         }
 
         if (m.isAnnotationPresent(NativeClassMethod.class))
             throw new NativeClassLoadFailedException(
-                    "an interface abstract method cannot be annotated as NativeClassMethod");
+                    mem, "an interface abstract method cannot be annotated as NativeClassMethod");
 
         if (!m.isAnnotationPresent(NativeClassMethod.class))
-            throw new NativeClassLoadFailedException("tried to load a not-annotated native abstract method");
+            throw new NativeClassLoadFailedException(mem, "tried to load a not-annotated native abstract method");
 
         NativeInstanceMethod instanceAnn = m.getDeclaredAnnotation(NativeInstanceMethod.class);
         List<Parameter> nativeParameters = PJ.list(m.getParameters());
@@ -353,7 +357,7 @@ public class BaseTypes {
         for (int i = hasMemoryParameter?1:0; i < nativeParameters.size(); ++i) {
             Parameter nativePar = nativeParameters.get(i);
             Class nativeParType = nativePar.getType();
-            ToolType baseType = getBaseType(nativeParType);
+            ToolType baseType = getBaseType(mem, nativeParType);
             parTypes.add(baseType);
         }
 
@@ -370,12 +374,12 @@ public class BaseTypes {
         NativeConverter nc = null;
         if (!ToolObject.class.isAssignableFrom(m.getReturnType())) { //it must return a ToolObject or derivate
             if (!CONVERTER_MAP.containsKey(m.getReturnType())) throw new NativeClassLoadFailedException(
-                    "Invalid native method return type");
+                    mem, "Invalid native method return type");
             nc = CONVERTER_MAP.get(m.getReturnType());
         }
 
         if (!(m.isAnnotationPresent(NativeClassMethod.class) || m.isAnnotationPresent(NativeInstanceMethod.class)))
-            throw new NativeClassLoadFailedException("tried to load a not-annotated native method");
+            throw new NativeClassLoadFailedException(mem, "tried to load a not-annotated native method");
 
 
         NativeClassMethod classAnn = m.getDeclaredAnnotation(NativeClassMethod.class);
@@ -383,7 +387,7 @@ public class BaseTypes {
         boolean isInstanceMethod = instanceAnn != null;
 
         if (isInstanceMethod && Modifier.isStatic(m.getModifiers()) || !isInstanceMethod && !Modifier.isStatic(m.getModifiers()))
-            throw new NativeClassLoadFailedException("tried to load a method annotated with wrong staticity: " + m.getName());
+            throw new NativeClassLoadFailedException(mem, "tried to load a method annotated with wrong staticity: " + m.getName());
 
 
         List<Parameter> nativeParameters = PJ.list(m.getParameters());
@@ -393,7 +397,7 @@ public class BaseTypes {
 
         if (!isInstanceMethod && (!(nativeParameters.size() >= 2) ||
                 !nativeParameters.get(1).isAnnotationPresent(SelfParameter.class)))
-            throw new NativeClassLoadFailedException("when method is static, second parameter must be the self object");
+            throw new NativeClassLoadFailedException(mem, "when method is static, second parameter must be the self object");
 
         int effectiveParsIndexStart = (isInstanceMethod ? 0 : 1) + (hasMemoryParameter ? 1 : 0);
 
@@ -401,7 +405,7 @@ public class BaseTypes {
         for (int i = effectiveParsIndexStart; i < nativeParameters.size(); ++i) {
             Parameter nativePar = nativeParameters.get(i);
             Class nativeParType = nativePar.getType();
-            ToolType baseType = getBaseType(nativeParType);
+            ToolType baseType = getBaseType(mem, nativeParType);
             parameters.add(new FormalParameter(nativePar.getName(), baseType));
         }
 
@@ -445,27 +449,25 @@ public class BaseTypes {
         return new Pair<>(newMethod, isInstanceMethod);
     }
 
-    public ToolType getBaseType(Class<?> nativeClass) throws NativeClassLoadFailedException {
+    public ToolType getBaseType(Memory m, Class<?> nativeClass) throws NativeClassLoadFailedException {
         ToolType baseType;
         if (!nativeClass.isInterface()) {
             baseType = NATIVE_CLASS_MAP.get(nativeClass);
         } else {
             baseType = NATIVE_INTERFACE_MAP.get(nativeClass);
         }
-        if (baseType == null) throw new NativeClassLoadFailedException(
+        if (baseType == null) throw new NativeClassLoadFailedException(m,
                 "no corresponding base type found for: " + nativeClass.getName());
         return baseType;
     }
 
     //TODO: convert native java objects
 
-    public static class NativeClassLoadFailedException extends Exception {
-        public NativeClassLoadFailedException() {
+    public static class NativeClassLoadFailedException extends ToolNativeException {
+        public NativeClassLoadFailedException(Memory m, String msg) {
+            super(m.baseTypes().C_NATIVE_CLASS_LOAD_FAILED_EXCEPTION.newExceptionInstance(msg));
         }
 
-        public NativeClassLoadFailedException(String msg) {
-            super(msg);
-        }
     }
 
     //todo visibility of fields

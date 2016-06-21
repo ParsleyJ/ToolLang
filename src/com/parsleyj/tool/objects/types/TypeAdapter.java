@@ -12,6 +12,7 @@ import com.parsleyj.tool.objects.ToolType;
  */
 public abstract class TypeAdapter extends ToolObject implements ToolType {
 
+
     public TypeAdapter(Memory m, ToolClass belongingClass) {
         super(m, belongingClass);
     }

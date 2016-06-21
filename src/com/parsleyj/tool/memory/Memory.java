@@ -33,9 +33,9 @@ public class Memory implements ConfigurationElement {
         public CallFrame(Memory belongingMemory, ToolObject owner, ArrayDeque<Scope> definitionScope) {
             this.owner = owner;
             stack = new ArrayDeque<>();
-            if(definitionScope.isEmpty()){
+            if (definitionScope.isEmpty()) {
                 stack.add(owner.getMembersScope());
-            }else stack.addAll(definitionScope);
+            } else stack.addAll(definitionScope);
             stack.add(new Scope(belongingMemory, Scope.ScopeType.MethodCall));
         }
 
@@ -47,18 +47,18 @@ public class Memory implements ConfigurationElement {
             return owner;
         }
 
-        public void popAllScopes(){
-            while(!stack.isEmpty()){
+        public void popAllScopes() {
+            while (!stack.isEmpty()) {
                 stack.getLast().executeOnPopActions();
                 stack.removeLast();
             }
         }
 
-        public void addTag(String tag){
+        public void addTag(String tag) {
             tags.add(tag);
         }
 
-        public boolean containsTag(String tag){
+        public boolean containsTag(String tag) {
             return tags.contains(tag);
         }
     }
@@ -100,8 +100,9 @@ public class Memory implements ConfigurationElement {
         }
 
         public void putReference(Reference r) throws ReferenceAlreadyExistsException {
-            if(contains(r.getIdentifierString()))
-                throw new ReferenceAlreadyExistsException(belongingMemory, "Reference with name \"" + r.getIdentifierString() + "\" already exists in this scope.");
+            if (contains(r.getIdentifierString()))
+                throw new ReferenceAlreadyExistsException(belongingMemory,
+                        "Reference with name \"" + r.getIdentifierString() + "\" already exists in this scope.");
             referenceTable.put(r.getIdentifierString(), r);
         }
 
@@ -135,24 +136,24 @@ public class Memory implements ConfigurationElement {
             return belongingMemory;
         }
 
-        public void addOnPopAction(OnPopAction action){
+        public void addOnPopAction(OnPopAction action) {
             this.onPopActions.add(action);
         }
 
-        public void executeOnPopActions(){
+        public void executeOnPopActions() {
             onPopActions.forEach(a -> a.onPop(belongingMemory));
         }
 
         @FunctionalInterface
-        public interface OnPopAction{
+        public interface OnPopAction {
             void onPop(Memory m);
         }
 
-        public void addTag(String tag){
+        public void addTag(String tag) {
             tags.add(tag);
         }
 
-        public boolean containsTag(String tag){
+        public boolean containsTag(String tag) {
             return tags.contains(tag);
         }
     }
@@ -288,7 +289,10 @@ public class Memory implements ConfigurationElement {
         this.callFrames.getLast().getStack().removeLast();
     }
 
-    public Triple<ArrayDeque<Scope>, ToolMethod, ToolObject> resolveFunction(String category, String name, List<ToolObject> arguments) throws ToolNativeException {
+    public Triple<ArrayDeque<Scope>, ToolMethod, ToolObject> resolveFunction(String category,
+                                                                             String name,
+                                                                             List<ToolObject> arguments)
+            throws ToolNativeException {
         Iterator<Scope> icf = callFrames.getLast().getStack().descendingIterator();
         while (icf.hasNext()) {
             Scope sc = icf.next();
@@ -316,8 +320,8 @@ public class Memory implements ConfigurationElement {
     }
 
     private void loadInterfaces(List<ToolInterface> allBaseInterfaces) {
-        for(ToolInterface i : allBaseInterfaces){
-            try{
+        for (ToolInterface i : allBaseInterfaces) {
+            try {
                 getTopScope().getNameTable().put(i.getInterfaceName(), NameKind.Variable);
                 this.newLocalReference(i);
             } catch (ReferenceAlreadyExistsException e) {
@@ -356,6 +360,5 @@ public class Memory implements ConfigurationElement {
     public BaseTypes baseTypes() {
         return baseTypes;
     }
-
 
 }
