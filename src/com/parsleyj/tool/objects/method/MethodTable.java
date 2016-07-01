@@ -114,6 +114,15 @@ public class MethodTable {
         }
     }
 
+    public String printMethods() throws ToolNativeException{
+        StringBuilder sb = new StringBuilder("MethodTable: {");
+        for (ToolMethod method : methods) {
+            sb.append("\t").append(method.completeFunctionName()).append("\n");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
 
     @FunctionalInterface
     interface OverloadResolutionParameterCriteria {

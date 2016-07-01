@@ -11,6 +11,7 @@ import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 import com.parsleyj.tool.semantics.base.RValue;
+import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.Triple;
 
 import java.util.ArrayDeque;
@@ -220,6 +221,7 @@ public class MethodCall implements RValue {
         }
 
         MethodTable callableMethodTable = caller.generateCallableMethodTable();
+        Lol.v(callableMethodTable.printMethods());
         ToolMethod tm = callableMethodTable.resolve(caller, category, name, arguments);
 
         return tm.call(memory, caller, arguments, new ArrayDeque<>());

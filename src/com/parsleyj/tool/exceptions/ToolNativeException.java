@@ -14,6 +14,7 @@ public class ToolNativeException extends Exception{
     private List<String> frameTrace = new ArrayList<>();
 
     public ToolNativeException(ToolException exceptionObject){
+        super(exceptionObject.getExplain());
         this.exceptionObject = exceptionObject;
     }
 

@@ -378,10 +378,11 @@ public class ToolGrammar {
                 openSquareBracketToken, rExpList, closedSquareBracketToken);
 
         SyntaxCaseDefinition elementAccessOperation1 = new SyntaxCaseDefinition(rExp, "elementAccessOperation1",
-                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2)), true),
+                (n, s) -> MethodCall.binaryParametricOperator(s.convert(n.get(0)), "[", s.convert(n.get(2)), "]"),
                 rExp, openSquareBracketToken, rExp, closedSquareBracketToken);
         SyntaxCaseDefinition elementAccessOperation2 = new SyntaxCaseDefinition(rExp, "elementAccessOperation2",
-                (n, s) -> new ElementAccessOperation(s.convert(n.get(0)), s.convert(n.get(2))),
+                (n, s) -> (RValue) mem -> MethodCall.binaryParametricOperator(
+                        s.convert(n.get(0)), "[", ((RValueList) s.convert(n.get(2))).generateToolTuple(mem), "]").evaluate(memory),
                 rExp, openSquareBracketToken, rExpList, closedSquareBracketToken);
         SyntaxCaseDefinition typeAccessOperation1 = new SyntaxCaseDefinition(rExp, "typeAccessOperation1",
                 (n, s) -> MethodCall.binaryParametricOperator(s.convert(n.get(0)), "<", s.convert(n.get(2)), ">"),

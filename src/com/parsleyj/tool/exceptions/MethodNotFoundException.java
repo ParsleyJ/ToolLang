@@ -26,8 +26,7 @@ public class MethodNotFoundException extends ToolNativeException {
                 (owner != null ? (owner + ".") : "") + name);
 
         if (!category.equals(ToolGetterMethod.METHOD_CATEGORY_GETTER)
-                && !category.equals(ToolSetterMethod.METHOD_CATEGORY_SETTER)
-                && !category.equals(ToolOperatorMethod.METHOD_CATEGORY_OPERATOR)) {
+                && !category.equals(ToolSetterMethod.METHOD_CATEGORY_SETTER)) {
             sb.append("(");
             for (int i = 0; i < arguments.size(); i++) {
                 ToolObject argument = arguments.get(i);
