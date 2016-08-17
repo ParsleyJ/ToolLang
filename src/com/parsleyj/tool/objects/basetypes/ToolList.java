@@ -60,7 +60,7 @@ public class ToolList extends ToolObject {
             }
         }
         if (resultList.size() == 1) return resultList.get(0);
-        else return new ToolList(m, resultList);
+        else return new ToolTuple(m, resultList);
     }
 
     @NativeInstanceMethod(value = "[]", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,

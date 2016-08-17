@@ -63,6 +63,9 @@ public class RecursiveParser implements Parser {
             if (oneNodeInStream(ts, leftDelimiter, rightDelimiter)) {
                 if ((leftDelimiter == null && rightDelimiter == null
                         && (permissiveMode || ts.peekLeft().getSyntaxClass().isOrExtends(rootClass))) ||
+                        //FIXME HERE NULLPOINTEREXCEPTION IF THE STREAM CONTAINS ONLY A TERMINAL!!!
+                        // fix: search for a syntax case containing only that terminal, return the node if found,
+                        //      throw a ParseFailed if not.
                         (leftDelimiter != null ? (
                                 !ts.peekRight().isTerminal() && (permissiveMode || ts.peekRight().getSyntaxClass().isOrExtends(rootClass)))
                                 : (!ts.peekLeft().isTerminal() && (permissiveMode || ts.peekLeft().getSyntaxClass().isOrExtends(rootClass))))) {
