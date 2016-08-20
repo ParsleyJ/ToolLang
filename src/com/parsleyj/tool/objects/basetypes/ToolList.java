@@ -63,6 +63,21 @@ public class ToolList extends ToolObject {
         else return new ToolTuple(m, resultList);
     }
 
+    @NativeInstanceMethod(value = "[]=", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.Ternary)
+    public ToolObject assignAt(@MemoryParameter Memory m, ToolObject index, ToolObject arg) throws ToolNativeException {
+        if (!allIndexesAreIntegersOrRanges(m, new ToolTuple(m, Collections.singletonList(index))))
+            throw new InvalidIndexTypeException(m, "All index elements have to be instances of Integer or IntegerRange.");
+        if(index.getBelongingClass().isOrExtends(m.baseTypes().C_INTEGER))
+            assignAtWithBackIndexes(m, this, ((ToolInteger) index).getIntegerValue(), arg);
+        else {
+            for (Integer i : (ToolIntegerRange) index) {
+                assignAtWithBackIndexes(m, this, i, arg);
+            }
+        }
+        return arg;
+    }
+
     @NativeInstanceMethod(value = "[]", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)
     public ToolObject _elementAt_(@MemoryParameter Memory m, ToolTuple indexes) throws ToolNativeException {
@@ -81,6 +96,24 @@ public class ToolList extends ToolObject {
         }
         if (resultList.size() == 1) return resultList.get(0);
         else return new ToolTuple(m, resultList);
+    }
+
+    @NativeInstanceMethod(value = "[]=", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.Ternary)
+    public ToolObject assignAt(@MemoryParameter Memory m, ToolTuple indexes, ToolObject arg) throws ToolNativeException {
+        if (!allIndexesAreIntegersOrRanges(m, indexes))
+            throw new InvalidIndexTypeException(m, "All index elements have to be instances of Integer or IntegerRange.");
+        if(indexes.getTupleObjects().isEmpty()) throw new InvalidIndexListException(m, "At least one index is needed.");
+        for (ToolObject ind : indexes.getTupleObjects()) {
+            if(ind.getBelongingClass().isOrExtends(m.baseTypes().C_INTEGER))
+                assignAtWithBackIndexes(m, this, ((ToolInteger) ind).getIntegerValue(), arg);
+            else {
+                for (Integer i : (ToolIntegerRange) ind) {
+                    assignAtWithBackIndexes(m, this, i, arg);
+                }
+            }
+        }
+        return arg;
     }
 
     @NativeInstanceMethod(value = "indexes", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
@@ -197,6 +230,17 @@ public class ToolList extends ToolObject {
         } else {
             if (toolObjects.size() + index < 0) throw new ToolIndexOutOfBoundsException(m, index, toolObjects.size());
             return toolObjects.get(toolObjects.size() + index);
+        }
+    }
+
+    private static void assignAtWithBackIndexes(Memory m, ToolList list, Integer index, ToolObject arg) throws ToolNativeException {
+        List<? extends ToolObject> toolObjects = list.getToolObjects();
+        if (index >= 0) {
+            if(index >= toolObjects.size()) throw new ToolIndexOutOfBoundsException(m, index, toolObjects.size());
+            list.getToolObjects().set(index, arg);
+        } else {
+            if (toolObjects.size() + index < 0) throw new ToolIndexOutOfBoundsException(m, index, toolObjects.size());
+            list.getToolObjects().set(toolObjects.size() + index, arg);
         }
     }
 

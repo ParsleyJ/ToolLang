@@ -3,6 +3,7 @@ package com.parsleyj.tool.semantics.util;
 import com.parsleyj.tool.exceptions.CallOnNullException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolTuple;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.ToolObject;
@@ -132,6 +133,18 @@ public class MethodCall implements RValue {
                 ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.BinaryParametric,
                         operatorSym1+operatorSym2),
                 new RValue[]{argExpression}
+        );
+    }
+
+    public static MethodCall ternaryOperator(RValue selfExpression,
+                                             String operatorSym1, RValue argExpression1,
+                                             String operatorSym2, RValue argExpression2){
+        return new MethodCall(
+                ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+                selfExpression,
+                ToolOperatorMethod.getOperatorMethodName(ToolOperatorMethod.Mode.Ternary,
+                        operatorSym1+operatorSym2),
+                new RValue[]{argExpression1, argExpression2}
         );
     }
 

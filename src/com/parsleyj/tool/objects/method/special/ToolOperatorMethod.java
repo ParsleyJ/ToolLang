@@ -6,7 +6,7 @@ package com.parsleyj.tool.objects.method.special;
  */
 public class ToolOperatorMethod {
 
-    public enum Mode{Prefix, Suffix, Binary, BinaryParametric}
+    public enum Mode{Prefix, Suffix, Binary, Ternary, BinaryParametric}
 
     public static final String METHOD_CATEGORY_OPERATOR = "METHOD_CATEGORY_OPERATOR";
 

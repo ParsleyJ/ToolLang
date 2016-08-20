@@ -2,11 +2,16 @@ package com.parsleyj.tool.objects;
 
 import com.parsleyj.tool.exceptions.*;
 import com.parsleyj.tool.memory.*;
+import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.ToolMethodPrototype;
+import com.parsleyj.tool.objects.method.Visibility;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.semantics.util.MethodCall;
 import com.parsleyj.tool.semantics.base.RValue;
+
+import java.util.Objects;
 
 /**
  * Created by Giuseppe on 01/04/16.
@@ -139,6 +144,12 @@ public class ToolObject implements RValue {
             if(!callables.contains(m.getMethodCategory(), m.getMethodName(), m.getArgumentTypes())) return false;
         }
         return true;
+    }
+
+    @NativeInstanceMethod(value = "===", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.Binary)
+    public boolean isSameInstance(ToolObject other){
+        return Objects.equals(this.id, other.id);
     }
 
 

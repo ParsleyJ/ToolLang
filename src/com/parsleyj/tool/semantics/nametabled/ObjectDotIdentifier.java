@@ -10,6 +10,8 @@ import com.parsleyj.tool.semantics.base.NamedLValue;
 import com.parsleyj.tool.semantics.base.RValue;
 import com.parsleyj.tool.semantics.util.MethodCall;
 
+import java.util.HashMap;
+
 /**
  * Created by Giuseppe on 05/04/16.
  * TODO: javadoc
@@ -34,7 +36,9 @@ public class ObjectDotIdentifier implements NamedLValue {
     @Override
     public ToolObject evaluate(Memory m) throws ToolNativeException {
         ToolObject leftExpObject = leftExp.evaluate(m);
-        switch (leftExpObject.getMembersScope().getNameTable().get(ident)){
+        Memory.NameKind nameKind = leftExpObject.getMembersScope().getNameTable().get(ident);
+        if(nameKind == null) return MethodCall.getter(leftExpObject, ident).evaluate(m);
+        else switch (nameKind){
             case Method:
                 return new ToolMethodSet(m, leftExpObject, ident);
             default:

@@ -1,6 +1,8 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
 import com.parsleyj.tool.objects.basetypes.ToolList;
@@ -144,6 +146,7 @@ public class ToolGrammar {
             }
         };
         TokenCategoryDefinition atToken = new TokenCategoryDefinition("AT", "\\Q@\\E");
+        TokenCategoryDefinition doubleDotToken = new TokenCategoryDefinition("DOUBLE_DOT", "\\Q..\\E");
         TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
         TokenCategoryDefinition destructuralAssignmentOperatorToken = new TokenCategoryDefinition("DESTRUCTURAL_ASSIGNMENT_OPERATOR", "\\Q:=\\E");
         TokenCategoryDefinition tagOperatorToken = new TokenCategoryDefinition("TAG_OPERATOR_SIGN", "\\Q|:\\E");
@@ -155,7 +158,7 @@ public class ToolGrammar {
         TokenCategoryDefinition minusToken = new TokenCategoryDefinition("MINUS", "\\Q-\\E");
         TokenCategoryDefinition asteriskToken = new TokenCategoryDefinition("ASTERISK", "\\Q*\\E");
         TokenCategoryDefinition percentSignToken = new TokenCategoryDefinition("PERCENT_SIGN", "\\Q%\\E");
-        TokenCategoryDefinition getBlockDefinitionOperatorToken = new TokenCategoryDefinition("GET_BLOCK_DEFINITION_OPERATOR", "\\Q&\\E");
+        TokenCategoryDefinition sameInstanceOperatorToken = new TokenCategoryDefinition("SAME_INSTANCE_OPERATOR", "\\Q===\\E");
         TokenCategoryDefinition assignmentOperatorToken = new TokenCategoryDefinition("ASSIGNMENT_OPERATOR", "\\Q=\\E");
         TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
         TokenCategoryDefinition notEqualsOperatorToken = new TokenCategoryDefinition("NOT_EQUALS_OPERATOR", "\\Q!=\\E");
@@ -178,13 +181,13 @@ public class ToolGrammar {
         LexicalPatternDefinition[] lexicon = new LexicalPatternDefinition[]{
                 stringToken,
                 identifierMultiPattern,
-                atToken, dotToken,
+                atToken, doubleDotToken, dotToken,
                 destructuralAssignmentOperatorToken,
                 tagOperatorToken,
                 colonToken, commaToken,
                 exclamationPointToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
-                getBlockDefinitionOperatorToken,
+                sameInstanceOperatorToken,
                 equalsOperatorToken, notEqualsOperatorToken,
                 greaterOperatorToken, equalGreaterOperatorToken,
                 lessOperatorToken, equalLessOperatorToken,
@@ -230,6 +233,7 @@ public class ToolGrammar {
         SyntaxCaseDefinition parameterDeclaration = new SyntaxCaseDefinition(param, "parameterDeclaration",
                 (n, s) -> new ExplicitTypeParameterDefinition(s.convert(n.get(0)), s.convert(n.get(2))),
                 ident, colonToken, rExp);
+
         SyntaxCaseDefinition rValueListBetweenBrackets = new SyntaxCaseDefinition(rExp, "rValueListBetweenBrackets",
                 (n, s) -> new RValueListBetweenBrackets((RValueList) s.convert(n.get(1))),
                 openRoundBracketToken, rExpList, closedRoundBracketToken);
@@ -385,12 +389,33 @@ public class ToolGrammar {
                 (n, s) -> (RValue) mem -> MethodCall.binaryParametricOperator(
                         s.convert(n.get(0)), "<", ((RValueList) s.convert(n.get(2))).generateToolTuple(mem), ">").evaluate(memory),
                 rExp, lessOperatorToken, rExpList, greaterOperatorToken);
-        SyntaxCaseDefinition elementAccessOperation1 = new SyntaxCaseDefinition(rExp, "elementAccessOperation1",
-                (n, s) -> MethodCall.binaryParametricOperator(s.convert(n.get(0)), "[", s.convert(n.get(2)), "]"),
+        SyntaxCaseDefinition elementAccessOperation1 = new SyntaxCaseDefinition(lExp, "elementAccessOperation1",
+                (n, s) -> new LValue() {
+                    @Override
+                    public void assign(ToolObject o, Memory m) throws ToolNativeException {
+                        MethodCall.ternaryOperator(s.convert(n.get(0)), "[", s.convert(n.get(2)), "]=", o).evaluate(m);
+                    }
+                    @Override
+                    public ToolObject evaluate(Memory memory) throws ToolNativeException {
+                        return MethodCall.binaryParametricOperator(s.convert(n.get(0)), "[", s.convert(n.get(2)), "]")
+                                .evaluate(memory);
+                    }
+                },
                 rExp, openSquareBracketToken, rExp, closedSquareBracketToken);
-        SyntaxCaseDefinition elementAccessOperation2 = new SyntaxCaseDefinition(rExp, "elementAccessOperation2",
-                (n, s) -> (RValue) mem -> MethodCall.binaryParametricOperator(
-                        s.convert(n.get(0)), "[", ((RValueList) s.convert(n.get(2))).generateToolTuple(mem), "]").evaluate(memory),
+        SyntaxCaseDefinition elementAccessOperation2 = new SyntaxCaseDefinition(lExp, "elementAccessOperation2",
+                (n, s) -> new LValue() {
+                    @Override
+                    public void assign(ToolObject o, Memory m) throws ToolNativeException {
+                        MethodCall.ternaryOperator(s.convert(n.get(0)), "[",
+                                ((RValueList) s.convert(n.get(2))).generateToolTuple(memory), "]=", o).evaluate(m);
+                    }
+                    @Override
+                    public ToolObject evaluate(Memory memory) throws ToolNativeException {
+                        return MethodCall.binaryParametricOperator(
+                                s.convert(n.get(0)), "[", ((RValueList) s.convert(n.get(2))).generateToolTuple(memory), "]")
+                                .evaluate(memory);
+                    }
+                },
                 rExp, openSquareBracketToken, rExpList, closedSquareBracketToken);
 
         SyntaxCaseDefinition unaryMinusOperation = new SyntaxCaseDefinition(rExp, "unaryMinus",
@@ -399,9 +424,6 @@ public class ToolGrammar {
         SyntaxCaseDefinition logicalNotOperation = new SyntaxCaseDefinition(rExp, "logicalNotOperation",
                 (n, s) -> MethodCall.prefixOperator("!", s.convert(n.get(1))),
                 exclamationPointToken, rExp).parsingDirection(Associativity.RightToLeft);
-        SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
-                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "to", b)),
-                rExp, toOperatorToken, rExp);
         SyntaxCaseDefinition asteriskOperation = new SyntaxCaseDefinition(rExp, "asteriskOperation",
                 new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "*", b)),
                 rExp, asteriskToken, rExp);
@@ -417,6 +439,9 @@ public class ToolGrammar {
         SyntaxCaseDefinition plusOperation = new SyntaxCaseDefinition(rExp, "plusOperation",
                 new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "+", b)),
                 rExp, plusToken, rExp);
+        SyntaxCaseDefinition intervalOperation = new SyntaxCaseDefinition(rExp, "intervalOperation",
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "..", b)),
+                rExp, doubleDotToken, rExp);
         SyntaxCaseDefinition greaterOperation = new SyntaxCaseDefinition(rExp, "greaterOperation",
                 new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, ">", b)),
                 rExp, greaterOperatorToken, rExp);
@@ -438,6 +463,10 @@ public class ToolGrammar {
         SyntaxCaseDefinition notEqualsOperation = new SyntaxCaseDefinition(rExp, "notEqualsOperation",
                 new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "!=", b)),
                 rExp, notEqualsOperatorToken, rExp);
+        SyntaxCaseDefinition isIdenticalOperation = new SyntaxCaseDefinition(rExp, "isIdenticalOperation",
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "===", b)),
+                rExp, sameInstanceOperatorToken, rExp);
+
         SyntaxCaseDefinition logicalAndOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
                 new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "and", b)),
                 rExp, andOperatorToken, rExp);
@@ -741,13 +770,14 @@ public class ToolGrammar {
                 elementAccessOperation1, elementAccessOperation2,
                 unaryMinusOperation,
                 logicalNotOperation,
-                intervalOperation,
                 asteriskOperation, slashOperation, percentSignOperation,
                 minusOperation, plusOperation,
+                intervalOperation,
                 greaterOperation, equalGreaterOperation,
                 lessOperation, equalLessOperation,
                 isOperation,
                 equalsOperation, notEqualsOperation,
+                isIdenticalOperation,
                 logicalAndOperation,
                 logicalOrOperation,
 

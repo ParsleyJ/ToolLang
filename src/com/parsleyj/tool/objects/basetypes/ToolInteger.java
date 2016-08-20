@@ -106,7 +106,7 @@ public class ToolInteger extends ToolObject {
         return new ToolBoolean(m, !Objects.equals(this.getIntegerValue(), b.getIntegerValue()));
     }
 
-    @NativeInstanceMethod(value = "to", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+    @NativeInstanceMethod(value = "..", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.Binary)
     public ToolIntegerRange _to_(@MemoryParameter Memory m, ToolInteger b){
         return new ToolIntegerRange(m, this.getIntegerValue(), b.getIntegerValue());
