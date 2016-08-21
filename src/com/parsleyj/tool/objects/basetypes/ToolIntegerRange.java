@@ -7,6 +7,7 @@ import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
+import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.semantics.nametabled.DefinitionGetter;
 
 import java.util.ArrayList;

@@ -118,6 +118,8 @@ public class ToolObject implements RValue {
                 +":"+"@id:"+getId()+">";
     }
 
+    @NativeInstanceMethod(value = "print", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
+            mode = ToolOperatorMethod.Mode.Prefix)
     public String getPrintString() {
         return toString();
     }

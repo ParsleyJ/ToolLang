@@ -60,6 +60,15 @@ public class ToolTuple extends ToolObject {
 
     }
 
+    @Override
+    public String getPrintString() {
+        StringBuilder sb = new StringBuilder();
+        for(ToolObject o: getTupleObjects()){
+            sb.append(o.getPrintString());
+        }
+        return sb.toString();
+    }
+
     @NativeClassMethod(value = "[]", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.BinaryParametric)
     public static ToolObject parametrizeCardinality(@MemoryParameter Memory memory,

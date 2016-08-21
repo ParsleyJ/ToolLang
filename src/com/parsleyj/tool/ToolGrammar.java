@@ -48,6 +48,8 @@ public class ToolGrammar {
     public static SyntaxClass ident = new SyntaxClass("ident", lExp, param);
     public static SyntaxClass identList = new SyntaxClass("identList", lExpList, paramList);
 
+    public static SyntaxClass printOperation = new SyntaxClass("printOperation", rExp);
+
     public static Interpreter getDefaultInterpreter(Memory memory) {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
                 (g) -> ToolString.newFromLiteral(memory, g));
@@ -64,7 +66,8 @@ public class ToolGrammar {
         TokenCategoryDefinition ifToken = new TokenCategoryDefinition("IF_KEYWORD", "\\Qif\\E");
         TokenCategoryDefinition thenToken = new TokenCategoryDefinition("THEN_KEYWORD", "\\Qthen\\E");
         TokenCategoryDefinition elseToken = new TokenCategoryDefinition("ELSE_KEYWORD", "\\Qelse\\E");
-        TokenCategoryDefinition toOperatorToken = new TokenCategoryDefinition("TO_OPERATOR", "\\Qto\\E");
+        TokenCategoryDefinition breakToken = new TokenCategoryDefinition("BREAK_KEYWORD", "\\Qbreak\\E");
+        TokenCategoryDefinition printOperatorToken = new TokenCategoryDefinition("PRINT_OPERATOR", "\\Qprint\\E");
         TokenCategoryDefinition andOperatorToken = new TokenCategoryDefinition("AND_OPERATOR", "\\Qand\\E");
         TokenCategoryDefinition orOperatorToken = new TokenCategoryDefinition("OR_OPERATOR", "\\Qor\\E");
         TokenCategoryDefinition notOperatorToken = new TokenCategoryDefinition("NOT_OPERATOR", "\\Qnot\\E");
@@ -88,8 +91,9 @@ public class ToolGrammar {
             @Override
             public List<TokenConverter> getDeclaredTokenConverters() {
                 return getConverters(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
-                        doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
-                        orOperatorToken, notOperatorToken,
+                        doToken, ifToken, thenToken, elseToken,
+                        breakToken, printOperatorToken,
+                        andOperatorToken, orOperatorToken, notOperatorToken,
                         defToken, getterToken, setterToken, operatorToken, ctorToken,
                         localToken, valToken, varToken,
                         classToken, extensionToken, extensorToken,
@@ -111,7 +115,8 @@ public class ToolGrammar {
                     case "if": return ifToken;
                     case "then": return thenToken;
                     case "else": return elseToken;
-                    case "to": return toOperatorToken;
+                    case "break": return breakToken;
+                    case "print": return printOperatorToken;
                     case "and": return andOperatorToken;
                     case "or": return orOperatorToken;
                     case "not": return notOperatorToken;
@@ -135,8 +140,9 @@ public class ToolGrammar {
             @Override
             public List<TokenCategory> declaredTokenCategories() {
                 return Arrays.asList(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
-                        doToken, ifToken, thenToken, elseToken, toOperatorToken, andOperatorToken,
-                        orOperatorToken, notOperatorToken,
+                        doToken, ifToken, thenToken, elseToken,
+                        breakToken, printOperatorToken,
+                        andOperatorToken, orOperatorToken, notOperatorToken,
                         defToken, getterToken, setterToken, operatorToken, ctorToken,
                         localToken, valToken, varToken,
                         classToken, extensionToken, extensorToken,
@@ -145,11 +151,16 @@ public class ToolGrammar {
                         identifierToken);
             }
         };
-        TokenCategoryDefinition atToken = new TokenCategoryDefinition("AT", "\\Q@\\E");
         TokenCategoryDefinition doubleDotToken = new TokenCategoryDefinition("DOUBLE_DOT", "\\Q..\\E");
-        TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
         TokenCategoryDefinition destructuralAssignmentOperatorToken = new TokenCategoryDefinition("DESTRUCTURAL_ASSIGNMENT_OPERATOR", "\\Q:=\\E");
         TokenCategoryDefinition tagOperatorToken = new TokenCategoryDefinition("TAG_OPERATOR_SIGN", "\\Q|:\\E");
+        TokenCategoryDefinition sameInstanceOperatorToken = new TokenCategoryDefinition("SAME_INSTANCE_OPERATOR", "\\Q===\\E");
+        TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
+        TokenCategoryDefinition notEqualsOperatorToken = new TokenCategoryDefinition("NOT_EQUALS_OPERATOR", "\\Q!=\\E");
+        TokenCategoryDefinition equalGreaterOperatorToken = new TokenCategoryDefinition("EQUAL_GREATER_OPERATOR", "\\Q>=\\E");
+        TokenCategoryDefinition equalLessOperatorToken = new TokenCategoryDefinition("EQUAL_LESS_OPERATOR", "\\Q<=\\E");
+        TokenCategoryDefinition atToken = new TokenCategoryDefinition("AT", "\\Q@\\E");
+        TokenCategoryDefinition dotToken = new TokenCategoryDefinition("DOT", "\\Q.\\E");
         TokenCategoryDefinition colonToken = new TokenCategoryDefinition("COLON", "\\Q:\\E");
         TokenCategoryDefinition commaToken = new TokenCategoryDefinition("COMMA", "\\Q,\\E");
         TokenCategoryDefinition slashToken = new TokenCategoryDefinition("SLASH", "\\Q/\\E");
@@ -158,14 +169,9 @@ public class ToolGrammar {
         TokenCategoryDefinition minusToken = new TokenCategoryDefinition("MINUS", "\\Q-\\E");
         TokenCategoryDefinition asteriskToken = new TokenCategoryDefinition("ASTERISK", "\\Q*\\E");
         TokenCategoryDefinition percentSignToken = new TokenCategoryDefinition("PERCENT_SIGN", "\\Q%\\E");
-        TokenCategoryDefinition sameInstanceOperatorToken = new TokenCategoryDefinition("SAME_INSTANCE_OPERATOR", "\\Q===\\E");
         TokenCategoryDefinition assignmentOperatorToken = new TokenCategoryDefinition("ASSIGNMENT_OPERATOR", "\\Q=\\E");
-        TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
-        TokenCategoryDefinition notEqualsOperatorToken = new TokenCategoryDefinition("NOT_EQUALS_OPERATOR", "\\Q!=\\E");
         TokenCategoryDefinition greaterOperatorToken = new TokenCategoryDefinition("GREATER_OPERATOR", "\\Q>\\E");
-        TokenCategoryDefinition equalGreaterOperatorToken = new TokenCategoryDefinition("EQUAL_GREATER_OPERATOR", "\\Q>=\\E");
         TokenCategoryDefinition lessOperatorToken = new TokenCategoryDefinition("LESS_OPERATOR", "\\Q<\\E");
-        TokenCategoryDefinition equalLessOperatorToken = new TokenCategoryDefinition("EQUAL_LESS_OPERATOR", "\\Q<=\\E");
         TokenCategoryDefinition semicolonToken = new TokenCategoryDefinition("SEMICOLON", "\\Q;\\E");
         TokenCategoryDefinition openRoundBracketToken = new TokenCategoryDefinition("OPEN_ROUND_BRACKET", "\\Q(\\E");
         TokenCategoryDefinition closedRoundBracketToken = new TokenCategoryDefinition("CLOSED_ROUND_BRACKET", "\\Q)\\E");
@@ -496,6 +502,8 @@ public class ToolGrammar {
         SyntaxCaseDefinition destructuralAssignment = new SyntaxCaseDefinition(rExp, "destructuralAssignment",
                 (n, s) -> new DestructuralAssignment(s.convert(n.get(0)), s.convert(n.get(2))),
                 lExp, destructuralAssignmentOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+
+
         SyntaxCaseDefinition taggedExpression = new SyntaxCaseDefinition(rExp, "taggedExpression",
                 (n, s) -> new TaggedExpression(s.convert(n.get(0)), s.convert(n.get(2))),
                 ident, tagOperatorToken, rExp);
@@ -521,6 +529,13 @@ public class ToolGrammar {
         SyntaxCaseDefinition identifierListStep = new SyntaxCaseDefinition(identList, "identifierListStep",
                 new UBOConverterMethod<IdentifierList, IdentifierList, Identifier>(IdentifierList::new),
                 identList, commaToken, ident);
+
+        SyntaxCaseDefinition printOperation1 = new SyntaxCaseDefinition(rExp, "printOperation1",
+                (n, s) -> new PrintOperation(s.convert(n.get(1))),
+                printOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition printOperation2 = new SyntaxCaseDefinition(rExp, "printOperation2",
+                (n, s) -> (RValue) mem -> new PrintOperation(((RValueList) s.convert(n.get(1))).generateToolTuple(mem)).evaluate(mem),
+                printOperatorToken, rExpList).parsingDirection(Associativity.RightToLeft);
 
         SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
@@ -611,10 +626,10 @@ public class ToolGrammar {
         SyntaxCaseDefinition intervalOperatorDefinition = new SyntaxCaseDefinition(rExp, "intervalOperatorDefinition",
                 (n, s) -> DefinitionOperator.binary(
                         s.convert(n.get(1)),
-                        "to",
+                        "..",
                         s.convert(n.get(3)),
                         s.convert(n.get(5))),
-                operatorToken, rExp, toOperatorToken, rExp, openCurlyBracketToken, rExp, closedCurlyBracketToken);
+                operatorToken, rExp, doubleDotToken, rExp, openCurlyBracketToken, rExp, closedCurlyBracketToken);
         SyntaxCaseDefinition asteriskOperatorDefinition = new SyntaxCaseDefinition(rExp, "asteriskOperatorDefinition",
                 (n, s) -> DefinitionOperator.binary(
                         s.convert(n.get(1)),
@@ -792,6 +807,9 @@ public class ToolGrammar {
                 parameterDefinitionListBase, parameterDefinitionListStep,
                 lExpListBase, lExpListStep,
                 identifierListBase, identifierListStep,
+
+                printOperation1,
+                printOperation2,
 
                 sequentialComposition,
 

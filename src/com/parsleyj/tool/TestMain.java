@@ -32,18 +32,7 @@ public class TestMain {
         firstObject.forceSetBelongingClass(memory.baseTypes().C_OBJECT);
         memory.pushScope();
         memory.loadBaseObjects();
-        try {
-            new DefinitionMethod(
-                    new LocalIdentifier("print"),
-                    Collections.singletonList(new ExplicitTypeParameterDefinition(new LocalIdentifier("x"), memory.baseTypes().C_OBJECT)),
-                    memory1 -> {
-                        ToolObject result = new LocalIdentifier("x").evaluate(memory1);
-                        System.out.println(result.getPrintString());
-                        return result;
-                    }).evaluate(memory);
-        } catch (ToolNativeException e) {
-            e.printStackTrace();
-        }
+
         Interpreter interp = ToolGrammar.getDefaultInterpreter(memory);
         interp.setPrintDebugMessages(PRINT_DEBUG);
         interp.initParser(ToolGrammar.rExp);

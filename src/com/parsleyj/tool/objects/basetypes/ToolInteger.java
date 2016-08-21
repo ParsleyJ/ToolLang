@@ -113,7 +113,6 @@ public class ToolInteger extends ToolObject {
     }
 
 
-
     @Override
     public String getPrintString() {
         return ""+String.valueOf(integer);

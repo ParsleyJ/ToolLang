@@ -8,6 +8,7 @@ import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.toolparser.semanticsconverter.SemanticObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Giuseppe on 04/04/16.
@@ -29,6 +30,10 @@ public class RValueList implements SemanticObject {
     public RValueList(RValueList a, RValue b) {
         unevaluatedList.addAll(a.getUnevaluatedList());
         unevaluatedList.add(b);
+    }
+
+    public RValueList(List<RValue> list){
+        unevaluatedList.addAll(list);
     }
 
     public ArrayList<RValue> getUnevaluatedList() {
@@ -64,4 +69,5 @@ public class RValueList implements SemanticObject {
         }
         return new ToolTuple(mem, objects);
     }
+
 }

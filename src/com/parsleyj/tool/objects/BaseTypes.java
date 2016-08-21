@@ -298,6 +298,7 @@ public class BaseTypes {
                     ToolMethod newMethod = toolMethodBooleanPair.getFirst();
                     Boolean isInstanceMethod = toolMethodBooleanPair.getSecond();
                     if (!isInstanceMethod) {
+
                         toolInterface.addMethod(newMethod);
                     } else {
                         toolInterface.addDefaultMethod(newMethod);
@@ -318,8 +319,10 @@ public class BaseTypes {
                 ToolMethod newMethod = toolMethodBooleanPair.getFirst();
                 Boolean isInstanceMethod = toolMethodBooleanPair.getSecond();
                 if (!isInstanceMethod) {
+                    //TODO: update class name table!!!
                     toolClass.addClassMethod(newMethod);
                 } else {
+                    //TODO: update object name table!!!
                     toolClass.addInstanceMethod(newMethod);
                 }
                 Lol.v("Added native method: " + newMethod.getMethodCategory() + " " + (isInstanceMethod ?
