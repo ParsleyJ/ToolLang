@@ -44,6 +44,8 @@ public class DefinitionGetter implements RValue{
         }
     }
 
+
+
     public static ToolMethod createGetter(Memory memory, String name, RValue body) throws ToolNativeException{
         return new ToolMethod(
                 memory,

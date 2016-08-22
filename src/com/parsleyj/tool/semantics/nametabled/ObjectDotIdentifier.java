@@ -47,6 +47,7 @@ public class ObjectDotIdentifier implements NamedLValue {
         }
     }
 
+
     @Override
     public String toString() {
         return leftExp + "." + ident;

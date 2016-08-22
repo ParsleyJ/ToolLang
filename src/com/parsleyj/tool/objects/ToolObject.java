@@ -79,6 +79,10 @@ public class ToolObject implements RValue {
         }
     }
 
+    @Override
+    public void addTag(String s) {
+        //TODO: add tag to object?
+    }
 
 
     public void addMethod(ToolMethod method) throws AmbiguousMethodDefinitionException {

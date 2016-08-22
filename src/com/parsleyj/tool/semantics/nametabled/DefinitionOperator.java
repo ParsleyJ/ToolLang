@@ -74,6 +74,8 @@ public class DefinitionOperator implements RValue {
     }
 
 
+
+
     public static ToolMethod createAndAddBinaryOperatorMethod(Memory memory, ToolOperatorMethod.Mode mode, String operatorSym, FormalParameter argParam, RValue body) throws ToolNativeException {
         ToolMethod method = createBinaryOperator(memory, mode, operatorSym, argParam, body);
         method.putDefinitionScope(memory.getCurrentFrameStack());

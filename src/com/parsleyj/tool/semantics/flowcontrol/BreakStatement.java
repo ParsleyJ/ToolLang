@@ -21,10 +21,10 @@ public class BreakStatement implements RValue{
     private final RValue resultExpression;
 
     public BreakStatement(RValue resultExpression) {
-        this(BREAKABLE_SCOPE_TAG, resultExpression);
+        this(resultExpression, BREAKABLE_SCOPE_TAG);
     }
 
-    public BreakStatement(String tag, RValue resultExpression){
+    public BreakStatement(RValue resultExpression, String tag){
         this.tag = tag;
         this.resultExpression = resultExpression;
     }
@@ -36,16 +36,18 @@ public class BreakStatement implements RValue{
         while (!stack.isEmpty()&&stack.getLast().contains(tag)) {
             stack.removeLast();
         }
-        if(stack.isEmpty()) throw new InvalidBreakExpression(memory, "break expression outside of breakable scope");
+        if(stack.isEmpty()) throw new InvalidBreakExpression(memory, "Break command not captured. Break tag: "+tag);
         throw new Break(tag, result);
     }
+
+
 
     public class Break extends RuntimeException {
         private String tag;
         private ToolObject result;
 
         public Break(String tag, ToolObject result) {
-            super("break expression outside of breakable scope");
+            super("Break command not captured. Break tag: "+tag);
             this.tag = tag;
             this.result = result;
         }

@@ -21,12 +21,7 @@ public interface RValue extends SemanticObject{
         return to.evaluateAsConditional(m);
     }
 
-    final List<String> tags = new ArrayList<>();
     default void addTag(String s){
-        tags.add(s);
-    }
-
-    default List<String> getTags(){
-        return tags;
+        //does nothing by default. override this to use tags in specific expressions.
     }
 }

@@ -154,7 +154,8 @@ public class ToolGrammar {
         TokenCategoryDefinition doubleDotToken = new TokenCategoryDefinition("DOUBLE_DOT", "\\Q..\\E");
         TokenCategoryDefinition destructuralAssignmentOperatorToken = new TokenCategoryDefinition(
                 "DESTRUCTURAL_ASSIGNMENT_OPERATOR", "\\Q:=\\E");
-        TokenCategoryDefinition tagOperatorToken = new TokenCategoryDefinition("TAG_OPERATOR", "\\Q@:\\E");
+        TokenCategoryDefinition tagSetOperatorToken = new TokenCategoryDefinition("TAG_SET_OPERATOR", "\\Q@@:\\E");
+        TokenCategoryDefinition tagDereferenceOperatorToken = new TokenCategoryDefinition("TAG_DEREFERENCE_OPERATOR", "\\Q@@\\E");
         TokenCategoryDefinition sameInstanceOperatorToken = new TokenCategoryDefinition("SAME_INSTANCE_OPERATOR", "\\Q===\\E");
         TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
         TokenCategoryDefinition notEqualsOperatorToken = new TokenCategoryDefinition("NOT_EQUALS_OPERATOR", "\\Q!=\\E");
@@ -189,9 +190,10 @@ public class ToolGrammar {
         LexicalPatternDefinition[] lexicon = new LexicalPatternDefinition[]{
                 stringToken,
                 identifierMultiPattern,
+                tagSetOperatorToken,
+                tagDereferenceOperatorToken,
                 atToken, doubleDotToken, dotToken,
                 destructuralAssignmentOperatorToken,
-                tagOperatorToken,
                 colonToken, commaToken,
                 exclamationPointToken,
                 plusToken, minusToken, asteriskToken, slashToken, percentSignToken,
@@ -508,7 +510,7 @@ public class ToolGrammar {
 
         SyntaxCaseDefinition taggedExpression = new SyntaxCaseDefinition(rExp, "taggedExpression",
                 (n, s) -> new TaggedExpression(s.convert(n.get(0)), s.convert(n.get(2))),
-                ident, tagOperatorToken, rExp);
+                ident, tagSetOperatorToken, rExp);
 
         SyntaxCaseDefinition rExpListBase = new SyntaxCaseDefinition(rExpList, "rExpListBase",
                 new UBOConverterMethod<RValueList, RValue, RValue>(RValueList::new),
@@ -543,10 +545,19 @@ public class ToolGrammar {
         SyntaxCaseDefinition breakStatement1 = new SyntaxCaseDefinition(rExp, "breakStatement1",
                 (n, s) -> new BreakStatement(s.convert(n.get(1))),
                 breakToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition taggedBreakStatement1 = new SyntaxCaseDefinition(rExp, "taggedBreakStatement1",
+                (n, s) -> new BreakStatement(s.convert(n.get(1)),
+                        ((Identifier) s.convert(n.get(3))).getIdentifierString()),
+                breakToken, rExp, tagDereferenceOperatorToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition breakStatement2 = new SyntaxCaseDefinition(rExp, "breakStatement2",
                 (n, s) -> (RValue) mem -> new BreakStatement(((RValueList) s.convert(n.get(1))).generateToolList(mem))
                         .evaluate(mem),
                 breakToken, rExpList).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition taggedBreakStatement2 = new SyntaxCaseDefinition(rExp, "taggedBreakStatement2",
+                (n, s) -> (RValue) mem -> new BreakStatement(
+                        ((RValueList) s.convert(n.get(1))).generateToolList(mem),
+                        ((Identifier) s.convert(n.get(3))).getIdentifierString()).evaluate(mem),
+                breakToken, rExpList, tagDereferenceOperatorToken, ident).parsingDirection(Associativity.RightToLeft);
 
         SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
@@ -575,13 +586,15 @@ public class ToolGrammar {
                         s.convert(n.get(1)),
                         Collections.singletonList(s.convert(n.get(3))),
                         s.convert(n.get(6))),
-                defToken, ident, openRoundBracketToken, param, closedRoundBracketToken, doToken, rExp).parsingDirection(Associativity.RightToLeft);
+                defToken, ident, openRoundBracketToken, param, closedRoundBracketToken, doToken, rExp)
+                .parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition methodDefinitionEB2 = new SyntaxCaseDefinition(rExp, "methodDefinitionEB2",
                 (n, s) -> new DefinitionMethod(
                         s.convert(n.get(1)),
                         ((ParameterDefinitionList)s.convert(n.get(3))).getParameterDefinitions(),
                         s.convert(n.get(6))),
-                defToken, ident, openRoundBracketToken, paramList, closedRoundBracketToken, doToken, rExp).parsingDirection(Associativity.RightToLeft);
+                defToken, ident, openRoundBracketToken, paramList, closedRoundBracketToken, doToken, rExp)
+                .parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition getterDefinition = new SyntaxCaseDefinition(rExp, "getterDefinition",
                 (n, s) -> new DefinitionGetter(((Identifier) s.convert(n.get(1))).getIdentifierString(), s.convert(n.get(3))),
                 getterToken, ident, openCurlyBracketToken, rExp, closedCurlyBracketToken);
@@ -820,7 +833,9 @@ public class ToolGrammar {
                 identifierListBase, identifierListStep,
 
                 printOperation1, printOperation2,
-                breakStatement1, breakStatement2,
+
+                breakStatement1, taggedBreakStatement1,
+                breakStatement2, taggedBreakStatement2,
 
                 sequentialComposition,
 
