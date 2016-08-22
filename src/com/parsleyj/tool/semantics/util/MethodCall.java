@@ -12,6 +12,7 @@ import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.tool.objects.method.special.ToolSetterMethod;
 import com.parsleyj.tool.semantics.base.RValue;
+import com.parsleyj.tool.semantics.flowcontrol.BreakStatement;
 import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.Triple;
 
@@ -255,13 +256,6 @@ public class MethodCall implements RValue {
         ToolObject caller = tml.getThird();
 
         return tm.call(memory, caller, arguments, definitionScope);
-    }
-
-    public static ToolObject executeScopedBlockWithNoParameters(RValue block, Memory memory) throws ToolNativeException{
-        memory.pushScope();
-        ToolObject result = block.evaluate(memory);
-        memory.popScope();
-        return result;
     }
 
     @Override

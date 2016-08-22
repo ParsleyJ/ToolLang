@@ -152,8 +152,9 @@ public class ToolGrammar {
             }
         };
         TokenCategoryDefinition doubleDotToken = new TokenCategoryDefinition("DOUBLE_DOT", "\\Q..\\E");
-        TokenCategoryDefinition destructuralAssignmentOperatorToken = new TokenCategoryDefinition("DESTRUCTURAL_ASSIGNMENT_OPERATOR", "\\Q:=\\E");
-        TokenCategoryDefinition tagOperatorToken = new TokenCategoryDefinition("TAG_OPERATOR_SIGN", "\\Q|:\\E");
+        TokenCategoryDefinition destructuralAssignmentOperatorToken = new TokenCategoryDefinition(
+                "DESTRUCTURAL_ASSIGNMENT_OPERATOR", "\\Q:=\\E");
+        TokenCategoryDefinition tagOperatorToken = new TokenCategoryDefinition("TAG_OPERATOR", "\\Q@:\\E");
         TokenCategoryDefinition sameInstanceOperatorToken = new TokenCategoryDefinition("SAME_INSTANCE_OPERATOR", "\\Q===\\E");
         TokenCategoryDefinition equalsOperatorToken = new TokenCategoryDefinition("EQUALS_OPERATOR", "\\Q==\\E");
         TokenCategoryDefinition notEqualsOperatorToken = new TokenCategoryDefinition("NOT_EQUALS_OPERATOR", "\\Q!=\\E");
@@ -179,7 +180,8 @@ public class ToolGrammar {
         TokenCategoryDefinition closedCurlyBracketToken = new TokenCategoryDefinition("CLOSED_CURLY_BRACKET", "\\Q}\\E");
         TokenCategoryDefinition openSquareBracketToken = new TokenCategoryDefinition("OPEN_SQUARE_BRACKET", "\\Q[\\E");
         TokenCategoryDefinition closedSquareBracketToken = new TokenCategoryDefinition("CLOSED_SQUARE_BRACKET", "\\Q]\\E");
-        TokenCategoryDefinition numeralToken = new TokenCategoryDefinition("NUMERAL", "(0|([1-9]\\d*))",// "(?<=\\s|^)[-+]?\\d+(?=\\s|$)"
+        TokenCategoryDefinition numeralToken = new TokenCategoryDefinition("NUMERAL", "(0|([1-9]\\d*))",
+                // "(?<=\\s|^)[-+]?\\d+(?=\\s|$)"
                 g -> new ToolInteger(memory, Integer.decode(g)));
         TokenCategoryDefinition newLineToken = new TokenCategoryDefinition("NEWLINE", "\\Q\n\\E", true);
         TokenCategoryDefinition blankToken = new TokenCategoryDefinition("BLANK", "\\s+", true);
@@ -534,8 +536,17 @@ public class ToolGrammar {
                 (n, s) -> new PrintOperation(s.convert(n.get(1))),
                 printOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition printOperation2 = new SyntaxCaseDefinition(rExp, "printOperation2",
-                (n, s) -> (RValue) mem -> new PrintOperation(((RValueList) s.convert(n.get(1))).generateToolTuple(mem)).evaluate(mem),
+                (n, s) -> (RValue) mem -> new PrintOperation(((RValueList) s.convert(n.get(1))).generateToolTuple(mem))
+                        .evaluate(mem),
                 printOperatorToken, rExpList).parsingDirection(Associativity.RightToLeft);
+
+        SyntaxCaseDefinition breakStatement1 = new SyntaxCaseDefinition(rExp, "breakStatement1",
+                (n, s) -> new BreakStatement(s.convert(n.get(1))),
+                breakToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition breakStatement2 = new SyntaxCaseDefinition(rExp, "breakStatement2",
+                (n, s) -> (RValue) mem -> new BreakStatement(((RValueList) s.convert(n.get(1))).generateToolList(mem))
+                        .evaluate(mem),
+                breakToken, rExpList).parsingDirection(Associativity.RightToLeft);
 
         SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
@@ -808,8 +819,8 @@ public class ToolGrammar {
                 lExpListBase, lExpListStep,
                 identifierListBase, identifierListStep,
 
-                printOperation1,
-                printOperation2,
+                printOperation1, printOperation2,
+                breakStatement1, breakStatement2,
 
                 sequentialComposition,
 
