@@ -11,6 +11,7 @@ import com.parsleyj.utils.reversiblestream.ReversibleStream;
 import com.parsleyj.utils.reversiblestream.StackedReversibleStream;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,10 +28,19 @@ public class RecursiveParser implements Parser {
     private Grammar grammar;
     private SyntaxClass rootClass;
 
+    private List<SyntaxCase> singleTerminalCases = new ArrayList<>();
 
     public RecursiveParser(Grammar grammar, SyntaxClass rootClass) {
         this.grammar = grammar;
         this.rootClass = rootClass;
+        initSingleTerminalCasesList();
+    }
+
+    private void initSingleTerminalCasesList() {
+        singleTerminalCases.addAll(grammar.getPriorityCaseList().stream()
+                .filter(scpair -> scpair.getSecond().startsWithTerminal() && scpair.getSecond().getStructure().size() == 1)
+                .map(Pair::getSecond)
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -61,11 +71,25 @@ public class RecursiveParser implements Parser {
         while (foundSomething && !ts.isEmpty() && delimitersCheck(ts, leftDelimiter, rightDelimiter)) {
             enteredWhileFirstTime = true;
             if (oneNodeInStream(ts, leftDelimiter, rightDelimiter)) {
-                if ((leftDelimiter == null && rightDelimiter == null
+                if (ts.peekLeft().isTerminal()){
+                    try {
+                        SyntaxCase instanceCase = new SyntaxCase("", rootClass, ts.peekLeft().getTokenCategory());
+                        for (SyntaxCase singleTerminalCase: singleTerminalCases){
+                            if(Grammar.caseMatch(instanceCase, singleTerminalCase) &&
+                                    singleTerminalCase.getBelongingClass().isOrExtends(rootClass)){
+                                ts.commit();
+                                return newNonTerminalNode(
+                                        singleTerminalCase.getBelongingClass(),
+                                        singleTerminalCase,
+                                        Collections.singletonList(ts.popLeft()));
+                            }
+                        }
+                    } catch (NoEnoughElementsException e) {
+                        ts.rollback();
+                        throw newParseFailedException(Collections.emptyList());
+                    }
+                } else if ((leftDelimiter == null && rightDelimiter == null
                         && (permissiveMode || ts.peekLeft().getSyntaxClass().isOrExtends(rootClass))) ||
-                        //FIXME: HERE ^^^^^^^^^^^^ NullPointerException IF THE STREAM CONTAINS ONLY A TERMINAL!!!
-                        // fix: search for a syntax case containing only that terminal, return the node if found,
-                        //      throw a ParseFailed if not.
                         (leftDelimiter != null ? (
                                 !ts.peekRight().isTerminal() && (permissiveMode || ts.peekRight().getSyntaxClass().isOrExtends(rootClass)))
                                 : (!ts.peekLeft().isTerminal() && (permissiveMode || ts.peekLeft().getSyntaxClass().isOrExtends(rootClass))))) {
