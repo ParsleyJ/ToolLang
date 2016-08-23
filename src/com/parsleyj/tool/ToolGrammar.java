@@ -48,8 +48,6 @@ public class ToolGrammar {
     public static SyntaxClass ident = new SyntaxClass("ident", lExp, param);
     public static SyntaxClass identList = new SyntaxClass("identList", lExpList, paramList);
 
-    public static SyntaxClass printOperation = new SyntaxClass("printOperation", rExp);
-
     public static Interpreter getDefaultInterpreter(Memory memory) {
         TokenCategoryDefinition stringToken = new TokenCategoryDefinition("STRING", "([\"'])(?:(?=(\\\\?))\\2.)*?\\1",
                 (g) -> ToolString.newFromLiteral(memory, g));
@@ -534,6 +532,9 @@ public class ToolGrammar {
                 new UBOConverterMethod<IdentifierList, IdentifierList, Identifier>(IdentifierList::new),
                 identList, commaToken, ident);
 
+        SyntaxCaseDefinition printOperation0 = new SyntaxCaseDefinition(rExp, "printOperation0",
+                (n, s) -> (RValue) mem -> new PrintOperation(new ToolString(mem, "")).evaluate(mem),
+                printOperatorToken);
         SyntaxCaseDefinition printOperation1 = new SyntaxCaseDefinition(rExp, "printOperation1",
                 (n, s) -> new PrintOperation(s.convert(n.get(1))),
                 printOperatorToken, rExp).parsingDirection(Associativity.RightToLeft);
@@ -832,7 +833,7 @@ public class ToolGrammar {
                 lExpListBase, lExpListStep,
                 identifierListBase, identifierListStep,
 
-                printOperation1, printOperation2,
+                printOperation0, printOperation1, printOperation2,
 
                 breakStatement1, taggedBreakStatement1,
                 breakStatement2, taggedBreakStatement2,

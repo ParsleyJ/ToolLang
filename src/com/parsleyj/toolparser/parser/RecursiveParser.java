@@ -11,7 +11,6 @@ import com.parsleyj.utils.reversiblestream.ReversibleStream;
 import com.parsleyj.utils.reversiblestream.StackedReversibleStream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,14 +75,19 @@ public class RecursiveParser implements Parser {
                         SyntaxCase instanceCase = new SyntaxCase("", rootClass, ts.peekLeft().getTokenCategory());
                         for (SyntaxCase singleTerminalCase: singleTerminalCases){
                             if(Grammar.caseMatch(instanceCase, singleTerminalCase) &&
-                                    singleTerminalCase.getBelongingClass().isOrExtends(rootClass)){
+                                    (rootClass == null || singleTerminalCase.getBelongingClass().isOrExtends(rootClass))){
+                                ParseTreeNode ptn;
+                                if (leftDelimiter != null) ptn = ts.popRight();
+                                else ptn = ts.popLeft();
                                 ts.commit();
                                 return newNonTerminalNode(
                                         singleTerminalCase.getBelongingClass(),
                                         singleTerminalCase,
-                                        Collections.singletonList(ts.popLeft()));
+                                        Collections.singletonList(ptn));
                             }
                         }
+                        ts.rollback();
+                        throw newParseFailedException(ts.toList());
                     } catch (NoEnoughElementsException e) {
                         ts.rollback();
                         throw newParseFailedException(Collections.emptyList());
@@ -135,7 +139,8 @@ public class RecursiveParser implements Parser {
                 (leftDelimiter == null || !ts.peekRight().isTerminal() || !ts.peekRight().getTokenCategory().matches(leftDelimiter));
     }
 
-    private boolean rightToLeftParse(DoubleSidedReversibleStream<ParseTreeNode> ts, TokenCategory rightDelimiter, boolean foundSomething, SyntaxCase candidate) {
+    private boolean rightToLeftParse(DoubleSidedReversibleStream<ParseTreeNode> ts, TokenCategory rightDelimiter,
+                                     boolean foundSomething, SyntaxCase candidate) {
         List<ParseTreeNode> tmpSequence = new ArrayList<>();
         boolean found = true;
         ts.checkPoint();
@@ -594,7 +599,10 @@ public class RecursiveParser implements Parser {
         List<SyntaxCase> candidates = PJ.reverse(candidatesStartingWith(
                 firstLeft.isTerminal() ? PJ.list(firstLeft.getTokenCategory()) : PJ.list(firstLeft.getSyntaxClass()),
                 firstRight.isTerminal() ? PJ.list(firstRight.getTokenCategory()) : PJ.list(firstRight.getSyntaxClass())));
-        return candidates.stream().filter(c -> streamContainsTerminals(c.getTerminalSymbols(), ts.toList())).collect(Collectors.toList());
+        return candidates.stream()
+                .filter(c -> !(c.startsWithTerminal() && c.getStructure().size() == 1)) //these are managed by other functions
+                .filter(c -> streamContainsTerminals(c.getTerminalSymbols(), ts.toList()))
+                .collect(Collectors.toList());
     }
 
     private boolean streamContainsTerminals(List<? extends SyntaxCaseComponent> terminals, List<ParseTreeNode> sequence) {
