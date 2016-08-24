@@ -4,6 +4,7 @@ import com.parsleyj.tool.exceptions.*;
 import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.types.BaseTypes;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
 import com.parsleyj.utils.Pair;
 import com.parsleyj.utils.Table;
@@ -24,12 +25,11 @@ public class Memory implements ConfigurationElement {
     public static class CallFrame {
 
         private List<String> tags = new ArrayList<>();
+
         private static int callFrameIdCounter = 0;
         private int id = callFrameIdCounter++;
         private ArrayDeque<Scope> stack;
         private ToolObject owner;
-
-
         public CallFrame(Memory belongingMemory, ToolObject owner, ArrayDeque<Scope> definitionScope) {
             this.owner = owner;
             stack = new ArrayDeque<>();
@@ -38,6 +38,7 @@ public class Memory implements ConfigurationElement {
             } else stack.addAll(definitionScope);
             stack.add(new Scope(belongingMemory, Scope.ScopeType.MethodCall));
         }
+
 
         public ArrayDeque<Scope> getStack() {
             return stack;
@@ -61,26 +62,28 @@ public class Memory implements ConfigurationElement {
         public boolean containsTag(String tag) {
             return tags.contains(tag);
         }
+
     }
 
-    public enum NameKind {Variable, Accessor, VariableAndAccessor, Method}
 
+    public enum NameKind {Variable, Accessor, VariableAndAccessor, Method;}
     /**
      * Created by Giuseppe on 05/04/16.
      * TODO: javadoc
      */
     public static class Scope {
 
-        public enum ScopeType {Regular, MethodCall, Object, ClassDefinition}
 
+
+        public enum ScopeType {Regular, MethodCall, Object, ClassDefinition;}
         private List<String> tags = new ArrayList<>();
+
         private ScopeType scopeType;
         private Memory belongingMemory;
         private Table<String, Reference> referenceTable = new Table<>();
         private HashMap<String, NameKind> nameTable = new HashMap<>();
         private MethodTable localMethods;
         private List<OnPopAction> onPopActions = new ArrayList<>();
-
         public Scope(Memory mem, ScopeType scopeType) {
             this.belongingMemory = mem;
             this.scopeType = scopeType;
@@ -146,9 +149,9 @@ public class Memory implements ConfigurationElement {
 
         @FunctionalInterface
         public interface OnPopAction {
+
             void onPop(Memory m);
         }
-
         public void addTag(String tag) {
             tags.add(tag);
         }
@@ -156,16 +159,16 @@ public class Memory implements ConfigurationElement {
         public boolean containsTag(String tag) {
             return tags.contains(tag);
         }
+
     }
-
-
     public static final String SELF_IDENTIFIER = "this";
+
+
     public static final String ARG_IDENTIFIER = "arg";
     private final String memoryName;
-
     private ArrayDeque<CallFrame> callFrames = new ArrayDeque<>();
-    private BaseTypes baseTypes;
 
+    private BaseTypes baseTypes;
     public Memory(String memoryName) {
         this.memoryName = memoryName;
     }
@@ -175,20 +178,20 @@ public class Memory implements ConfigurationElement {
         baseTypes.init(this);
     }
 
-
     @Override
     public String getConfigurationElementName() {
         return memoryName;
     }
 
+
     public void pushScope() {
         callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.Regular));
     }
 
-
     public void pushCallFrame(ToolObject owner, ArrayDeque<Scope> definitionScope) {
         callFrames.add(new CallFrame(this, owner, definitionScope));
     }
+
 
     public void pushClassDefinitionScope() {
         callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.ClassDefinition));
@@ -203,7 +206,6 @@ public class Memory implements ConfigurationElement {
         return r.getValue();
     }
 
-
     public Reference getReferenceByIdentifier(String identifierString) throws ReferenceNotFoundException {
         Iterator<Scope> i = callFrames.getLast().getStack().descendingIterator();
         while (i.hasNext()) {
@@ -216,6 +218,7 @@ public class Memory implements ConfigurationElement {
         throw new ReferenceNotFoundException(this, "Reference with name: " + identifierString + " not found.");
     }
 
+
     public ArrayDeque<Scope> getCurrentFrameStack() {
         return callFrames.getLast().getStack();
     }
@@ -226,6 +229,10 @@ public class Memory implements ConfigurationElement {
 
     public CallFrame getCurrentFrame() {
         return callFrames.getLast();
+    }
+
+    public ArrayDeque<CallFrame> getFrames() {
+        return callFrames;
     }
 
     public Reference newLocalReference(String identifier, ToolObject o) throws ReferenceAlreadyExistsException {

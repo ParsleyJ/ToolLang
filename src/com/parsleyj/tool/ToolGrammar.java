@@ -821,10 +821,6 @@ public class ToolGrammar {
                 logicalAndOperation,
                 logicalOrOperation,
 
-                ifThenElseStatement, ifThenStatement,
-                whileStatement,
-                forInStatement,
-                assignment, destructuralAssignment,
 
                 taggedExpression,
 
@@ -833,11 +829,15 @@ public class ToolGrammar {
                 lExpListBase, lExpListStep,
                 identifierListBase, identifierListStep,
 
+                ifThenElseStatement, ifThenStatement,
+                whileStatement,
+                forInStatement,
                 printOperation0, printOperation1, printOperation2,
 
                 breakStatement1, taggedBreakStatement1,
                 breakStatement2, taggedBreakStatement2,
 
+                assignment, destructuralAssignment,
                 sequentialComposition,
 
                 methodDefinition0, methodDefinition1, methodDefinition2,

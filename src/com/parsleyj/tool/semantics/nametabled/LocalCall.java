@@ -29,6 +29,9 @@ public class LocalCall implements RValue {
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         Pair<Memory.NameKind, Memory.Scope> queryResult = memory.recursivelyGetNameKind(name);
+        if(queryResult == null){
+            throw new NameNotFoundException(memory, "Name '"+name+"' not found.");
+        }
         Memory.NameKind nameKind = queryResult.getFirst();
         if(nameKind == null){
             throw new NameNotFoundException(memory, "Name '"+name+"' not found.");

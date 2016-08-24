@@ -6,6 +6,7 @@ import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 
 import java.util.Objects;
@@ -112,6 +113,14 @@ public class ToolInteger extends ToolObject {
         return new ToolIntegerRange(m, this.getIntegerValue(), b.getIntegerValue());
     }
 
+    @NativeInstanceMethod(value = "times", category = ToolGetterMethod.METHOD_CATEGORY_GETTER)
+    public ToolIntegerRange times(@MemoryParameter Memory m){
+        if(this.getIntegerValue() >= 0){
+            return new ToolIntegerRange(m, 0, this.getIntegerValue()-1);
+        }else{
+            return new ToolIntegerRange(m, -1, this.getIntegerValue());
+        }
+    }
 
     @Override
     public String getPrintString() {

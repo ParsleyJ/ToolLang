@@ -33,10 +33,19 @@ public class BreakStatement implements RValue{
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         ToolObject result = resultExpression.evaluate(memory);
         ArrayDeque<Memory.Scope> stack = memory.getCurrentFrameStack();
+        Iterator<Memory.Scope> it = memory.getCurrentFrameStack().descendingIterator();
+        boolean breakWillBeCatched = false;
+        while(it.hasNext()){
+            Memory.Scope s = it.next();
+            if(s.containsTag(tag)) breakWillBeCatched = true;
+        }
+        if(!breakWillBeCatched) throw new InvalidBreakExpression(memory,
+                "Break command not corresponding to any breakable statement. Break tag: "+tag);
         while (!stack.isEmpty()&&stack.getLast().contains(tag)) {
             stack.removeLast();
         }
-        if(stack.isEmpty()) throw new InvalidBreakExpression(memory, "Break command not captured. Break tag: "+tag);
+        if(stack.isEmpty()) throw new InvalidBreakExpression(memory,
+                "Break command not captured. Break tag: "+tag);
         throw new Break(tag, result);
     }
 

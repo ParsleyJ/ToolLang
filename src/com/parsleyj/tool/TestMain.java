@@ -17,7 +17,7 @@ import java.util.*;
 public class TestMain {
 
     public static final boolean PRINT_DEBUG = false;
-    public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = false;
+    public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = true;
     public static final boolean MULTILINE = true;
     public static final boolean PRINT_RESULTS = false;
 

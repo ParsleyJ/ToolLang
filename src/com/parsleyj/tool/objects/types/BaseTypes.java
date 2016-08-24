@@ -1,9 +1,10 @@
-package com.parsleyj.tool.objects;
+package com.parsleyj.tool.objects.types;
 
 import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.BadMethodCallException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeClassMethod;
@@ -75,6 +76,7 @@ public class BaseTypes {
     public ToolExceptionClass C_NAME_NOT_FOUND_EXCEPTION;
     public ToolExceptionClass C_INVALID_DEFINITION_EXCEPTION;
     public ToolExceptionClass C_INVALID_BREAK_EXPRESSION_EXCEPTION;
+    public ToolExceptionClass C_INVALID_RETURN_EXPRESSION_EXCEPTION;
     public ToolExceptionClass C_INVALID_L_VALUE_EXCEPTION;
     public ToolExceptionClass C_BAD_RETURNED_VALUE_EXCEPTION;
     public ToolExceptionClass C_NATIVE_CLASS_LOAD_FAILED_EXCEPTION;
@@ -180,6 +182,7 @@ public class BaseTypes {
             C_NAME_NOT_FOUND_EXCEPTION = new ToolExceptionClass(m, "NameNotFoundException");
             C_INVALID_DEFINITION_EXCEPTION = new ToolExceptionClass(m, "InvalidDefinitionException");
             C_INVALID_BREAK_EXPRESSION_EXCEPTION = new ToolExceptionClass(m, "InvalidBreakExpressionException");
+            C_INVALID_RETURN_EXPRESSION_EXCEPTION = new ToolExceptionClass(m, "InvalidReturnExpressionException");
             C_INVALID_L_VALUE_EXCEPTION = new ToolExceptionClass(m, "InvalidLValueException");
             C_BAD_RETURNED_VALUE_EXCEPTION = new ToolExceptionClass(m, "BadReturnedValueException");
             C_NATIVE_CLASS_LOAD_FAILED_EXCEPTION = new ToolExceptionClass(m, "NativeClassLoadFailedException");
