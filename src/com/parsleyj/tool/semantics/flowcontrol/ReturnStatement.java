@@ -35,12 +35,12 @@ public class ReturnStatement implements RValue {
         ToolObject result = resultExpression.evaluate(memory);
         ArrayDeque<Memory.CallFrame> frames = memory.getFrames();
         Iterator<Memory.CallFrame> it = memory.getFrames().descendingIterator();
-        boolean returnWillBeCatched = false;
+        boolean returnWillBeCaptured = false;
         while(it.hasNext()){
             Memory.CallFrame s = it.next();
-            if(s.containsTag(tag)) returnWillBeCatched = true;
+            if(s.containsTag(tag)) returnWillBeCaptured = true;
         }
-        if(!returnWillBeCatched) throw new InvalidReturnExpression(memory,
+        if(!returnWillBeCaptured) throw new InvalidReturnExpression(memory,
                 "Return command not corresponding to any call frame. Return tag: "+tag);
         while (!frames.isEmpty()&&frames.getLast().containsTag(tag)) {
             frames.removeLast();

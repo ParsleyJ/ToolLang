@@ -543,6 +543,13 @@ public class ToolGrammar {
                         .evaluate(mem),
                 printOperatorToken, rExpList).parsingDirection(Associativity.RightToLeft);
 
+        SyntaxCaseDefinition breakStatement0 = new SyntaxCaseDefinition(rExp, "breakStatement0",
+                (n, s) -> (RValue) mem -> new BreakStatement(mem.baseTypes().O_NULL).evaluate(mem),
+                breakToken);
+        SyntaxCaseDefinition taggedBreakStatement0 = new SyntaxCaseDefinition(rExp, "taggedBreakStatement0",
+                (n, s) -> (RValue) mem -> new BreakStatement(mem.baseTypes().O_NULL,
+                        ((Identifier) s.convert(n.get(2))).getIdentifierString()).evaluate(mem),
+                breakToken, tagDereferenceOperatorToken, ident);
         SyntaxCaseDefinition breakStatement1 = new SyntaxCaseDefinition(rExp, "breakStatement1",
                 (n, s) -> new BreakStatement(s.convert(n.get(1))),
                 breakToken, rExp).parsingDirection(Associativity.RightToLeft);
@@ -834,6 +841,7 @@ public class ToolGrammar {
                 forInStatement,
                 printOperation0, printOperation1, printOperation2,
 
+                breakStatement0, taggedBreakStatement0,
                 breakStatement1, taggedBreakStatement1,
                 breakStatement2, taggedBreakStatement2,
 
