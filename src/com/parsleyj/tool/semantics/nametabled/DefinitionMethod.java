@@ -11,6 +11,7 @@ import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.semantics.base.Identifier;
 import com.parsleyj.tool.semantics.base.ParameterDefinition;
 import com.parsleyj.tool.semantics.base.RValue;
+import com.parsleyj.tool.semantics.flowcontrol.ReturnStatement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ public class DefinitionMethod implements RValue {
     private final Identifier identifier;
     private final RValue body;
     private final List<ParameterDefinition> params;
+    private final List<String> methodTags = new ArrayList<>();
 
     public DefinitionMethod(Identifier identifier, RValue body){
         this.identifier = identifier;
@@ -48,7 +50,8 @@ public class DefinitionMethod implements RValue {
             case Variable:
             case Accessor:
             case VariableAndAccessor:
-                throw new NameAlreadyUsedException(memory, "Cannot define method: '"+name+"' is an already used name in this scope.");
+                throw new NameAlreadyUsedException(memory,
+                        "Cannot define method: '"+name+"' is an already used name in this scope.");
             case Method:
                 return createAndAddMethod(memory, name, params, body); //tries to overload
             default: //never goes here
@@ -56,25 +59,35 @@ public class DefinitionMethod implements RValue {
         }
     }
 
+    @Override
+    public void addTag(String s) {
+        methodTags.add(s);
+    }
 
-    public static ToolMethod createAndAddMethod(Memory memory, String name, List<ParameterDefinition> params, RValue body) throws ToolNativeException{
+    public ToolMethod createAndAddMethod(Memory memory, String name, List<ParameterDefinition> params, RValue body) throws ToolNativeException{
         List<FormalParameter> formalParameters = new ArrayList<>();
         for (ParameterDefinition param : params) {
             formalParameters.add(param.defineParameter(memory));
         }
-        ToolMethod method = createMethod(memory, name, formalParameters, body);
+        ToolMethod method = createMethod(memory, methodTags, name, formalParameters, body);
+
         method.putDefinitionScope(memory.getCurrentFrameStack());
         memory.getTopScope().addMethod(method);
         return method;
     }
 
-    public static ToolMethod createMethod(Memory memory, String name, List<FormalParameter> formalParameters, RValue body) {
-        return new ToolMethod(
-                    memory,
-                    Visibility.Public,
-                    name,
+    public static ToolMethod createMethod(Memory memory, List<String> methodTags, String name, List<FormalParameter> formalParameters, RValue body) {
+        ToolMethod method = new ToolMethod(
+                memory,
+                Visibility.Public,
+                name,
                 formalParameters.toArray(new FormalParameter[formalParameters.size()]),
-                    new ToolBoolean(memory, true),
-                    body);
+                new ToolBoolean(memory, true),
+                body);
+        method.addTag(ReturnStatement.RETURNABLE_CALL_FRAME_TAG);
+        method.addTag(ToolMethod.METHOD_TAG);
+        method.addTag(name);
+        methodTags.forEach(method::addTag);
+        return method;
     }
 }

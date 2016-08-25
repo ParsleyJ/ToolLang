@@ -41,9 +41,9 @@ public class BreakStatement implements RValue{
         }
         if(!breakWillBeCaptured) throw new InvalidBreakExpression(memory,
                 "Break command not corresponding to any breakable statement. Break tag: "+tag);
-        while (!stack.isEmpty()&&stack.getLast().contains(tag)) {
+        /*while (!stack.isEmpty()&&stack.getLast().contains(tag)) {
             stack.removeLast();
-        }
+        }*/
         if(stack.isEmpty()) throw new InvalidBreakExpression(memory,
                 "Break command not captured. Break tag: "+tag);
         throw new Break(tag, result);

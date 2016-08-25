@@ -7,6 +7,7 @@ import com.parsleyj.tool.semantics.base.*;
 import com.parsleyj.tool.semantics.nametabled.*;
 import com.parsleyj.tool.semantics.parameter.ExplicitTypeParameterDefinition;
 import com.parsleyj.toolparser.program.*;
+import com.parsleyj.utils.Lol;
 
 import java.util.*;
 
@@ -17,11 +18,12 @@ import java.util.*;
 public class TestMain {
 
     public static final boolean PRINT_DEBUG = false;
-    public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = true;
+    public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = false;
     public static final boolean MULTILINE = true;
     public static final boolean PRINT_RESULTS = false;
 
     public static void test() {
+        //Lol.addFlag("memoryStack");
         Program.VERBOSE = PRINT_DEBUG;
         Scanner sc = new Scanner(System.in);
         String memName = "M";

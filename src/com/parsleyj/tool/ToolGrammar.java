@@ -64,6 +64,7 @@ public class ToolGrammar {
         TokenCategoryDefinition ifToken = new TokenCategoryDefinition("IF_KEYWORD", "\\Qif\\E");
         TokenCategoryDefinition thenToken = new TokenCategoryDefinition("THEN_KEYWORD", "\\Qthen\\E");
         TokenCategoryDefinition elseToken = new TokenCategoryDefinition("ELSE_KEYWORD", "\\Qelse\\E");
+        TokenCategoryDefinition returnToken = new TokenCategoryDefinition("RETURN_TOKEN", "\\Qreturn\\E");
         TokenCategoryDefinition breakToken = new TokenCategoryDefinition("BREAK_KEYWORD", "\\Qbreak\\E");
         TokenCategoryDefinition printOperatorToken = new TokenCategoryDefinition("PRINT_OPERATOR", "\\Qprint\\E");
         TokenCategoryDefinition andOperatorToken = new TokenCategoryDefinition("AND_OPERATOR", "\\Qand\\E");
@@ -90,7 +91,7 @@ public class ToolGrammar {
             public List<TokenConverter> getDeclaredTokenConverters() {
                 return getConverters(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken,
-                        breakToken, printOperatorToken,
+                        returnToken, breakToken, printOperatorToken,
                         andOperatorToken, orOperatorToken, notOperatorToken,
                         defToken, getterToken, setterToken, operatorToken, ctorToken,
                         localToken, valToken, varToken,
@@ -113,6 +114,7 @@ public class ToolGrammar {
                     case "if": return ifToken;
                     case "then": return thenToken;
                     case "else": return elseToken;
+                    case "return": return returnToken;
                     case "break": return breakToken;
                     case "print": return printOperatorToken;
                     case "and": return andOperatorToken;
@@ -139,7 +141,7 @@ public class ToolGrammar {
             public List<TokenCategory> declaredTokenCategories() {
                 return Arrays.asList(nullToken, trueToken, falseToken, whileToken, forToken, inToken,
                         doToken, ifToken, thenToken, elseToken,
-                        breakToken, printOperatorToken,
+                        returnToken, breakToken, printOperatorToken,
                         andOperatorToken, orOperatorToken, notOperatorToken,
                         defToken, getterToken, setterToken, operatorToken, ctorToken,
                         localToken, valToken, varToken,
@@ -567,6 +569,22 @@ public class ToolGrammar {
                         ((Identifier) s.convert(n.get(3))).getIdentifierString()).evaluate(mem),
                 breakToken, rExpList, tagDereferenceOperatorToken, ident).parsingDirection(Associativity.RightToLeft);
 
+        SyntaxCaseDefinition returnStatement1 = new SyntaxCaseDefinition(rExp, "returnStatement1",
+                (n, s) -> new ReturnStatement(s.convert(n.get(1))),
+                returnToken, rExp).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition taggedReturnStatement1 = new SyntaxCaseDefinition(rExp, "taggedReturnStatement1",
+                (n, s) -> new ReturnStatement(s.convert(n.get(1)), ((Identifier) s.convert(n.get(3))).getIdentifierString()),
+                returnToken, rExp, tagDereferenceOperatorToken, ident).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition returnStatement2 = new SyntaxCaseDefinition(rExp, "returnStatement2",
+                (n, s) -> (RValue) mem -> new BreakStatement(
+                        ((RValueList) s.convert(n.get(1))).generateToolList(mem)).evaluate(mem),
+                returnToken, rExpList).parsingDirection(Associativity.RightToLeft);
+        SyntaxCaseDefinition taggedReturnStatement2 = new SyntaxCaseDefinition(rExp, "taggedReturnStatement2",
+                (n, s) -> (RValue) mem -> new BreakStatement(
+                        ((RValueList) s.convert(n.get(1))).generateToolList(mem),
+                        ((Identifier) s.convert(n.get(3))).getIdentifierString()).evaluate(mem),
+                returnToken, rExpList, tagDereferenceOperatorToken, ident).parsingDirection(Associativity.RightToLeft);
+
         SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
                 rExp, semicolonToken, rExp);
@@ -844,6 +862,9 @@ public class ToolGrammar {
                 breakStatement0, taggedBreakStatement0,
                 breakStatement1, taggedBreakStatement1,
                 breakStatement2, taggedBreakStatement2,
+
+                returnStatement1, taggedReturnStatement1,
+                returnStatement2, taggedReturnStatement2,
 
                 assignment, destructuralAssignment,
                 sequentialComposition,

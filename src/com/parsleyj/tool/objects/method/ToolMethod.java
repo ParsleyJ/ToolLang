@@ -7,6 +7,7 @@ import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.ToolClass;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.semantics.base.RValue;
+import com.parsleyj.tool.semantics.flowcontrol.ReturnStatement;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ import java.util.List;
 
 public class ToolMethod extends ToolMethodPrototype{
 
+    public static final String METHOD_TAG = "method";
+
     public static final String METHOD_CATEGORY_METHOD = "METHOD_CATEGORY_METHOD";
 
     private Visibility visibility;
@@ -27,6 +30,7 @@ public class ToolMethod extends ToolMethodPrototype{
     private RValue body;
     private ArrayDeque<Memory.Scope> definitionScope = new ArrayDeque<>();
     private ToolObject ownerObject;
+    private List<String> tags = new ArrayList<>();
 
     public ToolMethod(Memory m, Visibility visibility, String name,
                       FormalParameter[] parameters, RValue body) {
@@ -76,12 +80,21 @@ public class ToolMethod extends ToolMethodPrototype{
         this.methodCategory = methodCategory;
     }
 
+    public void addTag(String s){
+        tags.add(s);
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
     public ToolObject call(Memory memory,
                            ToolObject caller,
                            List<ToolObject> arguments,
                            ArrayDeque<Memory.Scope> definitionScope) throws ToolNativeException {
         ToolObject result;
         memory.pushCallFrame(caller, definitionScope);
+        tags.forEach(t -> memory.getCurrentFrame().addTag(t));
 
         for (int i = 0; i < getArgumentNames().size(); ++i) {
             memory.newLocalReference(getArgumentNames().get(i), arguments.get(i));
@@ -94,6 +107,14 @@ public class ToolMethod extends ToolMethodPrototype{
             tne.addFrameToTrace("\tat: "+ completeFunctionName());
             memory.returnFromCallError();
             throw tne;
+        }catch (ReturnStatement.Return e){
+            if (memory.getCurrentFrame().containsTag(e.getTag())) {
+                memory.returnFromCall();
+                return e.getResult();
+            } else {
+                memory.returnFromCall();
+                throw e;
+            }
         }
         memory.returnFromCall();
         return result;

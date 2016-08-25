@@ -122,7 +122,8 @@ public class ToolTypeAdapter implements ToolType {
                         isOperatorImplementation.isOperator(memory1, result,
                                 memory1.getObjectByIdentifier(Memory.ARG_IDENTIFIER)))
         ));
-        result.addMethod(DefinitionMethod.createMethod(memory, "canBeUsedAs",
+
+        result.addMethod(DefinitionMethod.createMethod(memory, Collections.emptyList(), "canBeUsedAs",
                 Collections.singletonList(new FormalParameter("other", memory.baseTypes().I_TYPE)),
                 memory1 -> {
                     ToolObject other = memory1.getObjectByIdentifier("other");
@@ -130,7 +131,8 @@ public class ToolTypeAdapter implements ToolType {
                             canBeUsedAsImplementation.canBeUsedAs(memory1, result, new ToolTypeAdapter(memory1, other)));
                 }
         ));
-        result.addMethod(DefinitionMethod.createMethod(memory, "getObjectConvertibility",
+
+        result.addMethod(DefinitionMethod.createMethod(memory, Collections.emptyList(), "getObjectConvertibility",
                 Collections.singletonList(new FormalParameter("from", memory.baseTypes().C_OBJECT)),
                 memory1 -> {
                     ToolObject from = memory1.getObjectByIdentifier("from");
@@ -139,7 +141,8 @@ public class ToolTypeAdapter implements ToolType {
                                     memory1, result, from));
                 }
         ));
-        result.addMethod(DefinitionMethod.createMethod(memory, "getConvertibility",
+
+        result.addMethod(DefinitionMethod.createMethod(memory, Collections.emptyList(), "getConvertibility",
                 Collections.singletonList(new FormalParameter("from", memory.baseTypes().I_TYPE)),
                 memory1 -> {
                     ToolObject from = memory1.getObjectByIdentifier("from");

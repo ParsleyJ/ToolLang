@@ -6,6 +6,7 @@ import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.types.BaseTypes;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
+import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.Pair;
 import com.parsleyj.utils.Table;
 import com.parsleyj.utils.Triple;
@@ -63,6 +64,9 @@ public class Memory implements ConfigurationElement {
             return tags.contains(tag);
         }
 
+        public List<String> getTags() {
+            return tags;
+        }
     }
 
 
@@ -72,8 +76,8 @@ public class Memory implements ConfigurationElement {
      * TODO: javadoc
      */
     public static class Scope {
-
-
+        private static int scopeIdCounter = 0;
+        private int id = scopeIdCounter++;
 
         public enum ScopeType {Regular, MethodCall, Object, ClassDefinition;}
         private List<String> tags = new ArrayList<>();
@@ -144,12 +148,12 @@ public class Memory implements ConfigurationElement {
         }
 
         public void executeOnPopActions() {
+            Lol.withFlag("memoryStack", "  popping scope with id: "+this.id);
             onPopActions.forEach(a -> a.onPop(belongingMemory));
         }
 
         @FunctionalInterface
         public interface OnPopAction {
-
             void onPop(Memory m);
         }
         public void addTag(String tag) {
@@ -161,9 +165,8 @@ public class Memory implements ConfigurationElement {
         }
 
     }
+
     public static final String SELF_IDENTIFIER = "this";
-
-
     public static final String ARG_IDENTIFIER = "arg";
     private final String memoryName;
     private ArrayDeque<CallFrame> callFrames = new ArrayDeque<>();
@@ -185,16 +188,22 @@ public class Memory implements ConfigurationElement {
 
 
     public void pushScope() {
-        callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.Regular));
+        Scope sc = new Scope(this, Scope.ScopeType.Regular);
+        Lol.withFlag("memoryStack", "  pushing scope with id: "+sc.id);
+        callFrames.getLast().getStack().add(sc);
     }
 
     public void pushCallFrame(ToolObject owner, ArrayDeque<Scope> definitionScope) {
-        callFrames.add(new CallFrame(this, owner, definitionScope));
+        CallFrame cf = new CallFrame(this, owner, definitionScope);
+        Lol.withFlag("memoryStack", "pushing Frame with id: "+cf.id);
+        callFrames.add(cf);
     }
 
 
     public void pushClassDefinitionScope() {
-        callFrames.getLast().getStack().add(new Scope(this, Scope.ScopeType.ClassDefinition));
+        Scope sc = new Scope(this, Scope.ScopeType.ClassDefinition);
+        Lol.withFlag("memoryStack", "  pushing scope with id: "+sc.id+" (class definition)");
+        callFrames.getLast().getStack().add(sc);
     }
 
     public Scope getTopScope() {
@@ -262,12 +271,14 @@ public class Memory implements ConfigurationElement {
     public void returnFromCallError() {
         popScope();
         callFrames.getLast().popAllScopes();
+        Lol.withFlag("memoryStack", "popping Frame with id: "+callFrames.getLast().id+ " (caused by error)");
         callFrames.removeLast();
     }
 
     public void returnFromCall() {
         popScope();
         callFrames.getLast().popAllScopes();
+        Lol.withFlag("memoryStack", "popping Frame with id: "+callFrames.getLast().id);
         callFrames.removeLast();
     }
 

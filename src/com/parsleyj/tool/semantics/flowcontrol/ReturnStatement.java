@@ -42,9 +42,9 @@ public class ReturnStatement implements RValue {
         }
         if(!returnWillBeCaptured) throw new InvalidReturnExpression(memory,
                 "Return command not corresponding to any call frame. Return tag: "+tag);
-        while (!frames.isEmpty()&&frames.getLast().containsTag(tag)) {
+        /*while (!frames.isEmpty()&&frames.getLast().containsTag(tag)) {
             frames.removeLast();
-        }
+        }*/
         if(frames.isEmpty()) throw new InvalidReturnExpression(memory,
                 "Return command not captured. Return tag: "+tag);
         throw new Return(tag, result);
