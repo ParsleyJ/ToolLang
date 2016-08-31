@@ -2,6 +2,7 @@ package com.parsleyj.tool;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolExpression;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.basetypes.ToolBoolean;
 import com.parsleyj.tool.objects.basetypes.ToolInteger;
@@ -478,10 +479,10 @@ public class ToolGrammar {
                 rExp, sameInstanceOperatorToken, rExp);
 
         SyntaxCaseDefinition logicalAndOperation = new SyntaxCaseDefinition(rExp, "logicalAndOperation",
-                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "and", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "and", new ToolExpression(memory, b))),
                 rExp, andOperatorToken, rExp);
         SyntaxCaseDefinition logicalOrOperation = new SyntaxCaseDefinition(rExp, "logicalOrOperation",
-                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "or", b)),
+                new CBOConverterMethod<RValue>((a, b) -> MethodCall.binaryOperator(a, "or", new ToolExpression(memory, b))),
                 rExp, orOperatorToken, rExp);
 
         SyntaxCaseDefinition ifThenElseStatement = new SyntaxCaseDefinition(rExp, "ifThenElseStatement",

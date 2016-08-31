@@ -2,6 +2,7 @@ package com.parsleyj.tool.objects.basetypes;
 
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
+import com.parsleyj.tool.objects.ToolExpression;
 import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
@@ -37,14 +38,26 @@ public class ToolBoolean extends ToolObject {
 
     @NativeInstanceMethod(value = "and", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.Binary)
-    public ToolBoolean _logicalAnd_(@MemoryParameter Memory m, ToolBoolean b){
-        return new ToolBoolean(m, this.getBoolValue() && b.getBoolValue());
+    public ToolBoolean _logicalAnd_(@MemoryParameter Memory m, ToolExpression b) throws ToolNativeException{
+        if(!this.getBoolValue()) return new ToolBoolean(m, false);
+        if(b.call(m).evaluateAsConditional(m)){
+            return new ToolBoolean(m, true);
+        }else{
+            return new ToolBoolean(m, false);
+        }
+
     }
 
     @NativeInstanceMethod(value = "or", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR,
             mode = ToolOperatorMethod.Mode.Binary)
-    public ToolBoolean _logicalOr_(@MemoryParameter Memory m, ToolBoolean b){
-        return new ToolBoolean(m, this.getBoolValue() || b.getBoolValue());
+    public ToolBoolean _logicalOr_(@MemoryParameter Memory m, ToolExpression b) throws ToolNativeException {
+        if(this.getBoolValue()) return new ToolBoolean(m, true);
+        if(b.call(m).evaluateAsConditional(m)){
+            return new ToolBoolean(m, true);
+        }else{
+            return new ToolBoolean(m, false);
+        }
+
     }
 
     @Override

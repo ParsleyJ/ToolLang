@@ -18,6 +18,7 @@ import com.parsleyj.tool.objects.method.ToolMethodPrototype;
 import com.parsleyj.tool.objects.method.Visibility;
 import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
+import com.parsleyj.tool.semantics.base.RValue;
 import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.MapBuilder;
 import com.parsleyj.utils.PJ;
@@ -28,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Created by Giuseppe on 04/04/16.
@@ -47,6 +49,7 @@ public class BaseTypes {
     public ToolClass C_METHOD_SET;
     public ToolClass C_METHOD;
     public ToolClass C_TUPLE;
+    public ToolClass C_EXPRESSION;
     public ToolClass C_INTEGER;
     public ToolClass C_STRING;
     public ToolClass C_BOOLEAN;
@@ -153,6 +156,7 @@ public class BaseTypes {
             C_METHOD_PROTOTYPE = new ToolClass(m, "MethodPrototype", C_OBJECT);
             C_METHOD_SET = new ToolClass(m, "MethodSet", C_METHOD_PROTOTYPE);
             C_METHOD = new ToolClass(m, "Method", C_METHOD_PROTOTYPE);
+            C_EXPRESSION = new ToolClass(m, "Expression", C_OBJECT);
             C_TUPLE = new ToolClass(m, "Tuple", C_OBJECT);
             C_INTEGER = new ToolClass(m, "Integer", C_OBJECT);
             C_STRING = new ToolClass(m, "String", C_OBJECT);
@@ -242,6 +246,7 @@ public class BaseTypes {
                     .put(ToolExtensor.class, C_EXTENSOR)
                     .put(ToolMethod.class, C_METHOD)
                     .put(ToolTuple.class, C_TUPLE)
+                    .put(ToolExpression.class, C_EXPRESSION)
                     .put(ToolInteger.class, C_INTEGER)
                     .put(ToolString.class, C_STRING)
                     .put(ToolBoolean.class, C_BOOLEAN)
@@ -260,6 +265,7 @@ public class BaseTypes {
                     .put(String.class, new NativeConverter<String>(x -> new ToolString(m, x)))
                     .put(Boolean.TYPE, new NativeConverter<Boolean>(x -> new ToolBoolean(m, x)))
                     .put(Boolean.class, new NativeConverter<Boolean>(x -> new ToolBoolean(m, x)))
+                    .put(RValue.class, new NativeConverter<RValue>(x -> new ToolExpression(m, x)))
                     .get();
 
             for (Map.Entry<Class<?>, ToolClass> e : NATIVE_CLASS_MAP.entrySet()) {
@@ -440,16 +446,20 @@ public class BaseTypes {
                     }
                     try {
                         List<Object> actualNativePars = new ArrayList<>();
-                        if(hasMemoryParameter) actualNativePars.add(memory);
-                        if(!isInstanceMethod) actualNativePars.add(memory.getSelfObject());
+                        if (hasMemoryParameter) actualNativePars.add(memory);
+                        if (!isInstanceMethod) actualNativePars.add(memory.getSelfObject());
                         actualNativePars.addAll(actualPars);
                         Object resultObject = isInstanceMethod ?
-                                    m.invoke(memory.getSelfObject(), actualNativePars.toArray(new Object[actualNativePars.size()])):
-                                    m.invoke(null, actualNativePars.toArray(new Object[actualNativePars.size()]));
-                        if(finalNc == null) return (ToolObject) resultObject;
+                                m.invoke(memory.getSelfObject(), actualNativePars.toArray(new Object[actualNativePars.size()])) :
+                                m.invoke(null, actualNativePars.toArray(new Object[actualNativePars.size()]));
+                        if (finalNc == null) return (ToolObject) resultObject;
                         else return finalNc.convert(resultObject);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new RuntimeException("InvokeFailed");
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException("InvokeFailed", e);
+                    } catch (InvocationTargetException e) {
+                        if (e.getCause() instanceof ToolNativeException)
+                            throw (ToolNativeException) e.getCause();
+                        throw new RuntimeException("InvokeFailed", e);
                     }
                 });
         return new Pair<>(newMethod, isInstanceMethod);

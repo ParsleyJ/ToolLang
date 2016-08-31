@@ -1,8 +1,12 @@
 package com.parsleyj.tool;
 
+import com.parsleyj.tool.exceptions.AmbiguousMethodDefinitionException;
 import com.parsleyj.tool.exceptions.ToolNativeException;
 import com.parsleyj.tool.memory.Memory;
 import com.parsleyj.tool.objects.*;
+import com.parsleyj.tool.objects.basetypes.ToolBoolean;
+import com.parsleyj.tool.objects.method.ToolMethod;
+import com.parsleyj.tool.objects.method.special.ToolGetterMethod;
 import com.parsleyj.tool.semantics.base.*;
 import com.parsleyj.tool.semantics.nametabled.*;
 import com.parsleyj.tool.semantics.parameter.ExplicitTypeParameterDefinition;
@@ -20,7 +24,7 @@ public class TestMain {
     public static final boolean PRINT_DEBUG = false;
     public static final boolean PRINT_TOOL_EXCEPTION_STACK_TRACE = false;
     public static final boolean MULTILINE = true;
-    public static final boolean PRINT_RESULTS = false;
+    public static boolean PRINT_RESULTS = false;
 
     public static void test() {
         //Lol.addFlag("memoryStack");
@@ -32,6 +36,17 @@ public class TestMain {
         memory.pushCallFrame(firstObject, new ArrayDeque<>());
         memory.init();
         firstObject.forceSetBelongingClass(memory.baseTypes().C_OBJECT);
+        try {
+            firstObject.addMethod(DefinitionSetter.createSetter(memory, "mustPrintResults", memory.baseTypes().C_BOOLEAN,
+                    mem -> {
+                        ToolBoolean toolBoolean = ((ToolBoolean) mem.getTopScope().getReferenceTable().get(Memory.ARG_IDENTIFIER)
+                                .getValue());
+                        PRINT_RESULTS = toolBoolean.getBoolValue();
+                        return toolBoolean;
+                    }));
+        } catch (AmbiguousMethodDefinitionException e) {
+            e.printStackTrace();
+        }
         memory.pushScope();
         memory.loadBaseObjects();
 

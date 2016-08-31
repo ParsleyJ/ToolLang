@@ -31,25 +31,33 @@ public class DefinitionSetter implements RValue {
     @Override
     public ToolObject evaluate(Memory memory) throws ToolNativeException {
         Memory.NameKind nk = memory.getTopScope().getNameTable().get(identifierString);
-        if (nk==null){
+        if (nk == null) {
             memory.getTopScope().getNameTable().put(identifierString, Memory.NameKind.Accessor);
             return createAndAddSetter(memory, identifierString, argType, body);
-        }else switch (nk){
+        } else switch (nk) {
             case Variable:
                 memory.getTopScope().getNameTable().put(identifierString, Memory.NameKind.VariableAndAccessor);
                 return createAndAddSetter(memory, identifierString, argType, body);
             case Accessor:
             case VariableAndAccessor:
-                return  createAndAddSetter(memory, identifierString, argType, body);
+                return createAndAddSetter(memory, identifierString, argType, body);
             case Method:
-                throw new NameAlreadyUsedException(memory, "Cannot define setter: '"+identifierString+"' is an already used name in this scope.");
+                throw new NameAlreadyUsedException(memory, "Cannot define setter: '" + identifierString + "' is an already used name in this scope.");
             default:
                 return null;
         }
     }
 
-    public static ToolMethod createAndAddSetter(Memory memory, String name, ToolClass argType, RValue body) throws ToolNativeException{
-        ToolMethod method = new ToolMethod(
+    public static ToolMethod createAndAddSetter(Memory memory, String name, ToolClass argType, RValue body)
+            throws ToolNativeException {
+        ToolMethod method = createSetter(memory, name, argType, body);
+        method.putDefinitionScope(memory.getCurrentFrameStack());
+        memory.getTopScope().addMethod(method);
+        return method;
+    }
+
+    public static ToolMethod createSetter(Memory memory, String name, ToolClass argType, RValue body) {
+        return new ToolMethod(
                 memory,
                 ToolSetterMethod.METHOD_CATEGORY_SETTER,
                 Visibility.Public,
@@ -59,8 +67,5 @@ public class DefinitionSetter implements RValue {
                 },
                 new ToolBoolean(memory, true),
                 body);
-        method.putDefinitionScope(memory.getCurrentFrameStack());
-        memory.getTopScope().addMethod(method);
-        return method;
     }
 }
