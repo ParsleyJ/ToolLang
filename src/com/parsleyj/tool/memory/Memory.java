@@ -5,6 +5,7 @@ import com.parsleyj.tool.objects.*;
 import com.parsleyj.tool.objects.method.MethodTable;
 import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.types.BaseTypes;
+import com.parsleyj.tool.semantics.flowcontrol.ReturnStatement;
 import com.parsleyj.toolparser.configuration.ConfigurationElement;
 import com.parsleyj.utils.Lol;
 import com.parsleyj.utils.Pair;
@@ -195,6 +196,7 @@ public class Memory implements ConfigurationElement {
 
     public void pushCallFrame(ToolObject owner, ArrayDeque<Scope> definitionScope) {
         CallFrame cf = new CallFrame(this, owner, definitionScope);
+        cf.addTag(ReturnStatement.RETURNABLE_CALL_FRAME_TAG);
         Lol.withFlag("memoryStack", "pushing Frame with id: "+cf.id);
         callFrames.add(cf);
     }

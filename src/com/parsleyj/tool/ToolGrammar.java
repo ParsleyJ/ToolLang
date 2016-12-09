@@ -341,11 +341,11 @@ public class ToolGrammar {
                 (n, s) -> new DefinitionVariable(((Identifier) s.convert(n.get(1))).getIdentifierString()),
                 localToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition valDefinitionProperty = new SyntaxCaseDefinition(lExp, "valDefinitionProperty",
-                (n, s) -> new DefinitionPropertyVal(s.convert(n.get(1))),
-                valToken, ident);
+                (n, s) -> new DefinitionPropertyVal(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                valToken, ident).parsingDirection(Associativity.RightToLeft);
         SyntaxCaseDefinition varDefinitionProperty = new SyntaxCaseDefinition(lExp, "varDefinitionProperty",
-                (n, s) -> new DefinitionPropertyVar(s.convert(n.get(1))),
-                varToken, ident);
+                (n, s) -> new DefinitionPropertyVar(((Identifier) s.convert(n.get(1))).getIdentifierString()),
+                varToken, ident).parsingDirection(Associativity.RightToLeft);
 
         SyntaxCaseDefinition objectAtIdentifier = new SyntaxCaseDefinition(lExp, "objectAtIdentifier",
                 (n, s) -> new ObjectAtIdentifier(s.convert(n.get(0)), s.convert(n.get(2))),

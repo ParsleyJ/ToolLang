@@ -89,11 +89,11 @@ public class ToolMethod extends ToolMethodPrototype{
     }
 
     public ToolObject call(Memory memory,
-                           ToolObject caller,
+                           ToolObject owner,
                            List<ToolObject> arguments,
                            ArrayDeque<Memory.Scope> definitionScope) throws ToolNativeException {
         ToolObject result;
-        memory.pushCallFrame(caller, definitionScope);
+        memory.pushCallFrame(owner, definitionScope);
         tags.forEach(t -> memory.getCurrentFrame().addTag(t));
 
         for (int i = 0; i < getArgumentNames().size(); ++i) {

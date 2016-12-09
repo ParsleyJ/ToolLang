@@ -5,6 +5,7 @@ import com.parsleyj.tool.objects.ToolObject;
 import com.parsleyj.tool.objects.annotations.methods.SelfParameter;
 import com.parsleyj.tool.objects.annotations.methods.MemoryParameter;
 import com.parsleyj.tool.objects.annotations.methods.NativeInstanceMethod;
+import com.parsleyj.tool.objects.method.ToolMethod;
 import com.parsleyj.tool.objects.method.special.ToolOperatorMethod;
 import com.parsleyj.utils.PJ;
 
@@ -58,6 +59,15 @@ public class ToolString extends ToolObject {
 
     @NativeInstanceMethod(value = "/", category = ToolOperatorMethod.METHOD_CATEGORY_OPERATOR, mode = ToolOperatorMethod.Mode.Binary)
     public ToolList _slash_(@MemoryParameter Memory m, ToolString delimiter){
+        return new ToolList(m, PJ.list(this.getStringValue().split(delimiter.getStringValue()))
+                .stream()
+                .map((s) -> new ToolString(m, s))
+                .collect(Collectors.toList())
+        );
+    }
+
+    @NativeInstanceMethod
+    public ToolList split(@MemoryParameter Memory m, ToolString delimiter){
         return new ToolList(m, PJ.list(this.getStringValue().split(delimiter.getStringValue()))
                 .stream()
                 .map((s) -> new ToolString(m, s))
