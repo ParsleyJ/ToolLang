@@ -586,6 +586,9 @@ public class ToolGrammar {
                         ((Identifier) s.convert(n.get(3))).getIdentifierString()).evaluate(mem),
                 returnToken, rExpList, tagDereferenceOperatorToken, ident).parsingDirection(Associativity.RightToLeft);
 
+        SyntaxCaseDefinition finalSequentialComposition = new SyntaxCaseDefinition(rExp, "finalSequentialComposition",
+                (n, s) -> s.convert(n.get(0)),
+                rExp, semicolonToken);
         SyntaxCaseDefinition sequentialComposition = new SyntaxCaseDefinition(rExp, "sequentialComposition",
                 new CBOConverterMethod<RValue>(SequentialComposition::new),
                 rExp, semicolonToken, rExp);
@@ -868,11 +871,15 @@ public class ToolGrammar {
                 returnStatement2, taggedReturnStatement2,
 
                 assignment, destructuralAssignment,
+
+                methodDefinitionEB0, methodDefinitionEB1, methodDefinitionEB2,
+                getterDefinitionEB, setterDefinitionEB,
+
+                finalSequentialComposition,
                 sequentialComposition,
 
                 methodDefinition0, methodDefinition1, methodDefinition2,
-                methodDefinitionEB0, methodDefinitionEB1, methodDefinitionEB2,
-                getterDefinition, getterDefinitionEB, setterDefinition, setterDefinitionEB,
+                getterDefinition, setterDefinition,
                 ctorDefinition0, ctorDefinition1, ctorDefinition2,
 
                 functorCallOperatorDefinition,
